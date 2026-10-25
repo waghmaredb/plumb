@@ -1,0 +1,172 @@
+# Source-tier rule table (spec C8, CL-008). Overridable: pass a path to
+# tier.load_tier_rules(). Domain patterns match the host or any parent domain
+# (".gov.sg" matches "mas.gov.sg"); host_patterns are regexes on the host;
+# path_patterns are substrings of the URL path (lowercased).
+# Resolution order: longest matching domain pattern wins; then host/path
+# patterns; then `default`.
+default: T5
+tiers:
+  T1:
+    description: regulator filings, primary documents, peer-reviewed or RCT
+    domains:
+      - .gov
+      - .gov.sg
+      - .gov.uk
+      - .gov.au
+      - .go.jp
+      - .gov.hk
+      - .gov.in
+      - .gc.ca
+      - mas.gov.sg
+      - sec.gov
+      - europa.eu
+      - arxiv.org
+      - doi.org
+      - ssrn.com
+      - nature.com
+      - science.org
+      - thelancet.com
+      - nejm.org
+      - ieee.org
+      - acm.org
+      - pubmed.ncbi.nlm.nih.gov
+      - who.int
+      - un.org
+      - iso.org
+      - bis.org
+      - imf.org
+      - worldbank.org
+      - oecd.org
+      - cloudsecurityalliance.org
+      - owasp.org
+      - nist.gov
+      - .edu
+      - .edu.sg
+      - .ac.uk
+  T2:
+    description: investor materials, central-bank and official statistics
+    domains:
+      - singstat.gov.sg
+      - data.gov.sg
+      - abs.gov.au
+      - ons.gov.uk
+      - census.gov
+      - bls.gov
+      - eurostat.ec.europa.eu
+      - federalreserve.gov
+      - ecb.europa.eu
+      - rba.gov.au
+      - bankofengland.co.uk
+      - boj.or.jp
+      - sgx.com
+      - asx.com.au
+      - hkexnews.hk
+    host_patterns:
+      - "^ir\\."
+      - "^investors?\\."
+    path_patterns:
+      - /investor
+      - /investors
+      - annual-report
+      - annualreport
+      - /ir/
+      - sec-filings
+      - /10-k
+      - /20-f
+      - /earnings
+  T3:
+    description: named consulting-firm research, reputable trade press
+    domains:
+      - mckinsey.com
+      - bcg.com
+      - bain.com
+      - deloitte.com
+      - pwc.com
+      - ey.com
+      - kpmg.com
+      - accenture.com
+      - gartner.com
+      - forrester.com
+      - idc.com
+      - reuters.com
+      - ft.com
+      - bloomberg.com
+      - wsj.com
+      - economist.com
+      - nytimes.com
+      - theguardian.com
+      - bbc.co.uk
+      - bbc.com
+      - straitstimes.com
+      - businesstimes.com.sg
+      - channelnewsasia.com
+      - nikkei.com
+      - scmp.com
+      - afr.com
+      - abc.net.au
+      - canberratimes.com.au
+      - fortune.com
+      - hbr.org
+      - cjr.org
+      - theregister.com
+      - techcrunch.com
+      - wired.com
+      - arstechnica.com
+      - ia.acs.org.au
+      - accountingtimes.com.au
+      - hrreporter.com
+  T4:
+    description: vendor and practitioner content (labelled)
+    domains:
+      - medium.com
+      - substack.com
+      - dev.to
+      - linkedin.com
+      - github.com
+      - aws.amazon.com
+      - cloud.google.com
+      - microsoft.com
+      - openai.com
+      - anthropic.com
+      - dell.com
+      - ibm.com
+      - oracle.com
+      - salesforce.com
+      - mlflow.org
+      - arthur.ai
+    path_patterns:
+      - /blog/
+      - /blogs/
+      - /whitepaper
+      - /case-study
+      - /case-studies
+      - /press-release
+      - /newsroom/
+  T5:
+    description: aggregators and SEO content; discovery only, never a citation of record
+    domains:
+      - statista.com
+      - wikipedia.org
+      - wikimedia.org
+      - prnewswire.com
+      - businesswire.com
+      - globenewswire.com
+      - prweb.com
+      - einpresswire.com
+      - marketsandmarkets.com
+      - grandviewresearch.com
+      - mordorintelligence.com
+      - fortunebusinessinsights.com
+      - reportlinker.com
+      - researchandmarkets.com
+      - quora.com
+      - reddit.com
+      - pinterest.com
+      - slideshare.net
+      - scribd.com
+# Hard content-farm list for tier.aigen_score (spec C7 hard signal)
+content_farms:
+  - ezinearticles.com
+  - hubpages.com
+  - articlesbase.com
+  - contentfarm.example

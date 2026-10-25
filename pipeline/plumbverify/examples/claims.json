@@ -1,0 +1,33 @@
+{
+  "claims": [
+    {
+      "id": "exec-01",
+      "module": "executive-summary",
+      "text": "Between 3% and 13% of URLs cited by deep-research agents are hallucinated",
+      "kind": "number",
+      "load_bearing": true,
+      "confidence_label": "filed",
+      "sources": [
+        "https://arxiv.org/html/2604.03173v1",
+        "https://arxiv.org/html/2605.06635v1"
+      ]
+    },
+    {
+      "id": "exec-02",
+      "module": "executive-summary",
+      "text": "The substance of the independent review is retained, and there are no changes to the recommendations.",
+      "kind": "quote",
+      "load_bearing": true,
+      "sources": ["https://fortune.com/2025/10/07/deloitte-ai-australia-government-report-hallucinations-technology-290000-refund"]
+    },
+    {
+      "id": "m3-07",
+      "module": "market-sizing",
+      "text": "Deloitte Australia partially refunded a A$440,000 report after fabricated references were found",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "sources": ["https://ia.acs.org.au/article/2025/deloitte-to-refund-government-over-ai-errors.html"]
+    }
+  ]
+}
