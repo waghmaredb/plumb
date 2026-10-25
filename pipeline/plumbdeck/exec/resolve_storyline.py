@@ -34,7 +34,7 @@ except Exception:  # pragma: no cover
     contradiction_rules = key_term_recall = None
 
 FACT_KINDS = {"synthesis", "quote"}
-NON_FINDING_KINDS = {"question", "offer", "method", "label", "observation"}
+NON_FINDING_KINDS = {"question", "hypothesis", "offer", "method", "label", "observation"}
 
 
 class StorylineError(Exception):
@@ -77,6 +77,15 @@ def items_with_support(node, path=""):
     elif isinstance(node, list):
         for i, v in enumerate(node):
             yield from items_with_support(v, f"{path}[{i}]")
+
+
+def shown_matches(display: str, value: float) -> bool:
+    """A displayed number matches if it is the value rounded to the precision shown."""
+    num = re.sub(r"[^\d.]", "", display.replace(",", ""))
+    if not num:
+        return False
+    dec = len(num.split(".")[1]) if "." in num else 0
+    return abs(float(num) - value) <= 0.5 * 10 ** (-dec) + 1e-9
 
 
 def resolve(story: dict, run_dir: Path, pdf: Path | None, signoff: Path | None) -> tuple[dict, list[dict], dict]:
@@ -134,6 +143,8 @@ def resolve(story: dict, run_dir: Path, pdf: Path | None, signoff: Path | None) 
     # matrix cells carry support without text: check release and collect pages
     for si, s in enumerate(story["slides"]):
         for ri, r in enumerate(s.get("rows", []) or []):
+            if not isinstance(r, dict):
+                continue
             for ci, c in enumerate(r.get("cells", []) or []):
                 for cid in c.get("support", []) or []:
                     d = decisions.get(cid)
@@ -172,31 +183,43 @@ def resolve(story: dict, run_dir: Path, pdf: Path | None, signoff: Path | None) 
     # tiles/bigs that cite a figure must display it correctly
     for s in story["slides"]:
         for tl in s.get("tiles", []):
-            if "figure" in tl:
-                f = figures.get(tl["figure"])
-                if not f:
-                    errors.append(f"tile '{tl['big']}': figure {tl['figure']} not verified")
+            ids = tl.get("figures") or ([tl["figure"]] if "figure" in tl else [])
+            if ids:
+                fs = [figures.get(x) for x in ids]
+                if not all(fs):
+                    errors.append(f"tile '{tl['big']}': figure(s) {ids} not verified")
                 else:
-                    shown = float(re.sub(r"[^\d.]", "", tl["big"]))
-                    exp = f["_num"] / 1000 if "bn" in tl["big"] else f["_num"]
-                    if abs(shown - round(exp, 1)) > 0.05:
-                        errors.append(f"tile '{tl['big']}' does not match verified {f['value']}")
-                    tl["_pages"] = f["_pages"]
+                    total = sum(f["_num"] for f in fs)
+                    exp = total / 1000 if "bn" in tl["big"] else total
+                    if not shown_matches(tl["big"], exp):
+                        errors.append(f"tile '{tl['big']}' does not match verified {' + '.join(f['value'] for f in fs)} (= {exp:.1f})")
+                    tl["_pages"] = sorted({p for f in fs for p in f["_pages"]})
+                    qa_rows.append({"path": f"{s['id']}.tile", "kind": "derived", "text": f"{tl['big']} {tl.get('line', {}).get('text', '')}",
+                                    "support": [" + ".join(f["value"] for f in fs) + f" = {total:.1f}"], "pages": tl["_pages"], "reviewer_check": True})
         # derived arithmetic in titles
         for path, el in walk(s):
             if el["kind"] == "derived":
-                d = el["derived"]; f = figures.get(d["figure"])
-                if not f:
-                    errors.append(f"derived '{el['text'][:50]}': figure {d['figure']} not verified"); continue
-                val = f["_num"] * d["pct"] / 100
-                shown = float(re.sub(r"[^\d.]", "", d["display"]))
-                if abs(shown - val) / val > 0.05:
-                    errors.append(f"derived '{d['display']}' is not {d['pct']}% of {f['value']} (= {val:.1f})")
+                d = el["derived"]
+                ids = d.get("sum") or [d["figure"]]
+                fs = [figures.get(x) for x in ids]
+                if not all(fs):
+                    errors.append(f"derived '{el['text'][:50]}': figure(s) {ids} not verified"); continue
+                pct = d.get("pct", 100)
+                base = sum(f["_num"] for f in fs)
+                val = base * pct / 100
+                expr = (" + ".join(f["value"] for f in fs)) + (f" × {pct}%" if pct != 100 else "")
+                if d.get("approx"):
+                    shown = float(re.sub(r"[^\d.]", "", d["display"]))
+                    ok = abs(shown - val) / val <= 0.05
+                else:
+                    ok = shown_matches(d["display"], val)
+                if not ok:
+                    errors.append(f"derived '{d['display']}' does not equal {expr} (= {val:.1f})")
                 if d["display"] not in el["text"]:
                     errors.append(f"derived display {d['display']} not in title text")
-                el["_pages"] = f["_pages"]
-                qa_rows.append({"path": s["id"] + ".title", "kind": "derived", "text": el["text"], "support": [f"{d['pct']}% × {f['value']} = {val:.1f}"],
-                                "pages": f["_pages"], "reviewer_check": True})
+                el["_pages"] = sorted({p for f in fs for p in f["_pages"]})
+                qa_rows.append({"path": s["id"] + "." + path, "kind": "derived", "text": el["text"], "support": [f"{expr} = {val:.1f}"],
+                                "pages": el["_pages"], "reviewer_check": True})
 
     # ---- pending slides: built, never final until their sources are fetched and verified ----
     pending = [s["id"] for s in story["slides"] if s.get("pending_sources")]
@@ -218,6 +241,8 @@ def resolve(story: dict, run_dir: Path, pdf: Path | None, signoff: Path | None) 
         body += [it["text"] for _, it in items_with_support({k: v for k, v in s.items() if k != "title"})]
         for k in ("cards", "lines", "milestones", "outputs", "lanes", "rows", "stages", "tiles"):
             for x in s.get(k, []) or []:
+                if isinstance(x, str):
+                    body.append(x); continue
                 for fld in ("text", "what", "name", "label", "head", "big"):
                     if isinstance(x.get(fld), str):
                         body.append(x[fld])
@@ -246,7 +271,7 @@ def resolve(story: dict, run_dir: Path, pdf: Path | None, signoff: Path | None) 
                        | {p for _, el in items_with_support(s) for p in el.get("_pages", [])}
                        | {p for f in s.get("figures", []) for p in f.get("_pages", [])}
                        | {p for tl in s.get("tiles", []) for p in tl.get("_pages", [])}
-                       | {p for r in s.get("rows", []) or [] for c in r.get("cells", []) or [] for p in c.get("_pages", [])})
+                       | {p for r in s.get("rows", []) or [] if isinstance(r, dict) for c in r.get("cells", []) or [] for p in c.get("_pages", [])})
         if pages:
             pp = sorted({printed(p) for p in pages})
             lab = "p." if len(pp) == 1 else "pp."
@@ -286,7 +311,7 @@ def write_qa(out: Path, story: dict, rows: list[dict], lock: dict) -> None:
     for i, r in enumerate(rows, 1):
         if not r["reviewer_check"] and r["kind"] not in ("quote",):
             continue
-        L.append(f"| {i} | {r['path']} | {r['kind']} | {r['text'].replace('|','/')} | {', '.join(s.split('.')[-1] for s in r['support'])} | "
+        L.append(f"| {i} | {r['path']} | {r['kind']} | {r['text'].replace('|','/')} | {', '.join(x.split('.')[-1] if re.match(r'^[a-z0-9-]+\.', x) and ' ' not in x else x for x in r['support'])} | "
                  f"{', '.join(map(str, r['pages']))} | {r.get('c4_offline_recall','')} | {'; '.join(r.get('c4_rules', [])) or '—'} | ☐ |")
     L += ["", "## Not findings (questions, offers, method, labels)", ""]
     for r in rows:

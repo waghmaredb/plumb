@@ -96,3 +96,35 @@ def test_v3_word_budget_enforced():
     s["slides"][8]["cards"][0]["text"] = " ".join(["word"] * 40)
     with pytest.raises(StorylineError, match="word"):
         resolve(s, RUN6, AR_PDF, None)
+
+
+STORY4 = EXEC / "storylines" / "geh-preread-exec-v4.json"
+
+
+@v3
+def test_v4_summed_sensitivity_verified_and_cited_in_printed_pages():
+    story, rows, _ = resolve(json.loads(STORY4.read_text()), RUN6, AR_PDF, None)
+    src = {s["id"]: s.get("_source", "") for s in story["slides"]}
+    assert "186, 187" in src["value-base"]  # PDF 188/189 -> printed 186/187
+    assert any(r["kind"] == "derived" and "131.1" in r["support"][0] for r in rows)
+    assert lint(story) == []
+    assert story["_status"]["final"] is False
+
+
+@v3
+def test_v4_wrong_derived_total_is_refused():
+    s = json.loads(STORY4.read_text())
+    vb = next(x for x in s["slides"] if x["id"] == "value-base")
+    vb["title"]["text"] = vb["title"]["text"].replace("S$131m", "S$140m")
+    vb["title"]["derived"]["display"] = "S$140m"
+    with pytest.raises(StorylineError, match="does not equal"):
+        resolve(s, RUN6, AR_PDF, None)
+
+
+@v3
+def test_v4_tile_must_match_summed_figures():
+    s = json.loads(STORY4.read_text())
+    ex = next(x for x in s["slides"] if x["id"] == "exec-summary")
+    ex["tiles"][1]["big"] = "S$150m"
+    with pytest.raises(StorylineError, match="does not match"):
+        resolve(s, RUN6, AR_PDF, None)

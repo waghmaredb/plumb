@@ -1,0 +1,160 @@
+{
+  "deck_id": "PLUMB-GEH-PREREAD",
+  "version": "4.0",
+  "client": "Great Eastern Holdings",
+  "audience": "Group CEO, COO, CRO and Data & AI lead — pre-read before a first meeting",
+  "source_doc": "Great Eastern Holdings Annual Report 2025",
+  "printed_page_offset": -2,
+  "date_label": "October 2026",
+  "word_budget": {"title": 18, "body": 35},
+  "companion": "Deep-dive evidence report",
+  "notes": "v4 after cold CXO review of v3 (2026-10-26): value rebuilt on the client's own accident & health sensitivity (addressable), not total claims and benefits (mostly contractual); credentials moved to slide 2; outcomes merged into the lifecycle; peers as a definitions table with no pre-ranked bars; neutral disclosure framing; falsifiable hypotheses; six-week plan; ask is the meeting only; varied title syntax; decorative icons removed from hypotheses.",
+  "slides": [
+    {
+      "id": "cover",
+      "layout": "cover",
+      "eyebrow": {"kind": "label", "text": "Great Eastern Holdings"},
+      "title": {"kind": "label", "text": "Great Eastern's AI is working. The next step is proving its value in dollars."},
+      "subtitle": {"kind": "label", "text": "Pre-read for a discussion with the leadership team"}
+    },
+    {
+      "id": "about",
+      "layout": "about_min",
+      "section": "About PLUMB Advisory",
+      "title": {"kind": "label", "text": "Who we are"},
+      "lines": [
+        {"icon": "LuUser", "text": "[[FOUNDER: lead advisor — name and insurance, AI and MAS-regulated experience]]"},
+        {"icon": "LuBriefcase", "text": "[[FOUNDER: two relevant engagements or references]]"},
+        {"icon": "LuFileSearch", "text": "Every figure here cites the page it came from; quotations and method are in the accompanying report"},
+        {"icon": "LuMail", "text": "[[FOUNDER: name, email, phone]]"}
+      ]
+    },
+    {
+      "id": "exec-summary",
+      "layout": "tiles",
+      "section": "The picture on one page",
+      "title": {"kind": "synthesis", "text": "Great Eastern's AI delivers speed, but no benefit is yet reported in dollars",
+        "support": ["great-eastern.findings.deploy.4", "great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2"], "observation": "measurement-absence"},
+      "tiles": [
+        {"icon": "LuGauge", "big": "75%", "line": {"kind": "synthesis", "text": "of medical claims settled same day in 2025",
+          "support": ["great-eastern.findings.deploy.4"]}},
+        {"icon": "LuHandCoins", "big": "S$131m", "figures": ["ah_sg", "ah_my"], "line": {"kind": "label", "text": "one-year profit effect of 10% better accident and health claims"}},
+        {"icon": "LuCircleDollarSign", "big": "0 of 8", "line": {"kind": "observation", "text": "AI uses reported with a dollar benefit",
+          "pages": [8], "support": ["great-eastern.ar.annual_report.2025.q6", "great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.deploy.3", "great-eastern.findings.deploy.4", "great-eastern.findings.deploy.5", "great-eastern.findings.deploy.6", "great-eastern.findings.deploy.7", "great-eastern.findings.governance.2"],
+          "observation": "measurement-absence"}}
+      ]
+    },
+    {
+      "id": "lifecycle",
+      "layout": "lifecycle",
+      "section": "Where AI is in use",
+      "title": {"kind": "synthesis", "text": "AI is live from advice to claims, with complex underwriting still in testing",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.deploy.3"]},
+      "stages": [
+        {"name": "Advice", "icon": "LuUsers", "items": [
+          {"text": "Adviser AI platform", "status": "In use", "support": ["great-eastern.findings.deploy.1"]}],
+          "outcome": {"text": "~75% less prep time", "tag": "Target", "support": ["great-eastern.findings.deploy.1"]}},
+        {"name": "Underwriting", "icon": "LuFileSearch", "items": [
+          {"text": "Underwriting analytics", "status": "In use", "support": ["great-eastern.ar.annual_report.2025.q6"], "pages": [8]},
+          {"text": "Complex cases", "status": "Testing", "support": ["great-eastern.findings.deploy.3"]}]},
+        {"name": "Onboarding", "icon": "LuUserCheck", "items": [
+          {"text": "Low-risk instant approval", "status": "In use", "support": ["great-eastern.findings.deploy.5"]}]},
+        {"name": "Claims", "icon": "LuStethoscope", "items": [
+          {"text": "Claims automation", "status": "In use", "support": ["great-eastern.findings.deploy.2"]},
+          {"text": "Bill-fraud checks", "status": "In use", "market": "MY", "support": ["great-eastern.findings.deploy.6", "great-eastern.findings.deploy.6.context1"]}],
+          "outcome": {"text": "75% same-day", "tag": "Result", "support": ["great-eastern.findings.deploy.4"]}},
+        {"name": "Risk & conduct", "icon": "LuShieldCheck", "items": [
+          {"text": "Compliance monitoring", "status": "In use", "support": ["great-eastern.findings.governance.2"]},
+          {"text": "Misconduct alerts", "status": "In use", "market": "MY", "support": ["great-eastern.findings.deploy.7"]}]}
+      ]
+    },
+    {
+      "id": "value-base",
+      "layout": "sensitivity_bars",
+      "section": "Where the value sits",
+      "title": {"kind": "derived", "text": "10% better accident and health claims would add S$131m to a year's profit",
+        "derived": {"sum": ["ah_sg", "ah_my"], "display": "S$131m"}},
+      "figures": [
+        {"id": "ah_sg", "label": "Singapore", "pdf_page": 188, "row": "Scenario 4 – Accident and Health", "value": "31.8"},
+        {"id": "ah_my", "label": "Malaysia", "pdf_page": 189, "row": "Scenario 4 – Accident and Health", "value": "99.3"}
+      ],
+      "unit": "Profit after tax, S$ million, net of reinsurance",
+      "annotations": {"ah_my": {"kind": "synthesis", "text": "AI bill-fraud checks already run here", "support": ["great-eastern.findings.deploy.6"]}},
+      "callout": {"head": "Addressable by AI", "lines": ["Claims leakage and fraud", "Medical cost management", "Faster, cleaner adjudication"]},
+      "strap": {"kind": "method", "text": "Great Eastern's 2025 assumption sensitivities, not a forecast of AI benefit. Contractual life benefits excluded."}
+    },
+    {
+      "id": "peers",
+      "layout": "pending_table",
+      "pending_sources": ["aia-group-ar-2025", "upd-2026-10-prudential-fy25-results-presentation", "upd-2026-10-manulife-ai-platform-release"],
+      "section": "Peer comparison",
+      "title": {"kind": "label", "text": "Regional peers have begun reporting AI value in dollars"},
+      "columns": ["AI value reported", "What it covers", "Source"],
+      "rows": ["AIA", "Prudential", "Manulife", "Great Eastern"],
+      "client_row": {"kind": "synthesis", "text": "Speed metrics, e.g. 75% same-day medical claims", "support": ["great-eastern.findings.deploy.4"]},
+      "note": {"kind": "label", "text": "Peer figures are self-reported and defined differently; each is checked against the peer's own report."}
+    },
+    {
+      "id": "mas-clock",
+      "layout": "pending_timeline",
+      "pending_sources": ["upd-2026-10-mas-airm-guidelines", "upd-2026-10-mas-airm-media-release"],
+      "section": "Regulatory timeline",
+      "title": {"kind": "label", "text": "MAS's AI risk guidelines set a timeline for evidencing AI governance"},
+      "milestones": [
+        {"when": "Oct 2026", "what": "Guidelines issued"},
+        {"when": "Oct 2027", "what": "Board oversight and AI inventory"},
+        {"when": "Oct 2028", "what": "Full lifecycle controls"}
+      ],
+      "note": {"kind": "label", "text": "Dates and expectations confirmed against MAS's published guidelines before use."}
+    },
+    {
+      "id": "governance",
+      "layout": "disclosure_matrix",
+      "section": "AI governance",
+      "title": {"kind": "synthesis", "text": "AI has board oversight and dedicated leadership; the annual report does not set out the AI framework",
+        "support": ["great-eastern.findings.governance.4", "great-eastern.findings.governance.3", "great-eastern.findings.opmodel.1", "great-eastern.findings.leadership.1"]},
+      "columns": ["In the 2025 annual report"],
+      "rows": [
+        {"label": "Board-level AI oversight", "cells": [{"state": "yes", "support": ["great-eastern.findings.governance.4", "great-eastern.findings.governance.3"]}]},
+        {"label": "Data & AI leadership and operating model", "cells": [{"state": "yes", "support": ["great-eastern.findings.opmodel.1", "great-eastern.findings.leadership.1"]}]},
+        {"label": "AI policy or principles", "cells": [{"state": "no", "observation": "governance-disclosure"}]},
+        {"label": "AI inventory and risk tiers", "cells": [{"state": "no", "observation": "governance-disclosure"}]},
+        {"label": "Model risk management for AI", "cells": [{"state": "no", "observation": "governance-disclosure"}]}
+      ],
+      "legend": ["Described", "Not covered in the report"],
+      "strap": {"kind": "method", "text": "Public disclosure only, not an assessment of practice; OCBC group frameworks not reviewed."}
+    },
+    {
+      "id": "hypotheses",
+      "layout": "icon_cards",
+      "section": "Hypotheses to test together",
+      "title": {"kind": "label", "text": "Three testable hypotheses would turn this outside-in view into decisions"},
+      "cards": [
+        {"head": "Value", "kind": "hypothesis", "text": "Medical-claims AI can improve accident and health claims 2–5% in 18 months"},
+        {"head": "Governance", "kind": "hypothesis", "text": "Most MAS AI expectations can reuse OCBC group frameworks"},
+        {"head": "Scale", "kind": "hypothesis", "text": "Production criteria, not model accuracy, hold back complex underwriting AI"}
+      ]
+    },
+    {
+      "id": "proposal",
+      "layout": "plan",
+      "section": "Proposed next step",
+      "title": {"kind": "offer", "text": "A six-week assessment would test these hypotheses with your leadership team"},
+      "unit_label": "Week",
+      "units": 6,
+      "lanes": [
+        {"name": "Public evidence and peer benchmark", "from": 1, "to": 2},
+        {"name": "Leadership questionnaire", "from": 1, "to": 2},
+        {"name": "10–12 leadership interviews", "from": 2, "to": 4},
+        {"name": "AI inventory and value sizing", "from": 3, "to": 5},
+        {"name": "Synthesis and read-out", "from": 5, "to": 6}
+      ],
+      "outputs": [
+        {"icon": "LuHandCoins", "text": "Sized AI value pools"},
+        {"icon": "LuClipboardCheck", "text": "AI inventory and risk tiers"},
+        {"icon": "LuRocket", "text": "Production path for next use cases"}
+      ],
+      "ask": {"kind": "offer", "text": "A 45-minute working session with the CEO, COO, CRO and Data & AI lead in [[FOUNDER: week]]"}
+    }
+  ]
+}

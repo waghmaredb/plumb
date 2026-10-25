@@ -454,11 +454,28 @@ function lifecycle(sl, i) {
       const c = STATUS_COL[it.status] || COL.muted;
       s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: px, y: py, w: pw, h: 0.48, rectRadius: 0.24, fill: { color: COL.white }, line: { color: c, width: 1.25 } });
       s.addShape(pres.shapes.OVAL, { x: px + 0.17, y: py + 0.17, w: 0.14, h: 0.14, fill: { color: c }, line: { color: c, width: 0 } });
-      s.addText(it.text, { x: px + 0.4, y: py, w: pw - (it.market ? 0.78 : 0.5), h: 0.48, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.ink, valign: "middle" });
+      s.addText(it.text, { x: px + 0.4, y: py, w: pw - (it.market ? 0.78 : 0.5), h: 0.48, isTextBox: true, margin: 0, fontFace: F.body, fontSize: it.text.length > 22 ? 10.5 : 11, color: COL.ink, valign: "middle" });
       if (it.market) s.addText(it.market, { x: px + pw - 0.42, y: py, w: 0.3, h: 0.48, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 9, bold: true, color: COL.muted, align: "right", valign: "middle" });
     });
   });
-  const ly = 6.08; let lx = MX;
+  if (sl.stages.some((st) => st.outcome)) {
+    const oy = top + d + 0.7 + 2 * 0.62 + 0.15;
+    s.addShape(pres.shapes.LINE, { x: MX, y: oy, w: CW, h: 0, line: { color: COL.hair, width: 0.75 } });
+    s.addText("REPORTED OUTCOME", { x: MX, y: oy + 0.12, w: 3, h: 0.25, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 9, bold: true, color: COL.muted, charSpacing: 1.5 });
+    sl.stages.forEach((st, k) => {
+      const cx = MX + cw * k + cw / 2, y = oy + 0.5;
+      if (st.outcome) {
+        const c = st.outcome.tag === "Result" ? COL.teal : COL.amber;
+        s.addText(st.outcome.text, { x: cx - cw / 2, y, w: cw, h: 0.4, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 18, color: COL.ink, align: "center", valign: "middle" });
+        s.addText(st.outcome.tag.toUpperCase(), { x: cx - 0.45, y: y + 0.48, w: 0.9, h: 0.24, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 8, bold: true, color: COL.white, charSpacing: 1.2,
+          align: "center", valign: "middle", shape: pres.shapes.ROUNDED_RECTANGLE, rectRadius: 0.04, fill: { color: c }, line: { color: c, width: 0 } });
+      } else {
+        s.addText("None reported", { x: cx - cw / 2, y, w: cw, h: 0.4, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 12, italic: true, color: COL.muted, align: "center", valign: "middle" });
+      }
+    });
+  }
+  const hasOut = sl.stages.some((st) => st.outcome);
+  const ly = hasOut ? top + d + 0.7 + 2 * 0.62 + 0.25 : 6.08; let lx = hasOut ? W - MX - 5.0 : MX;
   [["In use", COL.teal], ["Testing", COL.amber]].forEach(([lab, c]) => {
     s.addShape(pres.shapes.OVAL, { x: lx, y: ly + 0.07, w: 0.16, h: 0.16, fill: { color: c }, line: { color: c, width: 0 } });
     s.addText(lab, { x: lx + 0.25, y: ly, w: 1.1, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.text, valign: "middle" });
@@ -546,8 +563,8 @@ function disclosureMatrix(sl, i) {
   sl.rows.forEach((r, j) => {
     const y = top + 0.55 + j * rh;
     s.addShape(pres.shapes.LINE, { x: MX, y: y + rh, w: CW - 1.4, h: 0, line: { color: COL.hair, width: 0.75 } });
-    icon(s, r.icon, lx, y + (rh - 0.34) / 2, 0.34, "ink");
-    s.addText(r.label, { x: lx + 0.6, y, w: lw, h: rh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 16, color: COL.ink, valign: "middle" });
+    if (r.icon) icon(s, r.icon, lx, y + (rh - 0.34) / 2, 0.34, "ink");
+    s.addText(r.label, { x: lx + (r.icon ? 0.6 : 0), y, w: lw, h: rh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 16, color: COL.ink, valign: "middle" });
     r.cells.forEach((c, k) => {
       const cx = colX + k * colW + colW / 2, cy = y + rh / 2, d = 0.42;
       if (c.state === "yes") {
@@ -560,9 +577,10 @@ function disclosureMatrix(sl, i) {
   });
   const ky = top + 0.55 + sl.rows.length * rh + 0.2;
   s.addShape(pres.shapes.OVAL, { x: colX + 0.2, y: ky + 0.06, w: 0.2, h: 0.2, fill: { color: COL.teal }, line: { color: COL.teal, width: 0 } });
-  s.addText("Disclosed", { x: colX + 0.5, y: ky, w: 1.1, h: 0.32, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.text, valign: "middle" });
-  s.addShape(pres.shapes.OVAL, { x: colX + 1.55, y: ky + 0.06, w: 0.2, h: 0.2, fill: { color: COL.white }, line: { color: COL.muted, width: 1.25 } });
-  s.addText("Not described", { x: colX + 1.85, y: ky, w: 1.4, h: 0.32, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.text, valign: "middle" });
+  const [lgY, lgN] = sl.legend || ["Disclosed", "Not described"];
+  s.addText(lgY, { x: colX + 0.5, y: ky, w: 1.1, h: 0.32, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.text, valign: "middle" });
+  s.addShape(pres.shapes.OVAL, { x: colX + 1.75, y: ky + 0.06, w: 0.2, h: 0.2, fill: { color: COL.white }, line: { color: COL.muted, width: 1.25 } });
+  s.addText(lgN, { x: colX + 2.05, y: ky, w: 2.6, h: 0.32, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.text, valign: "middle" });
   if (sl.strap) s.addText(t(sl.strap), { x: MX, y: 6.0, w: CW, h: 0.35, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, italic: true, color: COL.muted });
 }
 
@@ -572,7 +590,8 @@ function iconCards(sl, i) {
   sl.cards.forEach((c, k) => {
     const x = MX + k * (w + gap);
     s.addShape(pres.shapes.RECTANGLE, { x, y: top, w, h, fill: { color: COL.panel }, line: { color: COL.panel, width: 0 } });
-    iconDisc(s, c.icon, x + 0.8, top + 0.85, 0.9, COL.teal, "white");
+    if (c.icon) iconDisc(s, c.icon, x + 0.8, top + 0.85, 0.9, COL.teal, "white");
+    else s.addText(String(k + 1).padStart(2, "0"), { x: x + 0.4, y: top + 0.35, w: 1.5, h: 1.0, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 48, color: "9FC7C5", valign: "middle" });
     s.addText(c.head, { x: x + 0.4, y: top + 1.55, w: w - 0.8, h: 0.5, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 24, color: COL.teal });
     s.addText(c.text, { x: x + 0.4, y: top + 2.15, w: w - 0.8, h: 1.2, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 17, color: COL.ink, valign: "top" });
   });
@@ -580,12 +599,12 @@ function iconCards(sl, i) {
 
 function plan(sl, i) {
   const s = frame(sl, i);
-  const top = contentTop(sl) + 0.1, lw = 3.2, gx = MX + lw, gw = 6.0, days = 12, dw = gw / days, rh = 0.5;
+  const top = contentTop(sl) + 0.1, lw = 3.4, gx = MX + lw, gw = 5.8, days = sl.units || 12, dw = gw / days, rh = 0.5;
   for (let d = 1; d <= days; d++) {
-    s.addText(String(d), { x: gx + (d - 1) * dw, y: top, w: dw, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10, color: COL.muted, align: "center" });
+    s.addText(sl.unit_label ? `${sl.unit_label} ${d}` : String(d), { x: gx + (d - 1) * dw, y: top, w: dw, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10, color: COL.muted, align: "center" });
     if (d > 1) s.addShape(pres.shapes.LINE, { x: gx + (d - 1) * dw, y: top + 0.35, w: 0, h: sl.lanes.length * rh + 0.05, line: { color: "EDF0F4", width: 0.75 } });
   }
-  s.addText("Working day", { x: MX, y: top, w: lw - 0.2, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10, color: COL.muted });
+  s.addText(sl.unit_label ? "" : "Working day", { x: MX, y: top, w: lw - 0.2, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10, color: COL.muted });
   sl.lanes.forEach((ln, k) => {
     const y = top + 0.42 + k * rh, last = k === sl.lanes.length - 1;
     s.addText(ln.name, { x: MX, y, w: lw - 0.2, h: rh - 0.08, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 13, color: COL.ink, valign: "middle" });
@@ -607,6 +626,57 @@ function plan(sl, i) {
   s.addText(fmt(t(sl.ask), { color: COL.white }), { x: MX + 1.6, y: ay, w: CW - 1.9, h: 0.75, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 14, valign: "middle" });
 }
 
+function sensitivityBars(sl, i) {
+  const s = frame(sl, i);
+  const top = contentTop(sl) + 0.35, figs = sl.figures, maxV = Math.max(...figs.map((f) => f._num)), lw = 1.9, bx = MX + lw, bwMax = 5.2, bh = 0.85, gap = 0.55;
+  figs.forEach((f, k) => {
+    const y = top + k * (bh + gap), w = bwMax * f._num / maxV;
+    s.addText(f.label, { x: MX, y, w: lw - 0.2, h: bh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 16, bold: true, color: COL.ink, valign: "middle" });
+    s.addShape(pres.shapes.RECTANGLE, { x: bx, y, w, h: bh, fill: { color: COL.teal }, line: { color: COL.teal, width: 0 } });
+    s.addText(`S$${f._num.toFixed(1)}m`, { x: bx + w + 0.15, y, w: 1.4, h: bh, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 22, color: COL.ink, valign: "middle" });
+    const an = (sl.annotations || {})[f.id];
+    if (an) s.addText(t(an), { x: bx, y: y + bh + 0.06, w: bwMax, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, italic: true, color: COL.teal });
+  });
+  const ty = top + figs.length * (bh + gap) + 0.05;
+  s.addShape(pres.shapes.LINE, { x: MX, y: ty, w: lw + bwMax + 1.5, h: 0, line: { color: COL.ink, width: 1 } });
+  const total = figs.reduce((a, f) => a + f._num, 0);
+  s.addText("Group", { x: MX, y: ty + 0.1, w: lw - 0.2, h: 0.5, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 16, bold: true, color: COL.ink, valign: "middle" });
+  s.addText(`S$${total.toFixed(1)}m`, { x: bx, y: ty + 0.1, w: 2.5, h: 0.5, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 26, color: COL.teal, valign: "middle" });
+  s.addText(sl.unit, { x: bx + 2.4, y: ty + 0.1, w: 4.5, h: 0.5, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.muted, valign: "middle" });
+  if (sl.callout) {
+    const cx = MX + 8.9, cw2 = W - MX - cx, cy = top - 0.05, ch = 3.1;
+    s.addShape(pres.shapes.RECTANGLE, { x: cx, y: cy, w: cw2, h: ch, fill: { color: COL.ink }, line: { color: COL.ink, width: 0 } });
+    s.addText(sl.callout.head.toUpperCase(), { x: cx + 0.35, y: cy + 0.3, w: cw2 - 0.7, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10, bold: true, color: "5FB3B0", charSpacing: 1.5 });
+    sl.callout.lines.forEach((ln, k) => {
+      const y = cy + 0.85 + k * 0.68;
+      s.addShape(pres.shapes.RECTANGLE, { x: cx + 0.35, y: y + 0.08, w: 0.06, h: 0.36, fill: { color: COL.teal }, line: { color: COL.teal, width: 0 } });
+      s.addText(ln, { x: cx + 0.6, y, w: cw2 - 0.9, h: 0.52, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, color: COL.white, valign: "middle" });
+    });
+  }
+  if (sl.strap) s.addText(t(sl.strap), { x: MX, y: 5.95, w: CW, h: 0.4, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, italic: true, color: COL.muted });
+}
+
+function pendingTable(sl, i) {
+  const s = frame(sl, i);
+  const top = contentTop(sl) + 0.15, lw = 2.4, cols = sl.columns, colW = (CW - lw) / cols.length, rh = 0.72;
+  cols.forEach((c, k) => s.addText(c.toUpperCase(), { x: MX + lw + k * colW, y: top, w: colW - 0.2, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 9.5, bold: true, color: COL.muted, charSpacing: 1.2 }));
+  s.addShape(pres.shapes.LINE, { x: MX, y: top + 0.4, w: CW, h: 0, line: { color: COL.ink, width: 1 } });
+  sl.rows.forEach((r, j) => {
+    const y = top + 0.45 + j * rh, client = j === sl.rows.length - 1;
+    s.addText(r, { x: MX, y, w: lw - 0.2, h: rh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, bold: client, color: COL.ink, valign: "middle" });
+    if (client && sl.client_row) {
+      s.addText(t(sl.client_row), { x: MX + lw, y, w: colW * 2 - 0.2, h: rh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 13, color: COL.text, valign: "middle" });
+      s.addText("Annual Report 2025", { x: MX + lw + 2 * colW, y, w: colW - 0.2, h: rh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 13, color: COL.text, valign: "middle" });
+    } else {
+      cols.forEach((c, k) => s.addShape(pres.shapes.RECTANGLE, { x: MX + lw + k * colW, y: y + rh / 2 - 0.09, w: colW * 0.7, h: 0.18, fill: { color: "E6EAEF" }, line: { color: "E6EAEF", width: 0 } }));
+    }
+    s.addShape(pres.shapes.LINE, { x: MX, y: y + rh, w: CW, h: 0, line: { color: COL.hair, width: 0.75 } });
+  });
+  const ny = top + 0.45 + sl.rows.length * rh + 0.35;
+  pendingStamp(s, MX, ny);
+  s.addText(t(sl.note), { x: MX + 3.25, y: ny, w: CW - 3.25, h: 0.34, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.muted, valign: "middle" });
+}
+
 function aboutMin(sl, i) {
   const s = frame(sl, i);
   const top = contentTop(sl) + 0.25;
@@ -620,7 +690,7 @@ function aboutMin(sl, i) {
 const LAYOUTS = { cover, exec_summary: execSummary, value_chain: valueChain, two_stats: twoStats, hero_stat: heroStat, hypotheses,
   timeline, two_columns: twoColumns, questions, proposal, about,
   tiles, lifecycle, donuts, value_bars: valueBars, pending_bars: pendingBars, pending_timeline: pendingTimeline,
-  disclosure_matrix: disclosureMatrix, icon_cards: iconCards, plan, about_min: aboutMin };
+  disclosure_matrix: disclosureMatrix, sensitivity_bars: sensitivityBars, pending_table: pendingTable, icon_cards: iconCards, plan, about_min: aboutMin };
 
 (async () => {
   await prerenderIcons();
