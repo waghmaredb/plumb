@@ -2,6 +2,13 @@
 leadership-perception variance (§5.3), value axis (§4).
 
 All statistics are pure Python; numpy is not required.
+
+v0.2 (2026-10-25, md §5.6): organisation item score = median of capped
+responses, mean secondary (decision 3); cap per response (decision 2); I class
+counts only with ≥2 verifiable interviewees (decision 11); self-view computed
+alongside the evidenced view (md §1 "Scorecard views"); V2 numeric shares mapped
+with upper-inclusive edges (decision 8); V1 ↔ D8.4 checked on the D8.4
+organisation item score (decision 10).
 """
 
 from __future__ import annotations
@@ -21,6 +28,15 @@ from .responses import Response
 # ---------------------------------------------------------------------------
 def _mean(xs: list[float]) -> Optional[float]:
     return sum(xs) / len(xs) if xs else None
+
+
+def _median(xs: list[float]) -> Optional[float]:
+    """Median; with an even count, the midpoint of the two middle values (v0.2 decision 3)."""
+    if not xs:
+        return None
+    s = sorted(xs)
+    n = len(s)
+    return float(s[n // 2]) if n % 2 else (s[n // 2 - 1] + s[n // 2]) / 2
 
 
 def _pstdev(xs: list[float]) -> Optional[float]:
@@ -43,16 +59,20 @@ class ItemResult(BaseModel):
     n_capped: int
     cap_flag: bool
     capped_respondents: list[str] = Field(default_factory=list)
+    score: Optional[float] = None  # organisation item score, evidenced view = median of capped (v0.2 decision 3)
+    score_self: Optional[float] = None  # self-view = median of raw responses
     mean_raw: Optional[float]
-    mean_capped: Optional[float]
+    mean_capped: Optional[float]  # secondary statistic, not used in the total
     sigma_raw: Optional[float]  # None when n < min_respondents_for_sigma
     range_raw: Optional[tuple[int, int]]
     sigma_flag: bool
     extremes_high: list[str] = Field(default_factory=list)  # roles at max raw level
     extremes_low: list[str] = Field(default_factory=list)  # roles at min raw level
     evidence_logged: bool
-    evidence_classes_logged: list[str] = Field(default_factory=list)
+    evidence_classes_logged: list[str] = Field(default_factory=list)  # qualifying classes (unverified I excluded)
     evidence_required: list[str]
+    interview_refs: int = 0  # distinct interview references / max interviewees on rows carrying I
+    interview_verified: Optional[bool] = None  # None when no row carries I
     exco_mean_raw: Optional[float] = None
     operating_mean_raw: Optional[float] = None
 
@@ -64,8 +84,10 @@ class DimensionResult(BaseModel):
     effective_weight: float
     scored: bool
     n_items_scored: int
-    mean: Optional[float]  # m_d on 1–5
+    mean: Optional[float]  # m_d on 1–5 (mean of organisation item scores, evidenced view)
     score: Optional[float]  # s_d on 0–100
+    self_mean: Optional[float] = None  # m_d on raw item medians (self-view)
+    self_score: Optional[float] = None
     n_items_sigma_flagged: int
     alignment_index: Optional[float]  # share of items flagged σ>1.0
     not_aligned: bool
@@ -95,6 +117,9 @@ class ScoreResult(BaseModel):
     capability_score: Optional[float]  # unrounded
     capability_score_rounded: Optional[float]
     band: Optional[str]
+    self_view_score: Optional[float] = None  # unrounded, cap rule not applied
+    self_view_score_rounded: Optional[float] = None
+    self_view_band: Optional[str] = None
     production_boundary: float
     above_production_boundary: Optional[bool]
     weights_renormalised: bool
@@ -114,13 +139,11 @@ class ScoreResult(BaseModel):
 # bands
 # ---------------------------------------------------------------------------
 def band_for(instrument: Instrument, score: float) -> str:
-    """Band on the unrounded score (§5.1).
+    """Band on the unrounded score (§5.1, §5.2).
 
-    The md's band table uses integer edges (0–25, 26–50, 51–75, 76–100) but
-    the band is assigned on the unrounded value, so the scorer treats each
-    band's upper edge as inclusive: ≤25 Stagnating, ≤50 Emerging, ≤75 Scaling,
-    >75 Leading. This matches the §5.1 worked check (50.0 = top of Emerging;
-    Scaling requires an average above level 3). See the `note:` under `bands`.
+    v0.2 decision 1: upper-inclusive closed intervals — 0 ≤ C ≤ 25 Stagnating,
+    25 < C ≤ 50 Emerging, 50 < C ≤ 75 Scaling, 75 < C ≤ 100 Leading. 50.0 is
+    the top of Emerging (the production boundary); Leading needs C > 75.
     """
     bands = instrument.band_list
     for b in bands[:-1]:
@@ -132,19 +155,38 @@ def band_for(instrument: Instrument, score: float) -> str:
 # ---------------------------------------------------------------------------
 # cap rule
 # ---------------------------------------------------------------------------
-def apply_cap(item: Item, r: Response, cap: int = 3) -> tuple[int, bool]:
-    """Return (recorded_score, was_capped).
+def interview_count(rows: list[Response]) -> int:
+    """Independent interviewees verifiable from an item's rows (v0.2 decision 11):
+    the larger of (distinct evidence_ref values on rows carrying I) and the
+    largest ``interviewees`` count on such a row."""
+    i_rows = [r for r in rows if "I" in r.evidence_classes]
+    refs = {r.evidence_ref.strip() for r in i_rows if r.evidence_ref.strip()}
+    declared = max((r.interviewees or 0 for r in i_rows), default=0)
+    return max(len(refs), declared)
+
+
+def apply_cap(item: Item, r: Response, cap: int = 3, interview_verified: Optional[bool] = None,
+              min_interviewees: int = 2) -> tuple[int, bool]:
+    """Return (recorded_score, was_capped). Applied per response (v0.2 decision 2).
 
     A self-report above the cap is recorded at the cap unless *all* of the
     item's Ev≥4 classes are logged on that response (§1, §5.4). Interview
     evidence alone never lifts an item whose Ev≥4 is D or S (§5.4), which
-    falls out of the subset test.
+    falls out of the subset test. An ``I`` class counts only when ≥2
+    independent interviewees are verifiable (v0.2 decision 11):
+    ``interview_verified`` is the item-level check made by ``score_responses``;
+    when it is not supplied, the row must carry ``interviewees ≥ 2`` itself.
     """
     score = int(r.score)
     if score <= cap:
         return score, False
     required = set(item.evidence_class_required)
-    if required and required.issubset(r.evidence_classes):
+    logged = set(r.evidence_classes)
+    if "I" in logged:
+        ok = interview_verified if interview_verified is not None else (r.interviewees or 0) >= min_interviewees
+        if not ok:
+            logged.discard("I")
+    if required and required.issubset(logged):
         return score, False
     return cap, True
 
@@ -159,6 +201,7 @@ def score_responses(
 ) -> ScoreResult:
     spec = instrument.scoring
     cap = spec.cap_rule.self_report_cap
+    min_iv = spec.cap_rule.interview_min_independent
     var = spec.variance
     flags: list[str] = []
 
@@ -189,10 +232,13 @@ def score_responses(
     for item in instrument.items:
         rows = by_item.get(item.id, [])
         raw = [int(r.score) for r in rows]
+        n_iv = interview_count(rows)
+        iv_present = any("I" in r.evidence_classes for r in rows)
+        iv_ok = n_iv >= min_iv
         capped: list[int] = []
         capped_resp: list[str] = []
         for r in rows:
-            s, was = apply_cap(item, r, cap)
+            s, was = apply_cap(item, r, cap, interview_verified=iv_ok, min_interviewees=min_iv)
             capped.append(s)
             if was:
                 capped_resp.append(r.respondent_id)
@@ -208,7 +254,8 @@ def score_responses(
 
             ext_hi = sorted({_role(r) for r in rows if int(r.score) == mx})
             ext_lo = sorted({_role(r) for r in rows if int(r.score) == mn})
-        ev_classes = sorted({c for r in rows for c in r.evidence_classes})
+        # qualifying evidence: an unverified interview class is not evidence (v0.2 decision 11)
+        ev_classes = sorted({c for r in rows for c in r.evidence_classes if c != "I" or iv_ok})
         exco_raw = [int(r.score) for r in rows if r.role_group == "exco"]
         oper_raw = [int(r.score) for r in rows if r.role_group == "operating"]
         item_results[item.id] = ItemResult(
@@ -220,6 +267,8 @@ def score_responses(
             n_capped=len(capped_resp),
             cap_flag=bool(capped_resp),
             capped_respondents=capped_resp,
+            score=_median(capped),
+            score_self=_median(raw),
             mean_raw=_mean(raw),
             mean_capped=_mean(capped),
             sigma_raw=sigma,
@@ -230,6 +279,8 @@ def score_responses(
             evidence_logged=bool(ev_classes),
             evidence_classes_logged=ev_classes,
             evidence_required=list(item.evidence_class_required),
+            interview_refs=n_iv,
+            interview_verified=iv_ok if iv_present else None,
             exco_mean_raw=_mean(exco_raw),
             operating_mean_raw=_mean(oper_raw),
         )
@@ -237,16 +288,21 @@ def score_responses(
     # ---- dimensions -------------------------------------------------------
     dim_results: list[DimensionResult] = []
     scored_dims: dict[str, float] = {}
+    self_dims: dict[str, float] = {}
     for dim in instrument.dimensions:
         items = instrument.items_by_dimension[dim.id]
         irs = [item_results[i.id] for i in items]
         scored_irs = [ir for ir in irs if ir.n_responses > 0]
         n_scored = len(scored_irs)
         scored = n_scored >= spec.dimension_min_items_scored
-        m_d = _mean([ir.mean_capped for ir in scored_irs]) if scored else None  # type: ignore[arg-type]
+        # m_d = mean of organisation item scores (medians of capped responses, v0.2 decision 3)
+        m_d = _mean([ir.score for ir in scored_irs]) if scored else None  # type: ignore[misc]
         s_d = (m_d - 1) / 4 * 100 if m_d is not None else None
+        m_self = _mean([ir.score_self for ir in scored_irs]) if scored else None  # type: ignore[misc]
+        s_self = (m_self - 1) / 4 * 100 if m_self is not None else None
         if scored:
             scored_dims[dim.id] = s_d  # type: ignore[assignment]
+            self_dims[dim.id] = s_self  # type: ignore[assignment]
         else:
             flags.append(
                 f"{dim.id} not scored: {n_scored} of {spec.dimension_items} items answered "
@@ -274,6 +330,8 @@ def score_responses(
                 n_items_scored=n_scored,
                 mean=m_d,
                 score=s_d,
+                self_mean=m_self,
+                self_score=s_self,
                 n_items_sigma_flagged=n_flag,
                 alignment_index=align,
                 not_aligned=not_aligned,
@@ -298,6 +356,9 @@ def score_responses(
         for dr in dim_results:
             dr.effective_weight = (weights[dr.id] / wsum * 100) if dr.id in scored_dims else 0.0
         C = sum(weights[d] * s for d, s in scored_dims.items()) / wsum
+        C_self = sum(weights[d] * s for d, s in self_dims.items()) / wsum
+    else:
+        C_self = None
     band = band_for(instrument, C) if C is not None else None
     C_round = round(C, spec.rounding_decimals) if C is not None else None
 
@@ -316,7 +377,8 @@ def score_responses(
         flags.append(f"Cap rule applied on {n_cap_items} items (self-report >{cap} without required evidence class, §5.4)")
 
     # ---- value axis -------------------------------------------------------
-    d84 = item_results["D8.4"].mean_capped if "D8.4" in item_results else None
+    # V1 ↔ D8.4: the only cross-item dependency (v0.2 decision 10), checked on the D8.4 organisation item score
+    d84 = item_results["D8.4"].score if "D8.4" in item_results else None
     value_results = _score_value_axis(instrument, val_rows, d84_mean=d84)
     profile = " · ".join(v.label for v in value_results)
     v1 = next((v for v in value_results if v.item_id == "V1"), None)
@@ -340,6 +402,9 @@ def score_responses(
         capability_score=C,
         capability_score_rounded=C_round,
         band=band,
+        self_view_score=C_self,
+        self_view_score_rounded=round(C_self, spec.rounding_decimals) if C_self is not None else None,
+        self_view_band=band_for(instrument, C_self) if C_self is not None else None,
         production_boundary=instrument.production_boundary,
         above_production_boundary=(C > instrument.production_boundary) if C is not None else None,
         weights_renormalised=renorm,
@@ -361,6 +426,14 @@ def score_responses(
 def _cap_value_row(vi: ValueItem, r: Response, d84_mean: Optional[float]) -> tuple[Union[str, int], bool, str]:
     """Apply the item's evidence rule to one value-axis row."""
     reported: Union[str, int] = r.score
+    if vi.share_intervals and str(reported) not in [str(x) for x in vi.scale]:
+        # a numeric share (e.g. "45.5" or "45.5%") is mapped with upper-inclusive edges (v0.2 decision 8)
+        try:
+            share = float(str(reported).strip().rstrip("%"))
+        except ValueError:
+            share = None
+        if share is not None:
+            reported = vi.band_for_share(share)
     try:
         rank = vi.rank(reported)
     except ValueError as e:

@@ -130,6 +130,8 @@ Handling: all Phase B items land in the engagement's Singapore-region store; no 
 
 ### 5.1 Self-assessment instrument (48 items + value axis)
 
+Respondents: link the invitation email to `methodology/maturity-instrument.md` → "What changed for respondents (v0.2)".
+
 | Target | Rule | Agreed |
 |---|---|---|
 | Respondents | 10–30 leaders across functions and levels; must include CEO/CFO/COO-level, function heads for in-scope segments, and the AI/data lead | [n], [names/roles] |

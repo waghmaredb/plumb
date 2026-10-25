@@ -4,6 +4,10 @@ S08 two-axis scorecard (capability bar + V1–V4 profile + evidence coverage)
 S09 peer percentile per dimension, n disclosed, evidence-gated share
 S10 leadership-perception variance (ExCo gap, σ>1.0 items with roles)
 S11 governance (D6) sub-dimension table with evidence class per cell
+
+v0.2: organisation item score = median of capped responses (mean secondary);
+self-view and evidenced view side by side with the artefacts that would close
+the gap (md §1 "Scorecard views"); band edges printed as upper-inclusive.
 S12 (regulatory exposure) is not derived from instrument data and is not rendered here.
 """
 
@@ -35,7 +39,8 @@ def render_scorecard(instrument: Instrument, res: ScoreResult, title: str = "") 
     L: list[str] = []
     L.append(f"# {title or f'{org} — Enterprise AI Maturity Scorecard'}")
     L.append("")
-    L.append(f"Instrument v{res.instrument_version} · respondents n={res.n_respondents} (ExCo {res.n_exco}, operating {res.n_operating}) · scores after cap rule (§5.4)")
+    L.append(f"Instrument v{res.instrument_version} · respondents n={res.n_respondents} (ExCo {res.n_exco}, operating {res.n_operating}) · "
+             "evidenced view = median of responses after the per-response cap rule (§5.1, §5.4); self-view = median of raw responses")
     L.append("")
 
     # ---- S08 two-axis scorecard -----------------------------------------
@@ -50,23 +55,26 @@ def render_scorecard(instrument: Instrument, res: ScoreResult, title: str = "") 
         L.append("")
         L.append("```")
         L.append(f"0 {_bar(res.capability_score)} 100   ┃ = production boundary (50)")
-        L.append("  Stagnating ≤25 · Emerging ≤50 · Scaling ≤75 · Leading >75")
+        if res.self_view_score is not None:
+            L.append(f"0 {_bar(res.self_view_score)} 100   self-view {res.self_view_score_rounded:.1f} ({res.self_view_band})")
+        L.append("  Stagnating ≤25 · Emerging >25–≤50 · Scaling >50–≤75 · Leading >75 (unrounded score)")
         L.append("```")
     else:
         L.append("**Capability score not computable** (no dimension reached the ≥4-of-6 item rule).")
     L.append("")
     L.append("| Capability axis | | Value axis (never merged) | |")
     L.append("|---|---|---|---|")
-    L.append(f"| Capability score | **{_f(res.capability_score_rounded)}** / 100 | Profile | **{res.value_profile}** |")
+    L.append(f"| Capability score (evidenced view, of record) | **{_f(res.capability_score_rounded)}** / 100 | Profile | **{res.value_profile}** |")
     v_by = {v.item_id: v for v in res.value_axis}
     rows = [
         ("Band", res.band or "—", "V1 EBIT share attributable to AI", v_by.get("V1")),
+        ("Self-view (no cap rule)", f"{_f(res.self_view_score_rounded)} · {res.self_view_band or '—'}", "", None),
         ("Production boundary (50)", "above" if res.above_production_boundary else ("at/below" if res.above_production_boundary is not None else "—"), "V2 share of initiatives in production", v_by.get("V2")),
         ("Evidence coverage", _pct(res.evidence_coverage) + (" — **self-report-dominant**" if res.self_report_dominant else ""), "V3 value-tracking rigour", v_by.get("V3")),
         ("Weights renormalised", "yes" if res.weights_renormalised else "no", "V4 agent control maturity (OWASP GML)", v_by.get("V4")),
     ]
     for a, b, c, v in rows:
-        vtxt = "—"
+        vtxt = "—" if c else ""
         if v is not None:
             vtxt = f"{v.recorded if v.recorded is not None else '—'}"
             if v.capped:
@@ -77,17 +85,39 @@ def render_scorecard(instrument: Instrument, res: ScoreResult, title: str = "") 
         L.append("> **Value gap flag** (§4): capability band is Scaling/Leading but V1 = Band A or V3 ≤ 2.")
     L.append("")
 
+    # ---- self-view vs evidenced view (md §1, red-team review §2.2) ----------------
+    gap_items = [i for i in res.items if i.score is not None and i.score_self is not None and i.score_self > i.score]
+    L.append("### Self-view vs evidenced view")
+    L.append("")
+    if res.self_view_score is not None and res.capability_score is not None:
+        L.append(f"Self-view {res.self_view_score_rounded:.1f} ({res.self_view_band}) · evidenced view {res.capability_score_rounded:.1f} ({res.band}) · "
+                 f"difference {res.self_view_score - res.capability_score:+.1f}. The evidenced view is the score of record; "
+                 "each row below is an item the leadership team rates higher than the logged evidence supports, and the artefact that would move it.")
+        L.append("")
+    if gap_items:
+        L.append("| Item | Self-view (median raw) | Evidenced (median capped) | Responses capped | Artefact needed (Ev≥4) |")
+        L.append("|---|---|---|---|---|")
+        for i in gap_items:
+            it = instrument.item_by_id[i.item_id]
+            need = it.evidence_class_required_text
+            if "I" in it.evidence_class_required and i.interview_verified is False:
+                need += f" — interview refs logged: {i.interview_refs} of 2 required"
+            L.append(f"| {i.item_id} | {_f(i.score_self, 1)} | {_f(i.score, 1)} | {i.n_capped}/{i.n_responses} | {need} |")
+    else:
+        L.append("No item's self-view is above its evidenced view.")
+    L.append("")
+
     # ---- dimension table ---------------------------------------------------
     L.append("### Dimension scores")
     L.append("")
-    L.append("| Dim | Dimension | Weight | Items scored | Mean (1–5) | Score (0–100) | σ-flagged items | Alignment |")
-    L.append("|---|---|---|---|---|---|---|---|")
+    L.append("| Dim | Dimension | Weight | Items scored | Mean of item medians (1–5) | Score (0–100) | Self-view score | σ-flagged items | Alignment |")
+    L.append("|---|---|---|---|---|---|---|---|---|")
     for d in res.dimensions:
         w = f"{d.weight:.0f}" + (f" → {d.effective_weight:.1f}" if res.weights_renormalised and d.scored else "")
         align = "not aligned" if d.not_aligned else ("—" if d.alignment_index is None else f"{d.alignment_index:.0%} flagged")
         L.append(
             f"| {d.id} | {d.name} | {w} | {d.n_items_scored}/{instrument.scoring.dimension_items}{'' if d.scored else ' (not scored)'} | "
-            f"{_f(d.mean, 2)} | {_f(d.score)} | {d.n_items_sigma_flagged} | {align} |"
+            f"{_f(d.mean, 2)} | {_f(d.score)} | {_f(d.self_score)} | {d.n_items_sigma_flagged} | {align} |"
         )
     L.append("")
 
@@ -203,16 +233,16 @@ def render_scorecard(instrument: Instrument, res: ScoreResult, title: str = "") 
     # ---- S11 governance sub-dimensions -----------------------------------
     L.append("## S11 · Governance, risk & compliance (D6) by item")
     L.append("")
-    L.append("| Item | Question | Level (mean, capped) | Ev≥4 required | Evidence logged | Capped responses | OWASP GML (D6.6) |")
-    L.append("|---|---|---|---|---|---|---|")
+    L.append("| Item | Question | Level (median, capped) | Mean (secondary) | Ev≥4 required | Evidence logged | Capped responses | OWASP GML (D6.6, governance half) |")
+    L.append("|---|---|---|---|---|---|---|---|")
     for i in res.items:
         if i.dimension != "D6":
             continue
         it = instrument.item_by_id[i.item_id]
         q = it.question.split(" (")[0]
-        gml = f"GML {i.mean_capped - 1:.1f}" if (i.item_id == "D6.6" and i.mean_capped is not None) else "—"
+        gml = f"GML {i.score - 1:.1f}" if (i.item_id == "D6.6" and i.score is not None) else "—"
         L.append(
-            f"| {i.item_id} | {q} | {_f(i.mean_capped, 2)} | {it.evidence_class_required_text} | "
+            f"| {i.item_id} | {q} | {_f(i.score, 1)} | {_f(i.mean_capped, 2)} | {it.evidence_class_required_text} | "
             f"{'+'.join(i.evidence_classes_logged) or 'none'} | {i.n_capped}/{i.n_responses} | {gml} |"
         )
     L.append("")
@@ -222,11 +252,11 @@ def render_scorecard(instrument: Instrument, res: ScoreResult, title: str = "") 
     # ---- item detail ----------------------------------------------------------
     L.append("## Appendix · Item detail (all 48 items)")
     L.append("")
-    L.append("| Item | n | Mean raw | Mean capped | σ raw | Capped | Evidence logged | Ev≥4 |")
-    L.append("|---|---|---|---|---|---|---|---|")
+    L.append("| Item | n | Median raw (self) | Median capped (score) | Mean raw | Mean capped | σ raw | Capped | Evidence logged | Ev≥4 |")
+    L.append("|---|---|---|---|---|---|---|---|---|---|")
     for i in res.items:
         L.append(
-            f"| {i.item_id} | {i.n_responses} | {_f(i.mean_raw, 2)} | {_f(i.mean_capped, 2)} | {_f(i.sigma_raw, 2)}{' ⚑' if i.sigma_flag else ''} | "
+            f"| {i.item_id} | {i.n_responses} | {_f(i.score_self, 1)} | {_f(i.score, 1)} | {_f(i.mean_raw, 2)} | {_f(i.mean_capped, 2)} | {_f(i.sigma_raw, 2)}{' ⚑' if i.sigma_flag else ''} | "
             f"{i.n_capped} | {'+'.join(i.evidence_classes_logged) or '—'} | {'+'.join(i.evidence_required)} |"
         )
     L.append("")

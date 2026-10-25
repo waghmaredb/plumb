@@ -1,5 +1,9 @@
 """Generate the synthetic example files. Deterministic (seed 20261025).
 
+v0.2: the responses CSV gains an `interviewees` column (decision 11). The
+random stream is unchanged, so every score, evidence class and benchmark row is
+identical to the v0.1 examples; only the scoring rules differ.
+
 Everything here is FICTIONAL. "Harbourline Mutual Bank" does not exist; the
 benchmark rows are random draws, not real organisations.
 
@@ -75,13 +79,16 @@ EVIDENCE = {
     "D1.4": ("D", "EV-004 budget paper FY26"),  # D only; item needs D+S → capped
     "D3.2": ("S", "EV-041 eval + deploy logs"),
     "D7.1": ("S", "EV-050 M365 Copilot telemetry"),
-    "D4.4": ("I", "EV-060 interviews CEO, CRO"),  # I only; item needs I+O → capped
+    "D4.4": ("I", "EV-060 interviews CEO, CRO"),  # I only (2 interviewees, verified); item needs I+O → capped
     "D1.1": ("D", "EV-001 board paper 2026-02"),
     "D5.5": ("D+S", "EV-071 tier policy + approval logs"),
     "D8.6": ("S", "EV-080 FinOps cost dashboard"),
     "D1.5": ("O+D", "EV-005 live chatbot demo + product roadmap"),
     "D3.4": ("S", "EV-044 API gateway logs"),
 }
+# Interview references that record more than one independent interviewee (v0.2 decision 11:
+# an I class counts only with ≥2 verifiable interviewees). Written to the `interviewees` column.
+INTERVIEWEES = {"D4.4": 2}
 # Items where ExCo claim 4–5 (so caps bite), beyond what the profile gives.
 EXCO_CLAIMS = {"D1.1": 4, "D1.2": 4, "D2.1": 4, "D2.3": 5, "D5.1": 4, "D6.1": 4, "D7.2": 4, "D1.4": 4, "D4.4": 4, "D2.6": 4}
 OPER_CLAIMS = {"D6.2": 4, "D3.2": 4, "D7.1": 4, "D5.5": 4, "D8.6": 4, "D6.1": 4, "D1.5": 4}
@@ -112,19 +119,19 @@ def gen_responses(path: Path) -> None:
         # evidence is only attached to the respondent who owns the artefact
         owner = {"exco": ["R02", "R04", "R05"], "operating": ["R06", "R09", "R12"]}
         if ev != "none" and s >= 4 and rid in owner[grp]:
-            out.append((rid, grp, role, iid, s, ev, ref))
+            out.append((rid, grp, role, iid, s, ev, ref, INTERVIEWEES.get(iid, "") if "I" in ev else ""))
         else:
-            out.append((rid, grp, role, iid, s, "none", ""))
+            out.append((rid, grp, role, iid, s, "none", "", ""))
     # value axis, entered once by the CFO
     out += [
-        ("R02", "exco", "CFO", "V1", "B", "S", "EV-090 finance extract FY25"),  # no attribution rule (D) → Band A not evidenced
-        ("R02", "exco", "CFO", "V2", "40–61%", "none", ""),  # self-report → capped at 12–39%
-        ("R02", "exco", "CFO", "V3", "3", "none", ""),
-        ("R04", "exco", "CRO", "V4", "2", "none", ""),
+        ("R02", "exco", "CFO", "V1", "B", "S", "EV-090 finance extract FY25", ""),  # no attribution rule (D) → Band A not evidenced
+        ("R02", "exco", "CFO", "V2", "40–61%", "none", "", ""),  # self-report → capped at 12–39%
+        ("R02", "exco", "CFO", "V3", "3", "none", "", ""),
+        ("R04", "exco", "CRO", "V4", "2", "none", "", ""),
     ]
     with open(path, "w", newline="", encoding="utf-8") as fh:
         w = csv.writer(fh)
-        w.writerow(["respondent_id", "role_group", "role", "item_id", "score", "evidence_class", "evidence_ref"])
+        w.writerow(["respondent_id", "role_group", "role", "item_id", "score", "evidence_class", "evidence_ref", "interviewees"])
         w.writerows(out)
 
 

@@ -1,10 +1,22 @@
-# Enterprise AI Maturity Instrument v0.1
+# Enterprise AI Maturity Instrument v0.2
 
-**Status: v0.1 draft, untested** | Owner: Methodology | Classification: Firm IP, shareable with clients under engagement terms | Date: 2026-10-25
+**Status: v0.2 draft — the 12 scorer ambiguities resolved by decision (§5.6); anchors not yet κ-tested (§7)** | Owner: Methodology | Classification: Firm IP, shareable with clients under engagement terms | Date: 2026-10-25
 
 Purpose: a two-axis, evidence-gated maturity score (capability 0–100 in four bands; value axis reported separately, never merged) with published anchors, published weights, perception-variance output and peer percentile. Designed to be (a) completable by 10–30 leaders as a self-assessment in Phase 2, (b) re-scored by an assessor against an evidence register, and (c) pre-populated outside-in by a research agent in Phase 1.
 
 Design constraints inherited from the research base: leader share in the top band must land at ≈5–10% of the benchmark; the production boundary must sit at the 50 line; self-report must not lift a score above level 3 without evidence; governance items must trace to ISO/IEC 42001 Annex A, NIST AI RMF, MAS AIRG materiality and the OWASP agentic governance ladder.
+
+## What changed for respondents (v0.2)
+
+> **If you are answering this instrument, five things are different from v0.1:**
+>
+> - **Your own 4 or 5 needs evidence.** Any answer of 4 or 5 is recorded as 3 unless you name or attach the artefact that shows it. This now applies to each person's answer, not only to the group's combined answer.
+> - **Your organisation's answer to each question is the middle answer, not the average.** With 10–30 people answering, one or two very high or very low answers no longer pull the result. The average is still shown beside it.
+> - **You will see two scores.** Your "self-view" (what everyone answered) and the "evidenced view" (after the evidence rule) are shown side by side, with the list of artefacts that would close the gap.
+> - **Interviews count as evidence only when two people agree.** A single conversation is not enough; two separate interviewees must be recorded.
+> - **Two agent questions now ask different things.** D3.5 asks about the technical controls on AI agents (their identity, logs, kill switch); D6.6 asks about how agents are governed (policy, who is accountable, which actions need human approval). Answer each on its own terms.
+>
+> The score bands have exact edges: a score of exactly 25, 50 or 75 belongs to the lower band, so 50.0 is still Emerging and Scaling starts above 50.
 
 ---
 
@@ -14,7 +26,8 @@ Design constraints inherited from the research base: leader share in the top ban
 |---|---|---|---|
 | v0.1 | 2026-10-25 | Initial draft: 48 capability items, 4 value items, scoring spec, calibration, κ subset | Methodology |
 | v0.1.1 | 2026-10-25 | Cap-rule transparency: rule shown to respondents on screen one and in the invitation email; scorecards show self-view and evidenced view side by side (red-team review 2026-10-25, Major / §2.2). Peer percentile only within one population (self vs evidenced, never pooled) and replaced by rank within named peers when n < 15 (Blocker 3 / §2.3) | Product |
-| v0.2 | — | Planned: anchors revised after κ test on ≥10 organisations; weights re-fitted after n≥100 benchmark entries | — |
+| v0.2 | 2026-10-25 | The 12 ambiguities logged by the scorer transcription resolved by decision (§5.6): upper-inclusive band edges on unrounded scores and "Leading (≥76)" corrected to >75; cap rule per response; organisation item score = median of capped responses (mean secondary); proxies stated as 1–4 per item with single-proxy items marked and the D8.1/D8.2 row split; D4.4 follows its Ev≥4 column; mid-rank percentile ties; region optional as a peer filter but required in benchmark rows; V2 edges upper-inclusive; band target shares restated to sum to 100% with the BCG order fixed; V1↔D8.4 kept as the only cross-item dependency; I (≥2) verifiable from evidence rows; D3.5 (technical controls) and D6.6 (governance of agents) re-anchored to remove the overlap. Machine-readable copy: `instrument/instrument-v0.2.yaml` (v0.1 file kept for history). "What changed for respondents" box added | Methodology |
+| v0.3 | — | Planned: anchors revised after κ test on ≥10 organisations; weights re-fitted after n≥100 benchmark entries | — |
 
 ---
 
@@ -25,10 +38,11 @@ Design constraints inherited from the research base: leader share in the top ban
 | Capability axis | 8 dimensions × 6 items = 48 items, each 5 anchored levels (1–5) |
 | Value axis | 4 items (V1–V4), reported as a profile beside the capability score, never averaged into it |
 | Level semantics | L1 absent · L2 ad hoc / pilot · **L3 in production with owner, budget, controls (production boundary)** · L4 scaled, measured, standardised · L5 embedded in decisions/products, externally evidenced or independently assured |
-| Evidence classes | **D** document (policy, board paper, assessment report) · **S** system record (logs, dashboards, HRIS/LMS/finance extracts, inventory) · **I** interview (≥2 independent interviewees agree) · **O** observation (assessor sees the system, workflow or artefact live) |
-| Cap rule | Self-reported scores are capped at level 3 unless an artefact of the item's required evidence class is logged (§5.4). **Shown to respondents before they answer:** screen one of the instrument (web form and engagement survey alike) and the invitation email state "a self-report above 3 is recorded at 3 unless an evidence class is logged; levels 4–5 are evidence levels — choose them, then name or attach the artefact" (wording: `commercial/engagement-charter-template.md` §5.1) |
-| Scorecard views | Every scorecard shows the **self-view** (consensus of raw self-reports, uncapped) and the **evidenced view** (cap rule applied) side by side; the difference is listed per item as the artefacts that would move it. The evidenced view is the score of record |
-| Outside-in proxies | 2–4 per item; corroborate only, never lift a score (§5.4) |
+| Evidence classes | **D** document (policy, board paper, assessment report) · **S** system record (logs, dashboards, HRIS/LMS/finance extracts, inventory) · **I** interview (≥2 independent interviewees agree; counts only when verifiable from the evidence rows as ≥2 distinct interview references or an interviewee count ≥2, §5.4) · **O** observation (assessor sees the system, workflow or artefact live) |
+| Cap rule | Applied **per response** (v0.2 decision 2): each respondent's self-report above 3 is recorded at 3 unless an artefact of the item's required evidence class is logged against that response (§5.4). **Shown to respondents before they answer:** screen one of the instrument (web form and engagement survey alike) and the invitation email state "a self-report above 3 is recorded at 3 unless an evidence class is logged; levels 4–5 are evidence levels — choose them, then name or attach the artefact" (wording: `commercial/engagement-charter-template.md` §5.1) |
+| Organisation item score | **Median** of the respondents' capped responses; the mean is shown beside it as a secondary statistic (v0.2 decision 3, §5.1) |
+| Scorecard views | Every scorecard shows the **self-view** (median of raw self-reports, uncapped) and the **evidenced view** (median of capped responses) side by side; the difference is listed per item as the artefacts that would move it. The evidenced view is the score of record |
+| Outside-in proxies | 1–4 per item (the 10 single-proxy items are marked † in §3); corroborate only, never lift a score (§5.4) |
 | Output | Weighted 0–100 capability score and band (self-view and evidenced view); value-axis profile; per-item σ with flags; peer percentile with n disclosed where the peer set has n ≥ 15 within one population, otherwise rank within named peers (§5.5); evidence coverage % |
 
 Evidence class codes in item tables: the class listed is the **minimum** required to score 4 or 5. Where two are listed (e.g. "D+S"), both are required.
@@ -49,13 +63,13 @@ Evidence class codes in item tables: the class listed is the **minimum** require
 | D8 | Value management | 16 | Outcome-anchored cuts (McKinsey >5% EBIT; PwC top 20%) are the only ones tied to financials; BCG future-built >60% rigorously track value vs 17% of stagnating [S4][S8][S1] |
 | | **Total** | **100** | D4+D5+D7 = 34; D6+D8 = 32; D2+D3 = 24; D1 = 10 |
 
-Weights are a priori for v0.1. They are to be re-fitted once the benchmark holds n≥100 scored organisations with an independent outcome measure (value axis V1–V3), following BCG's practice of validating weights statistically [S1].
+Weights are a priori (set in v0.1, unchanged in v0.2). They are to be re-fitted once the benchmark holds n≥100 scored organisations with an independent outcome measure (value axis V1–V3), following BCG's practice of validating weights statistically [S1].
 
 ---
 
 ## 3. Capability items
 
-Column key: **Q** = question as asked to a leader (self-assessment wording, answered by picking the level that is true today). **Ev≥4** = evidence class required to score 4 or 5.
+Column key: **Q** = question as asked to a leader (self-assessment wording, answered by picking the level that is true today). **Ev≥4** = evidence class required to score 4 or 5. In the proxy tables, **†** marks an item with a single outside-in proxy (v0.2 decision 4: D1.6, D4.5, D4.6, D5.1, D8.1, D8.2, D8.3, D8.4, D8.5, D8.6); a † item's outside-in pre-score rests on one signal and is labelled so in Phase 1 output.
 
 ### D1 Strategy & ambition
 
@@ -77,7 +91,7 @@ Column key: **Q** = question as asked to a leader (self-assessment wording, answ
 | D1.3 | Count of distinct AI initiatives named in press releases over 12 months (scatter vs focus); recurrence of the same 2–5 themes | BCG AI Radar: leaders prioritise ~3.5 use cases vs 6.1 [P10]; no firm-level validation |
 | D1.4 | Disclosed AI spend or share of IT budget; capex/opex commentary on AI in results calls | [P4] avg ~5% of IT budget (APAC 5.2%); [P6] leaders invest 2.5x more of revenue |
 | D1.5 | AI features in product pages; trademarks and product patents; app-store release notes | [P1] growth via product innovation (trademarks, product patents); [P4] 3.5x patents |
-| D1.6 | Quantified AI-attributed financials in guidance or results (e.g. "5–10% of FY EBIT") | [P2] rubric L4 = "expected financial outcomes"; [P3] |
+| D1.6 † | Quantified AI-attributed financials in guidance or results (e.g. "5–10% of FY EBIT") | [P2] rubric L4 = "expected financial outcomes"; [P3] |
 
 ### D2 Data foundations
 
@@ -109,7 +123,7 @@ Column key: **Q** = question as asked to a leader (self-assessment wording, answ
 | D3.2 | How mature are your LLM operations? | None | Prompts edited by hand in production | Versioned prompts and models with CI for ≥1 production application | Evaluation suites, regression tests and drift monitoring across all production GenAI | Automated rollback and continuous evaluation with sampled human review | S (eval + deployment logs) |
 | D3.3 | Do you reuse AI components? | No | Informal copy of code between teams | Shared catalogue of ≥5 reusable components (connectors, prompts, agents, guardrails) | >50% of new builds reuse catalogued components | Components have owners, SLAs and usage metrics | S (catalogue + usage) |
 | D3.4 | How is AI integrated with systems of record? | Not integrated | Copy/paste between tools | ≥1 production AI reads systems of record through governed APIs | AI writes to systems of record under change control and logging | AI embedded in core transaction workflows with event-level audit logs | S (integration logs) |
-| D3.5 | How are AI agents provisioned and controlled? | No agents | Agents run on human or shared credentials | Per-agent identity, tool allowlist and action logs for every production agent | Short-lived task-scoped credentials, sandboxed execution, tested kill switch | Cryptographic agent identity and tamper-evident audit trails (OWASP GML Level 4) | O (demo) + S (logs) |
+| D3.5 | What technical controls run on your AI agents (identity, credentials, logging, kill switch)? | No agents, or agents with no technical controls | Agents run on human or shared credentials | Per-agent identity, tool allowlist and action logs for every production agent | Short-lived task-scoped credentials, sandboxed execution, kill switch tested in the last 6 months | Cryptographic agent identity, tamper-evident audit trails and runtime anomaly detection that contains an agent automatically (OWASP GML Level 4 technical controls) | O (kill-switch test) + S (logs) |
 | D3.6 | How are AI systems secured against AI-specific threats? | Not considered | Generic infosec only | Threat model and prompt-injection controls documented per input channel for production systems | Red-team before deployment of material systems; per-inference logs retained ≥90 days | Continuous adversarial testing with measured false-positive/negative rates | D (threat model) + S (logs) |
 
 **D3 outside-in proxies**
@@ -120,7 +134,7 @@ Column key: **Q** = question as asked to a leader (self-assessment wording, answ
 | D3.2 | Postings naming LLMOps / evaluation / observability tooling; conference talks by engineers | [P1]; Accenture names LLMOps as a gen-AI essential [S3] |
 | D3.3 | Public engineering blogs describing internal platforms; open-source releases | PwC leaders 2.4x reusable catalogued components [S8]; no outside-in validation |
 | D3.4 | Vendor case studies naming core-system integration; API marketplace presence | No published validation |
-| D3.5 | Postings for agent-platform / identity engineers; vendor announcements on agent deployments | [P8] 20% mature agent governance; [P11] BCG 5% full control set |
+| D3.5 | Postings for agent-platform / agent-identity engineers; vendor announcements on agent deployments naming identity or kill-switch controls | [P8] 20% mature agent governance; [P11] BCG 5% full control set |
 | D3.6 | Security certifications; bug-bounty scope including AI; CISO statements on AI security | BCG: 72% report unmanaged AI-security risks [S1]; no outside-in validation |
 
 ### D4 Talent & skills
@@ -142,8 +156,8 @@ Column key: **Q** = question as asked to a leader (self-assessment wording, answ
 | D4.2 | Patents; open-source repos under company org; conference talks; Kaggle/arXiv affiliations | [P4] 3.5x patents; GitHub validation is a known gap |
 | D4.3 | Public upskilling commitments ("train X% of staff"); LinkedIn Learning certificate counts | [P4] future-built plan to upskill >50% vs 20%; no outside-in validation |
 | D4.4 | Board bios; annual-report governance section on AI oversight; director AI committee seats | No published validation |
-| D4.5 | Postings for "AI product manager" / "analytics translator" | [P1] |
-| D4.6 | Remuneration report / proxy statement mentions of AI metrics in incentive plans | No published validation |
+| D4.5 † | Postings for "AI product manager" / "analytics translator" | [P1] |
+| D4.6 † | Remuneration report / proxy statement mentions of AI metrics in incentive plans | No published validation |
 
 ### D5 Operating model & workflow redesign
 
@@ -160,7 +174,7 @@ Column key: **Q** = question as asked to a leader (self-assessment wording, answ
 
 | ID | Proxy signals | Validation source |
 |---|---|---|
-| D5.1 | Case studies / results commentary describing "redesigned" or "reinvented" processes vs "assistant deployed" | McKinsey 55% vs 20% redesign [S4]; no outside-in validation |
+| D5.1 † | Case studies / results commentary describing "redesigned" or "reinvented" processes vs "assistant deployed" | McKinsey 55% vs 20% redesign [S4]; no outside-in validation |
 | D5.2 | Postings naming "AI Centre of Excellence"; org announcements | [P5] ~60% of high-maturity centralise strategy, governance, data, infra |
 | D5.3 | Engineering blog release cadence; app release notes frequency | No published validation |
 | D5.4 | Ratio of "pilot" to "deployed/production" language in press over 24 months; 10-K rubric L3 vs L4 | [P2] rubric distinguishes Pilot (3) from Production (4); [P4] 62% vs 12% deployed |
@@ -178,7 +192,7 @@ Item bank mapping: ISO/IEC 42001 clauses and Annex A categories [S15][S16]; NIST
 | D6.3 | Are impact and risk assessments performed before deployment? (ISO cl. 6.1.4, A.5; NIST Map) | Never | Ad hoc for some systems | Impact assessment with individual and societal sections completed for every material system pre-deployment | Documented methodology with triggers and thresholds; reassessment on scope or model change | Assessments published or independently reviewed | D (assessments) |
 | D6.4 | How are AI systems tested and validated? (NIST Measure; MAS validation; AI Verify) | Not tested beyond dev | Developer testing only | Pre-deployment tests for accuracy, fairness, robustness and hallucination documented for material systems | Independent validation for high-materiality systems, periodic re-validation, red-team before release | External assurance or testing (e.g. AI Verify process checks, third-party audit) | D (test reports) + S |
 | D6.5 | How are production AI systems monitored and incidents handled? (NIST Manage; ISO A.6.2.8, A.8) | Not monitored | Ad hoc checks | Production monitoring with retained logs; internal AI incident reporting channel exists and is used | KPI/KRI review cadence per system owner; incident runbooks; change control with re-vetting triggers | Incident metrics reported to the board; external adverse-impact reporting route; incident communication plan tested | S (logs, incident register) |
-| D6.6 | How mature is your governance of AI agents? (OWASP GML 0–4; MAS agentic expectations) | Shadow agents / unaware (GML 0) | Experimentation without guardrails (GML 1) | Published agent policy, mandatory human review for high-impact actions, named accountable executive, logging, AI-BOM (GML 2) | Real-time anomaly detection, tested kill switches, machine-readable policy; agent identifiers, tool access and guardrails recorded (GML 3) | Cryptographic agent identity and tamper-evident audit trails; adaptive controls (GML 4) | O (kill-switch test) + S |
+| D6.6 | How are your AI agents governed (policy, accountability, approval of agent actions)? (OWASP GML 0–4 governance controls; MAS agentic expectations) | Agents in use are unknown to governance (GML 0) | Agents piloted under the general AI policy only; no agent-specific approval (GML 1) | Published agent policy; named accountable executive per production agent; agent register (AI-BOM) recording purpose, owner and permitted actions; mandatory human approval for high-impact actions (GML 2) | Approval tiers by action reversibility and impact (autonomous / notify / approve) set per agent in machine-readable policy; register re-reviewed on change; agent incidents run through the AI incident process (GML 3) | Agent governance independently assured; tiers re-set on observed agent behaviour with control-function sign-off; agent risk reported to the board (GML 4) | D (agent policy, register) + S (approval records) |
 
 **D6 coverage check**
 
@@ -192,7 +206,7 @@ Item bank mapping: ISO/IEC 42001 clauses and Annex A categories [S15][S16]; NIST
 | A.9 responsible use | D5.5, D7.6 |
 | NIST AI RMF Govern / Map / Measure / Manage | D6.1 / D6.2–D6.3 / D6.4 / D6.5 |
 | MAS AIRG materiality, inventory, independent validation, agentic | D6.2 / D6.2 / D6.4 / D6.6 |
-| OWASP Agentic GML 0–4 | D6.6 (and D3.5 for the technical stack) |
+| OWASP Agentic GML 0–4 | Split without overlap (v0.2 decision 12): D6.6 governance controls (policy, accountability, approval tiers, register); D3.5 technical controls (identity, credentials, logging, sandbox, kill switch) |
 
 **D6 outside-in proxies**
 
@@ -203,7 +217,7 @@ Item bank mapping: ISO/IEC 42001 clauses and Annex A categories [S15][S16]; NIST
 | D6.3 | Published impact assessments; DPIA references in privacy notices | No published validation |
 | D6.4 | AI Verify / third-party testing participation; bias-audit publications (e.g. NYC LL144) | No published validation |
 | D6.5 | Entries in public AI incident databases; regulator actions; incident disclosure in annual report | Deloitte APAC: 2 in 5 lack an incident reporting mechanism [S7] |
-| D6.6 | Public statements on agent deployments with/without control language; postings for agent governance roles | [P8] 20% mature agent governance; [P11] BCG 5% full control set |
+| D6.6 | Public statements on agent deployments with/without governance language (policy, accountable owner, human approval); postings for agent governance roles | [P8] 20% mature agent governance; [P11] BCG 5% full control set |
 
 ### D7 Culture & adoption
 
@@ -242,11 +256,12 @@ Item bank mapping: ISO/IEC 42001 clauses and Annex A categories [S15][S16]; NIST
 
 | ID | Proxy signals | Validation source |
 |---|---|---|
-| D8.1–8.2 | Investor-day language on "control groups", "measured against baseline" (e.g. DBS reports value in three buckets against control groups) | DBS example [P12]; no cross-firm validation |
-| D8.3 | Quantified AI value in results or investor day (e.g. S$ value, % EBIT) | [P2] rubric L4/L5; [P3] AIR Index |
-| D8.4 | Audit-committee or CFO statements on AI benefit measurement | No published validation |
-| D8.5 | Announced discontinuations or portfolio pruning | No published validation |
-| D8.6 | Commentary on AI run costs / token spend in results calls | [P2] notes AI bought as opex; no capex signal |
+| D8.1 † | Investor-day or results language on "measured against baseline" | DBS example [P12]; no cross-firm validation |
+| D8.2 † | Investor-day or results language on "control groups" (e.g. DBS reports value in three buckets against control groups) | DBS example [P12]; no cross-firm validation |
+| D8.3 † | Quantified AI value in results or investor day (e.g. S$ value, % EBIT) | [P2] rubric L4/L5; [P3] AIR Index |
+| D8.4 † | Audit-committee or CFO statements on AI benefit measurement | No published validation |
+| D8.5 † | Announced discontinuations or portfolio pruning | No published validation |
+| D8.6 † | Commentary on AI run costs / token spend in results calls | [P2] notes AI bought as opex; no capex signal |
 
 ---
 
@@ -254,10 +269,10 @@ Item bank mapping: ISO/IEC 42001 clauses and Annex A categories [S15][S16]; NIST
 
 | ID | Question | Scale | Evidence required | Calibration anchor |
 |---|---|---|---|---|
-| V1 | What share of EBIT in the last fiscal year is attributable to AI, under a finance-approved attribution rule? | Band A: none / not measured · Band B: >0 and <5% · Band C: ≥5% | S (finance extract) + D (attribution rule, D8.4 ≥3); otherwise recorded as Band A "not evidenced" | McKinsey high performers = >5% EBIT + significant value ≈ 6% of respondents; 39% attribute any EBIT impact, most <5% [S4] |
-| V2 | Of AI initiatives started in the last 24 months, what share is in production (live, owned, with users)? | <12% · 12–39% · 40–61% · ≥62% | S (portfolio tracker); self-report capped at the 12–39% band | BCG future-built 62% deployed vs 12% laggards [S1]; Gartner high-maturity 45% of projects ≥3 yrs in production [S5] |
+| V1 | What share of EBIT in the last fiscal year is attributable to AI, under a finance-approved attribution rule? | Band A: none / not measured · Band B: >0 and <5% · Band C: ≥5% | S (finance extract) + D (attribution rule, with the D8.4 organisation item score ≥3 in the evidenced view); otherwise recorded as Band A "not evidenced". This is the instrument's only cross-item dependency (v0.2 decision 10) | McKinsey high performers = >5% EBIT + significant value ≈ 6% of respondents; 39% attribute any EBIT impact, most <5% [S4] |
+| V2 | Of AI initiatives started in the last 24 months, what share is in production (live, owned, with users)? | <12% · 12–39% · 40–61% · ≥62%, on the unrounded share p with upper-inclusive edges (v0.2 decision 8): p < 12 · 12 ≤ p ≤ 39 · 39 < p ≤ 61 · p > 61 | S (portfolio tracker); self-report capped at the 12–39% band | BCG future-built 62% deployed vs 12% laggards [S1]; Gartner high-maturity 45% of projects ≥3 yrs in production [S5] |
 | V3 | How rigorous is value tracking? | 1 none · 2 anecdotal · 3 self-reported metric per use case · 4 system-measured baseline, finance-reconciled · 5 control groups + finance sign-off + audit trail | S (ledger) for ≥4 | BCG >60% of future-built rigorously track vs 17% of stagnating [S1]; PwC leaders 80% more likely to systematically track [S8]; DBS three-bucket, control-group model [P12] |
-| V4 | What is your agent control maturity? | OWASP Governance Maturity Level 0–4 (same anchors as D6.6) | O (kill-switch test) + S (logs) for ≥3 | Deloitte: 20% mature agent governance [S7]; BCG: 5% have the full control set for agents with decision authority [P11] |
+| V4 | What is your agent control maturity? | OWASP Governance Maturity Level 0–4 on the full GML ladder (governance and technical controls together; D6.6 and D3.5 each score one half of it as capability items, V4 records the whole as an outcome and is assessed on its own evidence, with no scoring dependency on either item) | O (kill-switch test) + S (logs) for ≥3 | Deloitte: 20% mature agent governance [S7]; BCG: 5% have the full control set for agents with decision authority [P11] |
 
 Output format: a four-cell profile (e.g. "V1 B · V2 40–61% · V3 4 · V4 2") displayed beside the capability band. A **value gap flag** is raised when capability band is Scaling or Leading but V1 = Band A or V3 ≤ 2.
 
@@ -269,24 +284,32 @@ Output format: a four-cell profile (e.g. "V1 B · V2 40–61% · V3 4 · V4 2") 
 
 | Step | Rule |
 |---|---|
-| Item score | Integer 1–5 after cap rule (§5.4) and assessor adjustment |
-| Dimension mean | m_d = mean of scored items in dimension d; requires ≥4 of 6 items scored, otherwise dimension marked "not scored" and its weight renormalised across scored dimensions, with a flag on the output |
+| Response score | Integer 1–5 per respondent per item, after the cap rule (§5.4), which is applied to each response before any aggregation (v0.2 decision 2) |
+| Organisation item score | **Median** of the capped responses for the item (with an even number of responses, the midpoint of the two middle values, so half-levels such as 2.5 occur); the **mean** of the capped responses is reported beside it as a secondary statistic and never used in the total (v0.2 decision 3). Assessor adjustment (§5.4 "Down-scoring") applies to the organisation item score |
+| Dimension mean | m_d = mean of the organisation item scores of scored items in dimension d; requires ≥4 of 6 items scored (an item is scored when it has at least one response), otherwise dimension marked "not scored" and its weight renormalised across scored dimensions, with a flag on the output |
 | Dimension score (0–100) | s_d = (m_d − 1) / 4 × 100 |
 | Capability score | C = Σ w_d × s_d / 100, using weights in §2 |
+| Self-view | The same steps run on the **raw** (uncapped) responses give the self-view score; the evidenced view above is the score of record (§1 "Scorecard views") |
 | Rounding | Report C to one decimal; band assigned on the unrounded value |
 
-Worked check: all 48 items at level 3 → every s_d = 50 → C = 50.0 → top of Emerging. Crossing into Scaling requires an average above level 3, i.e. above the production boundary. Leading (≥76) requires a weighted dimension mean ≥4.04.
+Worked check: all 48 items at level 3 → every organisation item score = 3 → every s_d = 50 → C = 50.0 → top of Emerging. Crossing into Scaling requires a weighted dimension mean above level 3, i.e. above the production boundary. Leading (C > 75) requires a weighted dimension mean above 4.0; all items at exactly 4 give C = 75.0, the top of Scaling.
+
+Why the median (decision 3): an organisation item score is formed from 10–30 respondents, and in groups that small one to three enthusiasts (or sceptics) at the extremes move a mean by up to half a level on a five-level scale. The median moves only when the middle of the leadership team moves. The mean stays visible because a mean well above the median is itself a finding (a minority claiming more than the team will support), and σ (§5.3) is still computed on raw levels.
 
 ### 5.2 Bands
 
+Bands are closed on the upper edge and applied to the **unrounded** C (v0.2 decision 1).
+
 | Band | Score | Meaning | Target share of benchmark |
 |---|---|---|---|
-| Stagnating | 0–25 | Mostly absent or ad hoc; no production AI with an owner | ~15% |
-| Emerging | 26–50 | Pilots and first production systems; controls and value tracking partial | ~45% |
-| Scaling | 51–75 | Majority of items above the production boundary; standardised methods and measurement | ~30–35% |
-| Leading | 76–100 | Embedded in decisions and products, independently evidenced | **5–10%** |
+| Stagnating | 0 ≤ C ≤ 25 | Mostly absent or ad hoc; no production AI with an owner | 15% |
+| Emerging | 25 < C ≤ 50 | Pilots and first production systems; controls and value tracking partial | 45% |
+| Scaling | 50 < C ≤ 75 | Majority of items above the production boundary; standardised methods and measurement | 32.5% (window 30–35%) |
+| Leading | 75 < C ≤ 100 | Embedded in decisions and products, independently evidenced | **7.5% (window 5–10%)** |
 
-The **production boundary is the 50 line**. Target shares follow the BCG 2025 distribution (5 / 35 / 46 / 14) and the IDC 2026 finding that 61.3% sit in the bottom two stages [S1][S6]. Thresholds are fixed for v0.1; after n≥100 benchmark entries, thresholds (not anchors) are adjusted so Leading = 5–10%.
+The **production boundary is the 50 line**: a score of exactly 50.0 is Emerging, and any score above it is Scaling or Leading. Upper-inclusive edges are used because the worked check (§5.1) places 50.0 at the top of Emerging, and because the band is assigned on the unrounded score, so an integer-edged table ("26–50") would leave 25–26, 50–51 and 75–76 unassigned. A reported score of "75.0" can therefore sit in Leading only when the unrounded value is above 75 (e.g. 75.04); the scorecard prints the band beside the rounded score so the two are never read apart.
+
+Target shares sum to 100% (15 + 45 + 32.5 + 7.5; v0.2 decision 9). The Leading window is 5–10% and Scaling takes the complement of Leading within the top 40%, so the two windows move together. Shares follow the BCG 2025 distribution, which in this table's order (Stagnating → Leading) is 14 / 46 / 35 / 5, and the IDC 2026 finding that 61.3% sit in the bottom two stages [S1][S6]. Thresholds are fixed for v0.2; after n≥100 benchmark entries, thresholds (not anchors) are adjusted so Leading = 5–10%.
 
 ### 5.3 Leadership-perception variance
 
@@ -303,22 +326,42 @@ The **production boundary is the 50 line**. Target shares follow the BCG 2025 di
 
 | Rule | Detail |
 |---|---|
-| Cap | Any item where the organisation's consensus self-report is 4 or 5 is **recorded at 3** until an artefact of the item's Ev≥4 class is logged in the evidence register with an artefact ID, date and reviewer. The rule is disclosed to respondents on screen one and in the invitation email (§1), and both views are reported (§1 "Scorecard views") |
-| Lift | With the required artefact logged, the item is scored at the level the artefact supports (which may be below the self-report) |
-| Interview evidence | Where Ev≥4 is D or S, interview agreement alone lifts to at most 3; where Ev≥4 is I, two independent interviewees must agree and the assessor records both references |
+| Cap | Applied **per response** (v0.2 decision 2): any respondent's self-report of 4 or 5 on an item is **recorded at 3** unless an artefact of the item's Ev≥4 class is logged against that response in the evidence register with an artefact ID, date and reviewer. Where two classes are listed (e.g. "D+S"), both must be logged. The organisation item score is then the median of the recorded responses (§5.1). The rule is disclosed to respondents on screen one and in the invitation email (§1), and both views are reported (§1 "Scorecard views") |
+| Why per response | The free web form has no consensus to cap, so per-response capping is the only rule both channels can apply identically; capping a consensus would also let a few evidenced 5s carry unevidenced 4s and 5s from the rest of the team into the score. One logged artefact may be linked to every response it supports |
+| Lift | With the required artefact logged, the response is scored at the level the artefact supports (which may be below the self-report) |
+| Interview evidence | Where Ev≥4 is D or S, interview agreement alone lifts to at most 3. Where Ev≥4 includes I (D4.4, D7.2, D7.3), the I class counts only when two independent interviewees are **verifiable from the evidence rows** (v0.2 decision 11): either ≥2 distinct interview references are logged on the item's rows, or a row's `interviewees` count is ≥2 (one reference covering a joint record of two interviews). A single interview reference does not lift and does not count toward evidence coverage |
 | Outside-in signals | Corroborate only. A proxy can be cited to **challenge** a self-report downward or to pre-populate a draft score, never to lift above 3 |
-| Down-scoring | Assessor may score below self-report at any level with a written reason; the respondent consensus and assessor score are both retained |
-| Evidence coverage | Deliverable reports % of items with evidence logged; engagements below 60% coverage report the capability score as "self-report-dominant" |
+| Down-scoring | Assessor may score below self-report at any level with a written reason; the respondent median and assessor score are both retained |
+| Evidence coverage | Deliverable reports % of items with qualifying evidence logged; engagements below 60% coverage report the capability score as "self-report-dominant" |
 
 ### 5.5 Peer percentile
 
 | Output | Rule |
 |---|---|
-| Peer set | Industry × region (APAC sub-region) × size band; built by the documented peer-set funnel used in Phase 1 |
+| Peer set | Industry × size band, with region (APAC sub-region) as an **optional** third filter; built by the documented peer-set funnel used in Phase 1. Region is a **required field in every benchmark row** (v0.2 decision 7) so that the filter is always available, even where it is not applied |
 | Minimum n | n ≥ 15 for a peer percentile; otherwise report the **rank within the named peers** with each peer's value shown, labelled "global, peer n insufficient", and no percentile |
 | Populations | Tier-0 self-scored entries (capped ≤ 3, `population = self`) and evidence-gated engagement entries (`population = evidenced`) are different populations and are never pooled into one percentile (`instrument/README.md`) |
-| Percentile | Percentile rank of C within the set; also reported per dimension and for V2/V3 |
+| Percentile | Mid-rank percentile of C within the set (v0.2 decision 6): 100 × (number below + 0.5 × number equal) / n, so tied organisations share one value and a set of identical scores places everyone at the 50th percentile; also reported per dimension and for V2/V3 |
 | Disclosure | n, peer-set definition date and the share of peer entries that are evidence-gated vs self-scored only (free instrument entries) are printed on the scorecard |
+
+### 5.6 Decisions resolved in v0.2
+
+Each of the 12 ambiguities logged by the scorer transcription (appendix) is resolved below. The decision is binding on the markdown, `instrument/instrument-v0.2.yaml` and `instrument/plumbscore` together.
+
+| # | Topic | Decision | Rationale (one line) | Where |
+|---|---|---|---|---|
+| 1 | Band edges | Upper-inclusive closed intervals on the unrounded score: Stagnating ≤25 · Emerging >25–≤50 · Scaling >50–≤75 · Leading >75; "Leading (≥76)" corrected to >75 | Matches the worked check (50.0 = top of Emerging) and leaves no score unassigned | §5.1, §5.2 |
+| 2 | Cap scope | Per response, before aggregation | The web form has no consensus to cap; one rule for both channels, and the stricter one | §1, §5.4 |
+| 3 | Organisation item score | Median of capped responses; mean shown as secondary | Robust to a few enthusiasts or sceptics in a group of 10–30; the mean–median gap remains visible | §5.1 |
+| 4 | Proxy count | Kept as written; §1 now says 1–4 per item; the 10 single-proxy items are marked †; the shared D8.1/D8.2 row split into two | States what exists rather than promising proxies no source yet supports | §1, §3 |
+| 5 | D4.4 evidence | Follow the Ev≥4 column, I (≥2) + O; §7 text corrected | The anchor's L4 ("observable" tool use) needs observation, not interviews alone | §3, §7 |
+| 6 | Percentile ties | Mid-rank: 100 × (below + 0.5 × equal) / n | Tied organisations get one value and the statistic is symmetric | §5.5 |
+| 7 | Region | Optional peer filter; required field in every benchmark row | Most SG/APAC peer sets fall below n = 15 with region applied, but the field must exist to apply it later | §5.5 |
+| 8 | V2 edges | Upper-inclusive on the unrounded share: p < 12 · 12 ≤ p ≤ 39 · 39 < p ≤ 61 · p > 61 | Same convention as the capability bands; band codes and labels unchanged | §4 |
+| 9 | Band target shares | 15 / 45 / 32.5 / 7.5 = 100%; BCG reference restated in table order as 14 / 46 / 35 / 5 | Shares must sum to 100% and be read in the same order as the bands | §5.2 |
+| 10 | V1 ↔ D8.4 | Kept: V1 counts as evidenced only if the D8.4 organisation item score (evidenced view) is ≥3; documented as the instrument's only cross-item dependency | An EBIT share without a documented attribution rule is not evidence of value | §4 |
+| 11 | I (≥2) | Two interview references (or an `interviewees` count ≥2) must be visible in the evidence rows before the I class counts | Makes the "two independent interviewees" rule checkable rather than an attestation | §1, §5.4 |
+| 12 | D3.5 vs D6.6 | Both kept, not merged. D6.6 scores governance of agents (policy, accountable executive, register, approval tiers); D3.5 scores technical controls (identity, credentials, logging, sandbox, kill switch). Anchors rewritten so no control appears in both | Each half of the OWASP ladder is scored once, so agent controls are no longer double-counted | §3 (D3.5, D6.6), D6 coverage check, §4 V4 |
 
 ---
 
@@ -346,7 +389,7 @@ Secondary calibration points: Gartner high-maturity organisations average 4.2–
 | Design | Two assessors score independently from the same evidence pack for ≥10 organisations (≥200 paired ratings) |
 | Statistic | Quadratic-weighted Cohen's κ per item (ordinal scale); plus exact-agreement % |
 | Thresholds | κw ≥ 0.70 accept (human-level agreement benchmark used in the coding-reliability literature, [S20]); 0.50–0.69 rewrite anchors; <0.50 rewrite or drop item |
-| Exit criterion for v0.2 | ≥16 of 20 items at κw ≥ 0.70, no item <0.50 |
+| Exit criterion for v0.3 | ≥16 of 20 items at κw ≥ 0.70, no item <0.50 (v0.2 resolved scoring ambiguities only; it did not run the κ test) |
 
 | # | Item | Why in subset |
 |---|---|---|
@@ -358,7 +401,7 @@ Secondary calibration points: Gartner high-maturity organisations average 4.2–
 | 6 | D3.2 | LLMOps anchors are technical; tests assessor skill variance |
 | 7 | D3.5 | Agent infrastructure (O evidence) |
 | 8 | D4.1 | "Strategy" vs "plan" judgement |
-| 9 | D4.4 | Interview-only item (I evidence) |
+| 9 | D4.4 | Interview + observation item (I (≥2) + O evidence; the only subset item whose Ev≥4 includes both) |
 | 10 | D5.1 | Redesign vs tool insertion — most important discriminator |
 | 11 | D5.4 | Pipeline gate criteria |
 | 12 | D5.5 | Approval-tier anchors |
@@ -416,31 +459,33 @@ Known limits of the proxy layer (carry into every outside-in pre-score): firm-le
 
 ---
 
-## 9. Open items for v0.2
+## 9. Open items for v0.3
 
 | # | Item |
 |---|---|
-| 1 | Run the κ test (§7) on ≥10 organisations; revise anchors failing 0.70 |
+| 1 | Run the κ test (§7) on ≥10 organisations; revise anchors failing 0.70 (D3.5 and D6.6 anchors were rewritten in v0.2 and are both in the κ subset, so their first κ result is on the v0.2 wording) |
 | 2 | Re-fit weights and band thresholds once n≥100 benchmark entries with V1–V3 evidence |
 | 3 | Add APAC regulatory overlays as scoring notes (MAS AIRG dates; Korea AI Basic Act; IMDA agentic MGF) without changing anchors |
-| 4 | Decide whether D3.5 and D6.6 are merged in scoring to avoid double-counting agent controls |
+| 4 | Add a second outside-in proxy to the 10 † items where a validated signal exists; until then they stay marked |
 | 5 | Build the free self-scored web version with the cap rule enforced (all self-only entries display ≤3 per item) |
 
-## Appendix — v0.2 items raised by the scorer transcription (2026-10-25)
+Resolved in v0.2: the former open item "decide whether D3.5 and D6.6 are merged" (decision 12, §5.6).
 
-Found while transcribing to `instrument/instrument-v0.1.yaml`; the scorer's interim choice is noted. Resolve in v0.2 and update both files together.
+## Appendix — v0.1 ambiguities raised by the scorer transcription (2026-10-25), resolved in v0.2
 
-| # | Ambiguity | Scorer interim choice |
-|---|---|---|
-| 1 | Band edges are integer-stated (0–25, 26–50 …) but scored on unrounded values; 25–26, 50–51, 75–76 undefined; "Leading (≥76)" conflicts with upper-inclusive reading | Upper-inclusive edges: ≤25 / ≤50 / ≤75 / >75 |
-| 2 | Cap rule scope: §1 per response vs §5.4 consensus | Per response (stricter) |
-| 3 | No rule for organisation-level item score across 10–30 respondents | Mean of capped rows |
-| 4 | §1 promises 2–4 proxies per item; D1.6, D4.5, D4.6, D5.1, D8.3–8.6 have one; D8.1/8.2 share a row | As written; add proxies in v0.2 |
-| 5 | §7 calls D4.4 interview-only but Ev≥4 column says I(≥2)+O | Follow the Ev≥4 column |
-| 6 | Percentile rank undefined for ties | Mid-rank |
-| 7 | §5.5 peer set includes region; benchmark CSV has no region column | Region optional |
-| 8 | V2 band edges leave 39–40% and 61–62% undefined | Upper-inclusive |
-| 9 | §5.2 target band shares sum to 95–105%; BCG reference listed in reverse order | Fix text in v0.2 |
-| 10 | V1 evidence rule depends on D8.4 ≥3 — only cross-item dependency | Implemented as stated |
-| 11 | "I (≥2 independent interviewees)" not verifiable from one evidence row | Treated as assessor attestation |
-| 12 | Open item: merge D3.5 and D6.6 (agent controls double-count) | Scored separately |
+Found while transcribing to `instrument/instrument-v0.1.yaml`. Every row is now closed by a decision recorded in §5.6 and applied in the body; this table is kept as the audit trail of what the v0.1 scorer did in the meantime.
+
+| # | Ambiguity | v0.1 scorer interim choice | v0.2 decision (§5.6) |
+|---|---|---|---|
+| 1 | Band edges are integer-stated (0–25, 26–50 …) but scored on unrounded values; 25–26, 50–51, 75–76 undefined; "Leading (≥76)" conflicts with upper-inclusive reading | Upper-inclusive edges: ≤25 / ≤50 / ≤75 / >75 | Adopted; table and §5.1 text corrected |
+| 2 | Cap rule scope: §1 per response vs §5.4 consensus | Per response (stricter) | Per response; §5.4 rewritten |
+| 3 | No rule for organisation-level item score across 10–30 respondents | Mean of capped rows | **Changed:** median of capped responses, mean secondary |
+| 4 | §1 promises 2–4 proxies per item; D1.6, D4.5, D4.6, D5.1, D8.3–8.6 have one; D8.1/8.2 share a row | As written; add proxies in v0.2 | §1 says 1–4; † marks; D8.1/D8.2 split |
+| 5 | §7 calls D4.4 interview-only but Ev≥4 column says I(≥2)+O | Follow the Ev≥4 column | Adopted; §7 text corrected |
+| 6 | Percentile rank undefined for ties | Mid-rank | Adopted; formula in §5.5 |
+| 7 | §5.5 peer set includes region; benchmark CSV has no region column | Region optional | Optional filter; **required field** in benchmark rows |
+| 8 | V2 band edges leave 39–40% and 61–62% undefined | Upper-inclusive | Adopted; intervals in §4 |
+| 9 | §5.2 target band shares sum to 95–105%; BCG reference listed in reverse order | Fix text in v0.2 | 15 / 45 / 32.5 / 7.5; BCG 14 / 46 / 35 / 5 |
+| 10 | V1 evidence rule depends on D8.4 ≥3 — only cross-item dependency | Implemented as stated | Kept and documented in §4 |
+| 11 | "I (≥2 independent interviewees)" not verifiable from one evidence row | Treated as assessor attestation | **Changed:** ≥2 interview refs or `interviewees` ≥2 required |
+| 12 | Open item: merge D3.5 and D6.6 (agent controls double-count) | Scored separately | Kept separate; anchors rewritten to remove overlap |

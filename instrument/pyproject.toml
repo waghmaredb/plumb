@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plumbscore"
-version = "0.1.0"
-description = "Scorer for the PLUMB Enterprise AI Maturity Instrument v0.1"
+version = "0.2.0"
+description = "Scorer for the PLUMB Enterprise AI Maturity Instrument v0.2"
 requires-python = ">=3.10"
 dependencies = ["pydantic>=2", "pyyaml>=6"]
 
@@ -20,7 +20,7 @@ plumbscore = "plumbscore.cli:main"
 include = ["plumbscore*"]
 
 [tool.setuptools.package-data]
-plumbscore = ["../instrument-v0.1.yaml"]
+plumbscore = ["../instrument-v0.2.yaml", "../instrument-v0.1.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -200,3 +200,24 @@ def test_cli_rejects_bad_score(tmp_path):
     bad.write_text("respondent_id,role_group,item_id,score,evidence_class,evidence_ref\nR1,exco,D1.1,6,none,\n")
     r = subprocess.run([sys.executable, "-m", "plumbscore", "score", str(bad)], cwd=ROOT, capture_output=True, text=True)
     assert r.returncode != 0 and "outside 1–5" in (r.stderr + r.stdout)
+
+
+def test_benchmark_requires_region(tmp_path):
+    """v0.2 decision 7: region is optional as a filter but required in every benchmark row."""
+    hdr = "org_id,sector,size_band,{}D1,D2,D3,D4,D5,D6,D7,D8,total\n"
+    vals = ",".join(["50"] * 9)
+    p = tmp_path / "b.csv"
+    p.write_text(hdr.format("") + f"O1,banking,large,{vals}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="region"):
+        load_benchmark(p)
+    p.write_text(hdr.format("region,") + f"O1,banking,large,,{vals}\n", encoding="utf-8")
+    with pytest.raises(ValueError, match="empty region"):
+        load_benchmark(p)
+    p.write_text(hdr.format("region,") + f"O1,banking,large,SG,{vals}\n", encoding="utf-8")
+    assert load_benchmark(p)[0].region == "SG"
+
+
+def test_percentile_ties_mid_rank_all_equal():
+    """v0.2 decision 6: tied organisations share one value; an all-equal set places everyone at the 50th."""
+    assert percentile_rank(40, [40, 40, 40, 40]) == 50
+    assert percentile_rank(40, [30, 40, 40, 50]) == 50

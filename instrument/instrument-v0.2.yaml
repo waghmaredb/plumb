@@ -1,0 +1,1058 @@
+# PLUMB Enterprise AI Maturity Instrument v0.2 — machine-readable transcription
+# Source of truth: ../methodology/maturity-instrument.md (v0.2, 2026-10-25).
+# This file is a faithful transcription. v0.2 resolves the 12 ambiguities the
+# v0.1 transcription logged; each is recorded under `decisions_v0_2` (md §5.6)
+# and applied in the fields below. instrument-v0.1.yaml is kept for history.
+
+instrument:
+  name: "Enterprise AI Maturity Instrument"
+  version: "0.2"
+  status: "v0.2 draft — the 12 scorer ambiguities resolved by decision (§5.6); anchors not yet κ-tested (§7)"
+  owner: "Methodology"
+  classification: "Firm IP, shareable with clients under engagement terms"
+  date: "2026-10-25"
+  source_markdown: "methodology/maturity-instrument.md"
+  purpose: >-
+    A two-axis, evidence-gated maturity score (capability 0–100 in four bands;
+    value axis reported separately, never merged) with published anchors,
+    published weights, perception-variance output and peer percentile.
+
+# §1 Structure at a glance
+structure:
+  capability_axis: "8 dimensions × 6 items = 48 items, each 5 anchored levels (1–5)"
+  value_axis: "4 items (V1–V4), reported as a profile beside the capability score, never averaged into it"
+  outside_in_proxies: "1–4 per item (the 10 single-proxy items are marked † in §3); corroborate only, never lift a score (§5.4)"
+  single_proxy_items: [D1.6, D4.5, D4.6, D5.1, D8.1, D8.2, D8.3, D8.4, D8.5, D8.6]
+  organisation_item_score: "Median of the respondents' capped responses; the mean is shown beside it as a secondary statistic (v0.2 decision 3, §5.1)"
+  scorecard_views: "self-view (median of raw self-reports, uncapped) and evidenced view (median of capped responses) side by side; the evidenced view is the score of record"
+  output: "Weighted 0–100 capability score and band (self-view and evidenced view); value-axis profile; per-item σ with flags; peer percentile with n disclosed where the peer set has n ≥ 15 within one population, otherwise rank within named peers (§5.5); evidence coverage %"
+
+level_semantics:
+  1: "absent"
+  2: "ad hoc / pilot"
+  3: "in production with owner, budget, controls (production boundary)"
+  4: "scaled, measured, standardised"
+  5: "embedded in decisions/products, externally evidenced or independently assured"
+
+evidence_classes:
+  D: "document (policy, board paper, assessment report)"
+  S: "system record (logs, dashboards, HRIS/LMS/finance extracts, inventory)"
+  I: "interview (≥2 independent interviewees agree; counts only when verifiable from the evidence rows as ≥2 distinct interview references or an interviewee count ≥2, §5.4)"
+  O: "observation (assessor sees the system, workflow or artefact live)"
+evidence_class_rule: >-
+  The class listed per item is the minimum required to score 4 or 5. Where two
+  are listed (e.g. "D+S"), both are required.
+
+# §5 Scoring specification
+scoring:
+  item_scale: {min: 1, max: 5}
+  response_score_rule: "Integer 1–5 per respondent per item, after the cap rule (§5.4), which is applied to each response before any aggregation (v0.2 decision 2)"
+  organisation_item_score:
+    statistic: median
+    secondary: mean
+    rule: >-
+      Median of the capped responses for the item (with an even number of
+      responses, the midpoint of the two middle values, so half-levels such as
+      2.5 occur); the mean of the capped responses is reported beside it as a
+      secondary statistic and never used in the total (v0.2 decision 3).
+      Assessor adjustment applies to the organisation item score.
+    rationale: "Robust to a few enthusiasts or sceptics in a group of 10–30 respondents; the mean–median gap remains visible"
+  self_view_rule: "The same steps run on the raw (uncapped) responses give the self-view score; the evidenced view is the score of record"
+  dimension_items: 6
+  dimension_min_items_scored: 4
+  dimension_not_scored_rule: >-
+    requires ≥4 of 6 items scored (an item is scored when it has at least one
+    response), otherwise dimension marked "not scored" and its weight
+    renormalised across scored dimensions, with a flag on the output
+  dimension_score_formula: "s_d = (m_d − 1) / 4 × 100"
+  capability_formula: "C = Σ w_d × s_d / 100"
+  rounding: "Report C to one decimal; band assigned on the unrounded value"
+  worked_check: "all 48 items at level 3 → every organisation item score = 3 → every s_d = 50 → C = 50.0 → top of Emerging"
+  leading_requires_weighted_mean_above: 4.0
+  leading_note: "Leading (C > 75) requires a weighted dimension mean above 4.0; all items at exactly 4 give C = 75.0, the top of Scaling"
+
+  # §5.4 Evidence cap rule
+  cap_rule:
+    self_report_cap: 3
+    scope: per_response
+    cap: >-
+      Applied per response (v0.2 decision 2): any respondent's self-report of 4
+      or 5 on an item is recorded at 3 unless an artefact of the item's Ev≥4
+      class is logged against that response in the evidence register with an
+      artefact ID, date and reviewer. Where two classes are listed (e.g.
+      "D+S"), both must be logged. The organisation item score is then the
+      median of the recorded responses (§5.1)
+    lift: >-
+      With the required artefact logged, the response is scored at the level
+      the artefact supports (which may be below the self-report)
+    interview_evidence: >-
+      Where Ev≥4 is D or S, interview agreement alone lifts to at most 3. Where
+      Ev≥4 includes I (D4.4, D7.2, D7.3), the I class counts only when two
+      independent interviewees are verifiable from the evidence rows (v0.2
+      decision 11): either ≥2 distinct interview references are logged on the
+      item's rows, or a row's `interviewees` count is ≥2. A single interview
+      reference does not lift and does not count toward evidence coverage
+    interview_min_independent: 2
+    outside_in_signals: >-
+      Corroborate only. A proxy can be cited to challenge a self-report
+      downward or to pre-populate a draft score, never to lift above 3
+    down_scoring: >-
+      Assessor may score below self-report at any level with a written reason;
+      the respondent median and assessor score are both retained
+    evidence_coverage_rule: >-
+      Deliverable reports % of items with qualifying evidence logged;
+      engagements below 60% coverage report the capability score as
+      "self-report-dominant"
+    evidence_coverage_self_report_dominant_below: 0.60
+
+  # §5.3 Leadership-perception variance
+  variance:
+    respondents_range: "10–30 leaders per organisation"
+    min_respondents_for_sigma: 5
+    below_min_rule: "below 5, report min–max range instead of σ"
+    sigma_type: "population standard deviation of raw self-reported levels across respondents"
+    computed_before_cap: true
+    sigma_flag_threshold: 1.0
+    sigma_flag_label: "perception divergence"
+    sigma_flag_output: "item listed in the deliverable with the respondent roles at each extreme (roles, not names)"
+    alignment_index: "Share of items in the dimension flagged"
+    alignment_not_aligned_share: 0.50
+    alignment_not_aligned_label: "leadership not aligned"
+    exco_gap: "mean(ExCo respondents) − mean(operating-manager respondents) per dimension"
+    exco_gap_flag_abs: 0.75
+    exco_gap_sign_labels: {positive: "ExCo-optimistic", negative: "ExCo-pessimistic"}
+
+  # §5.5 Peer percentile
+  peer_percentile:
+    peer_set: "Industry × size band, with region (APAC sub-region) as an optional third filter; built by the documented peer-set funnel used in Phase 1"
+    region_filter: optional
+    region_required_in_benchmark_rows: true
+    min_n: 15
+    fallback: "report the rank within the named peers with each peer's value shown, labelled \"global, peer n insufficient\", and no percentile"
+    fallback_label: "global, peer n insufficient"
+    percentile: "Mid-rank percentile of C within the set (v0.2 decision 6): 100 × (number below + 0.5 × number equal) / n; also reported per dimension and for V2/V3"
+    tie_rule: mid_rank
+    populations: "Tier-0 self-scored entries (population = self) and evidence-gated engagement entries (population = evidenced) are never pooled into one percentile"
+    disclosure: "n, peer-set definition date and the share of peer entries that are evidence-gated vs self-scored only (free instrument entries) are printed on the scorecard"
+
+# §5.2 Bands
+bands:
+  production_boundary: 50
+  edges: "upper-inclusive closed intervals on the unrounded score (v0.2 decision 1): 0 ≤ C ≤ 25 · 25 < C ≤ 50 · 50 < C ≤ 75 · 75 < C ≤ 100"
+  threshold_policy: "Thresholds are fixed for v0.2; after n≥100 benchmark entries, thresholds (not anchors) are adjusted so Leading = 5–10%"
+  target_shares_sum: "15 + 45 + 32.5 + 7.5 = 100% (v0.2 decision 9); Leading window 5–10%, Scaling the complement within the top 40% (30–35%)"
+  target_share_reference: "BCG 2025 distribution, in band order Stagnating → Leading: 14 / 46 / 35 / 5; IDC 2026 finding that 61.3% sit in the bottom two stages"
+  recalibration_limit: "Any configuration that places >15% of the benchmark in Leading is out of line with every published source and must be re-calibrated"
+  # low is exclusive except for the first band; high is inclusive.
+  list:
+    - {name: "Stagnating", low: 0, high: 25, interval: "0 ≤ C ≤ 25", meaning: "Mostly absent or ad hoc; no production AI with an owner", target_share: "15%"}
+    - {name: "Emerging", low: 25, high: 50, interval: "25 < C ≤ 50", meaning: "Pilots and first production systems; controls and value tracking partial", target_share: "45%"}
+    - {name: "Scaling", low: 50, high: 75, interval: "50 < C ≤ 75", meaning: "Majority of items above the production boundary; standardised methods and measurement", target_share: "32.5% (window 30–35%)"}
+    - {name: "Leading", low: 75, high: 100, interval: "75 < C ≤ 100", meaning: "Embedded in decisions and products, independently evidenced", target_share: "7.5% (window 5–10%)"}
+
+# §2 Capability axis: dimensions and weights
+dimensions:
+  - id: D1
+    name: "Strategy & ambition"
+    weight: 10
+    justification: "Necessary but widely \"highly prepared\" already (Deloitte: 42% rate strategy highly prepared); IDC: \"strategy is outpacing delivery\" [S6]"
+  - id: D2
+    name: "Data foundations"
+    weight: 12
+    justification: "Bain tracks data unreadiness as the growing roadblock; Accenture DM&G is a core capability [S3]"
+  - id: D3
+    name: "Technology & platform (incl. LLMOps/agent infra)"
+    weight: 12
+    justification: "Held below people/process weights deliberately; 2021 review found technology over-weighted at 46% of model attention [S10]"
+  - id: D4
+    name: "Talent & skills"
+    weight: 10
+    justification: "Accenture front-runners show 4x talent maturity; part of the \"70% people/process\" effort share [S3][S1]"
+  - id: D5
+    name: "Operating model & workflow redesign"
+    weight: 14
+    justification: "Strongest single discriminator: McKinsey high performers 2.8x as likely to have redesigned workflows (55% vs 20%) [S4]"
+  - id: D6
+    name: "Governance, risk & compliance"
+    weight: 16
+    justification: "IDC split governance into its own dimension in 2026; MAS AIRG makes it regulatory for FIs from Oct 2027; only 20% have mature agent governance [S6][S14][S7]"
+  - id: D7
+    name: "Culture & adoption"
+    weight: 10
+    justification: "Gartner: BU trust 57% vs 14% between high and low maturity; completes the 70% people/process share with D4+D5 [S5]"
+  - id: D8
+    name: "Value management"
+    weight: 16
+    justification: "Outcome-anchored cuts (McKinsey >5% EBIT; PwC top 20%) are the only ones tied to financials; BCG future-built >60% rigorously track value vs 17% of stagnating [S4][S8][S1]"
+weights_total: 100
+weights_check: "D4+D5+D7 = 34; D6+D8 = 32; D2+D3 = 24; D1 = 10"
+weights_status: "a priori (set in v0.1, unchanged in v0.2); to be re-fitted once the benchmark holds n≥100 scored organisations with an independent outcome measure (value axis V1–V3)"
+
+# §3 Capability items
+# evidence_class_required: set of classes ALL required to score 4 or 5 (from the Ev≥4 column).
+# evidence_class_required_text: the Ev≥4 column verbatim.
+items:
+  # ---------------- D1 Strategy & ambition ----------------
+  - id: D1.1
+    dimension: D1
+    question: "Which statement best describes your organisation's AI ambition?"
+    anchors:
+      1: "No written AI ambition; AI appears only in IT plans"
+      2: "AI referenced in corporate strategy without targets or timeline"
+      3: "Approved AI strategy naming priority use cases and a 12-month plan, with a named sponsor"
+      4: "Multi-year (≥3 yr) ambition with quantified financial targets, reviewed by the board at least annually"
+      5: "AI targets disclosed in investor materials or external guidance and linked to executive remuneration"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (board paper / strategy doc)"
+    kappa_subset: true
+    kappa_reason: "Distinguishing \"strategy\" from \"ambition with targets\" is judgement-heavy"
+    outside_in_proxies:
+      - {signal: "Annual report / 10-K AI paragraph scored on the 1–5 Yu et al. rubric (L1 mention → L5 deep integration)", validation: "[P2] sector corr. 0.76 with Census, 0.87 with Ramp; [P3] AIR Index"}
+      - {signal: "investor-day AI targets", validation: "[P2] sector corr. 0.76 with Census, 0.87 with Ramp; [P3] AIR Index"}
+      - {signal: "earnings-call AI semantic density", validation: "[P2] sector corr. 0.76 with Census, 0.87 with Ramp; [P3] AIR Index"}
+  - id: D1.2
+    dimension: D1
+    question: "Who is accountable for AI outcomes at the top of the organisation?"
+    anchors:
+      1: "No one named"
+      2: "An IT or digital lead by default, no mandate letter"
+      3: "A named executive owner of AI in role ≥6 months with written mandate"
+      4: "Chief AI Officer or equivalent reporting to CEO/COO, with budget authority and a central team"
+      5: "CAIO plus every BU head carrying AI targets in their scorecard"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (org chart + mandate)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "CAIO/CDO on leadership page or LinkedIn", validation: "[P4] future-built 3x as likely to have CAIO, 2x CDO; [P5] 91% of high-maturity orgs have dedicated AI leaders"}
+      - {signal: "reporting line stated in announcements", validation: "[P4] future-built 3x as likely to have CAIO, 2x CDO; [P5] 91% of high-maturity orgs have dedicated AI leaders"}
+      - {signal: "tenure", validation: "[P4] future-built 3x as likely to have CAIO, 2x CDO; [P5] 91% of high-maturity orgs have dedicated AI leaders"}
+  - id: D1.3
+    dimension: D1
+    question: "How is the AI portfolio focused?"
+    anchors:
+      1: "No portfolio view exists"
+      2: ">15 unconnected use cases, no prioritisation record"
+      3: "Prioritised use-case list with an owner per item"
+      4: "2–5 defined domains, each with a sized value pool and domain owner"
+      5: "Portfolio rebalanced at least quarterly on realised value; kill decisions recorded"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (portfolio register)"
+    kappa_subset: true
+    kappa_reason: "Domain focus vs use-case scatter"
+    outside_in_proxies:
+      - {signal: "Count of distinct AI initiatives named in press releases over 12 months (scatter vs focus)", validation: "BCG AI Radar: leaders prioritise ~3.5 use cases vs 6.1 [P10]; no firm-level validation"}
+      - {signal: "recurrence of the same 2–5 themes", validation: "BCG AI Radar: leaders prioritise ~3.5 use cases vs 6.1 [P10]; no firm-level validation"}
+  - id: D1.4
+    dimension: D1
+    question: "How is AI funded?"
+    anchors:
+      1: "No dedicated budget"
+      2: "Funded project-by-project from BU discretionary budgets"
+      3: "Annual AI budget line approved centrally"
+      4: "Multi-year funding with stage gates and documented reallocation between initiatives"
+      5: "AI investment share at or above peer top quartile and disclosed"
+    evidence_class_required: [D, S]
+    evidence_class_required_text: "D+S (budget record)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Disclosed AI spend or share of IT budget", validation: "[P4] avg ~5% of IT budget (APAC 5.2%); [P6] leaders invest 2.5x more of revenue"}
+      - {signal: "capex/opex commentary on AI in results calls", validation: "[P4] avg ~5% of IT budget (APAC 5.2%); [P6] leaders invest 2.5x more of revenue"}
+  - id: D1.5
+    dimension: D1
+    question: "Where does AI sit in your products and services?"
+    anchors:
+      1: "Not in any customer offering"
+      2: "Discussed or prototyped, nothing live"
+      3: "At least one AI-enabled feature live in a customer-facing offering"
+      4: "AI features priced, measured and roadmapped across ≥2 product lines"
+      5: "AI capabilities sold as services or embedded in all core decisions (MIT CISR Stage 4 marker)"
+    evidence_class_required: [O, D]
+    evidence_class_required_text: "O (live product) + D"
+    kappa_subset: true
+    kappa_reason: "Live product boundary (O evidence)"
+    outside_in_proxies:
+      - {signal: "AI features in product pages", validation: "[P1] growth via product innovation (trademarks, product patents); [P4] 3.5x patents"}
+      - {signal: "trademarks and product patents", validation: "[P1] growth via product innovation (trademarks, product patents); [P4] 3.5x patents"}
+      - {signal: "app-store release notes", validation: "[P1] growth via product innovation (trademarks, product patents); [P4] 3.5x patents"}
+  - id: D1.6
+    dimension: D1
+    question: "How does the AI roadmap connect to financial plans?"
+    anchors:
+      1: "No roadmap"
+      2: "Roadmap with no value attached"
+      3: "Roadmap items with owners, dates and a stated expected benefit"
+      4: "Every roadmap item tied to a P&L line on a driver tree"
+      5: "Roadmap reforecast quarterly against realised value with finance sign-off"
+    evidence_class_required: [D, S]
+    evidence_class_required_text: "D (roadmap) + S (finance)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Quantified AI-attributed financials in guidance or results (e.g. \"5–10% of FY EBIT\")", validation: "[P2] rubric L4 = \"expected financial outcomes\"; [P3]"}
+
+  # ---------------- D2 Data foundations ----------------
+  - id: D2.1
+    dimension: D2
+    question: "Who owns your critical data?"
+    anchors:
+      1: "No named owners"
+      2: "IT owns data by default"
+      3: "Named business data owners for the priority AI domains"
+      4: "Enterprise data-owner register with stewardship SLAs covering all critical data domains"
+      5: "Data-ownership KPIs in executive scorecards and reviewed quarterly"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (register)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "CDO presence", validation: "[P4] future-built 2x as likely to have a CDO"}
+      - {signal: "data-governance titles on LinkedIn", validation: "[P4] future-built 2x as likely to have a CDO"}
+  - id: D2.2
+    dimension: D2
+    question: "How is data quality measured?"
+    anchors:
+      1: "Not measured"
+      2: "Checked manually when problems arise"
+      3: "Quality rules monitored for datasets feeding production AI"
+      4: "Quality dashboards with thresholds, alerts and a data-incident process"
+      5: "Quality SLAs enforced contractually, including with external data suppliers"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (dashboard / incident log)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Job postings for data-quality / data-steward roles", validation: "[P1] postings method; no quality-specific validation"}
+      - {signal: "data-quality tooling in technographics", validation: "[P1] postings method; no quality-specific validation"}
+  - id: D2.3
+    dimension: D2
+    question: "How accessible is governed data?"
+    anchors:
+      1: "Silos; extracts by request"
+      2: "Partial warehouse/lake, no catalogue"
+      3: "Governed catalogue covering priority domains with access workflow"
+      4: "Self-serve access with lineage for >70% of critical datasets"
+      5: "Proprietary \"flow\" data products generated continuously by operations/products feed models"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (catalogue coverage)"
+    kappa_subset: true
+    kappa_reason: "Coverage percentage judgement"
+    outside_in_proxies:
+      - {signal: "Data-platform technographics (BuiltWith)", validation: "No published validation"}
+      - {signal: "hyperscaler data-platform case studies naming the firm", validation: "No published validation"}
+  - id: D2.4
+    dimension: D2
+    question: "How ready is your unstructured content for GenAI?"
+    anchors:
+      1: "Not curated"
+      2: "Ad hoc document dumps into a tool"
+      3: "Curated, access-controlled corpus serving ≥1 production retrieval application"
+      4: "Enterprise document governance (classification, retention, access) feeding retrieval for all production GenAI"
+      5: "Usage feedback loops measurably improve corpora (retrieval quality tracked)"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (retrieval eval)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Postings for knowledge-management / retrieval / \"RAG\" roles", validation: "No published validation"}
+      - {signal: "enterprise search vendor case studies", validation: "No published validation"}
+  - id: D2.5
+    dimension: D2
+    question: "Can you trace the provenance of data used by production AI? (ISO 42001 A.7)"
+    anchors:
+      1: "No"
+      2: "Manual notes for some models"
+      3: "Lineage and provenance records for data of priority production systems"
+      4: "Automated lineage and provenance records for all production AI (A.7.5)"
+      5: "Lineage used as audit evidence (internal audit or certification)"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (lineage)"
+    kappa_subset: true
+    kappa_reason: "Provenance completeness (S evidence)"
+    outside_in_proxies:
+      - {signal: "ISO 42001 or ISO 27001 certification announcements", validation: "No published validation"}
+      - {signal: "lineage tooling in technographics", validation: "No published validation"}
+  - id: D2.6
+    dimension: D2
+    question: "How are personal data and cross-border transfers controlled for AI?"
+    anchors:
+      1: "No AI-specific controls"
+      2: "Policy statement only"
+      3: "DPIAs completed for AI uses of personal data"
+      4: "Per-system residency and transfer register with enforced endpoint allowlists"
+      5: "Independently audited (e.g. ISO 27701 / external review)"
+    evidence_class_required: [D, S]
+    evidence_class_required_text: "D (DPIA) + S (register)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Privacy certifications (ISO 27701)", validation: "No published validation"}
+      - {signal: "privacy-notice language on AI", validation: "No published validation"}
+      - {signal: "regulator enforcement history", validation: "No published validation"}
+
+  # ---------------- D3 Technology & platform ----------------
+  - id: D3.1
+    dimension: D3
+    question: "Where does production AI run?"
+    anchors:
+      1: "Nowhere; experiments on laptops or consumer SaaS"
+      2: "Team-level cloud accounts, no SLAs"
+      3: "Production AI on managed infrastructure with SLAs and on-call ownership"
+      4: "Shared AI platform (model gateway, vector store, evaluation service) used by ≥3 business units"
+      5: "Platform cost/performance benchmarked; multi-model routing in place"
+    evidence_class_required: [O, S]
+    evidence_class_required_text: "O (platform) + S"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Hyperscaler partnership announcements", validation: "[P1] AI-skill share of postings"}
+      - {signal: "technographics", validation: "[P1] AI-skill share of postings"}
+      - {signal: "postings for ML-platform engineers", validation: "[P1] AI-skill share of postings"}
+  - id: D3.2
+    dimension: D3
+    question: "How mature are your LLM operations?"
+    anchors:
+      1: "None"
+      2: "Prompts edited by hand in production"
+      3: "Versioned prompts and models with CI for ≥1 production application"
+      4: "Evaluation suites, regression tests and drift monitoring across all production GenAI"
+      5: "Automated rollback and continuous evaluation with sampled human review"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (eval + deployment logs)"
+    kappa_subset: true
+    kappa_reason: "LLMOps anchors are technical; tests assessor skill variance"
+    outside_in_proxies:
+      - {signal: "Postings naming LLMOps / evaluation / observability tooling", validation: "[P1]; Accenture names LLMOps as a gen-AI essential [S3]"}
+      - {signal: "conference talks by engineers", validation: "[P1]; Accenture names LLMOps as a gen-AI essential [S3]"}
+  - id: D3.3
+    dimension: D3
+    question: "Do you reuse AI components?"
+    anchors:
+      1: "No"
+      2: "Informal copy of code between teams"
+      3: "Shared catalogue of ≥5 reusable components (connectors, prompts, agents, guardrails)"
+      4: ">50% of new builds reuse catalogued components"
+      5: "Components have owners, SLAs and usage metrics"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (catalogue + usage)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Public engineering blogs describing internal platforms", validation: "PwC leaders 2.4x reusable catalogued components [S8]; no outside-in validation"}
+      - {signal: "open-source releases", validation: "PwC leaders 2.4x reusable catalogued components [S8]; no outside-in validation"}
+  - id: D3.4
+    dimension: D3
+    question: "How is AI integrated with systems of record?"
+    anchors:
+      1: "Not integrated"
+      2: "Copy/paste between tools"
+      3: "≥1 production AI reads systems of record through governed APIs"
+      4: "AI writes to systems of record under change control and logging"
+      5: "AI embedded in core transaction workflows with event-level audit logs"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (integration logs)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Vendor case studies naming core-system integration", validation: "No published validation"}
+      - {signal: "API marketplace presence", validation: "No published validation"}
+  - id: D3.5
+    dimension: D3
+    question: "What technical controls run on your AI agents (identity, credentials, logging, kill switch)?"
+    anchors:
+      1: "No agents, or agents with no technical controls"
+      2: "Agents run on human or shared credentials"
+      3: "Per-agent identity, tool allowlist and action logs for every production agent"
+      4: "Short-lived task-scoped credentials, sandboxed execution, kill switch tested in the last 6 months"
+      5: "Cryptographic agent identity, tamper-evident audit trails and runtime anomaly detection that contains an agent automatically (OWASP GML Level 4 technical controls)"
+    evidence_class_required: [O, S]
+    evidence_class_required_text: "O (kill-switch test) + S (logs)"
+    kappa_subset: true
+    kappa_reason: "Agent infrastructure (O evidence)"
+    framework_map: ["OWASP Agentic GML 0–4 (technical controls)"]
+    note: "v0.2 decision 12: kept separate from D6.6. D3.5 scores technical controls (identity, credentials, logging, sandbox, kill switch); D6.6 scores governance of agents. No control appears in both."
+    outside_in_proxies:
+      - {signal: "Postings for agent-platform / agent-identity engineers", validation: "[P8] 20% mature agent governance; [P11] BCG 5% full control set"}
+      - {signal: "vendor announcements on agent deployments naming identity or kill-switch controls", validation: "[P8] 20% mature agent governance; [P11] BCG 5% full control set"}
+  - id: D3.6
+    dimension: D3
+    question: "How are AI systems secured against AI-specific threats?"
+    anchors:
+      1: "Not considered"
+      2: "Generic infosec only"
+      3: "Threat model and prompt-injection controls documented per input channel for production systems"
+      4: "Red-team before deployment of material systems; per-inference logs retained ≥90 days"
+      5: "Continuous adversarial testing with measured false-positive/negative rates"
+    evidence_class_required: [D, S]
+    evidence_class_required_text: "D (threat model) + S (logs)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Security certifications", validation: "BCG: 72% report unmanaged AI-security risks [S1]; no outside-in validation"}
+      - {signal: "bug-bounty scope including AI", validation: "BCG: 72% report unmanaged AI-security risks [S1]; no outside-in validation"}
+      - {signal: "CISO statements on AI security", validation: "BCG: 72% report unmanaged AI-security risks [S1]; no outside-in validation"}
+
+  # ---------------- D4 Talent & skills ----------------
+  - id: D4.1
+    dimension: D4
+    question: "Do you have an AI talent strategy?"
+    anchors:
+      1: "No"
+      2: "Hiring reacts to projects"
+      3: "Documented AI role taxonomy and 12-month hiring plan"
+      4: "Strategic workforce plan with quantified skill gaps, funded, covering role redesign"
+      5: "Plan reforecast annually with redesign outcomes tracked (roles changed, hours redeployed)"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (workforce plan)"
+    kappa_subset: true
+    kappa_reason: "\"Strategy\" vs \"plan\" judgement"
+    outside_in_proxies:
+      - {signal: "AI-skill share of job postings over 24 months", validation: "[P1] postings/resumes predict sales, employment, market value; [P7] WTI LinkedIn data"}
+      - {signal: "AI title growth on LinkedIn", validation: "[P1] postings/resumes predict sales, employment, market value; [P7] WTI LinkedIn data"}
+  - id: D4.2
+    dimension: D4
+    question: "How deep is your in-house specialist bench?"
+    anchors:
+      1: "No in-house specialists"
+      2: "Fully vendor-dependent"
+      3: "In-house team covering data science, ML/LLM engineering and AI product"
+      4: "Bench sized to the portfolio with attrition at or below peer"
+      5: "Externally recognised (publications, patents, open-source, speaking)"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (HRIS)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Patents", validation: "[P4] 3.5x patents; GitHub validation is a known gap"}
+      - {signal: "open-source repos under company org", validation: "[P4] 3.5x patents; GitHub validation is a known gap"}
+      - {signal: "conference talks", validation: "[P4] 3.5x patents; GitHub validation is a known gap"}
+      - {signal: "Kaggle/arXiv affiliations", validation: "[P4] 3.5x patents; GitHub validation is a known gap"}
+  - id: D4.3
+    dimension: D4
+    question: "How broad is workforce upskilling?"
+    anchors:
+      1: "None"
+      2: "Optional self-paced content"
+      3: "Role-based curriculum completed by >25% of workforce"
+      4: ">50% completed with assessed competence (not just attendance)"
+      5: "Competence requirements by role, refreshed annually and tied to performance"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (LMS)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Public upskilling commitments (\"train X% of staff\")", validation: "[P4] future-built plan to upskill >50% vs 20%; no outside-in validation"}
+      - {signal: "LinkedIn Learning certificate counts", validation: "[P4] future-built plan to upskill >50% vs 20%; no outside-in validation"}
+  - id: D4.4
+    dimension: D4
+    question: "How AI-literate is the top team?"
+    anchors:
+      1: "No exposure"
+      2: "One-off briefing"
+      3: "Board and ExCo completed a structured AI programme in the last 24 months"
+      4: "ExCo members use AI tools in their own workflow (observable) and challenge AI proposals on evidence"
+      5: "Board includes AI-competent director(s); AI is a standing board agenda item"
+    evidence_class_required: [I, O]
+    evidence_class_required_text: "I (≥2) + O"
+    kappa_subset: true
+    kappa_reason: "Interview + observation item (I (≥2) + O evidence; the only subset item whose Ev≥4 includes both)"
+    note: "v0.2 decision 5: follows the Ev≥4 column, I (≥2) + O; the I class counts only with ≥2 interview references or interviewees ≥2 (decision 11)."
+    outside_in_proxies:
+      - {signal: "Board bios", validation: "No published validation"}
+      - {signal: "annual-report governance section on AI oversight", validation: "No published validation"}
+      - {signal: "director AI committee seats", validation: "No published validation"}
+  - id: D4.5
+    dimension: D4
+    question: "Who translates business need into AI product?"
+    anchors:
+      1: "No one"
+      2: "Analysts informally"
+      3: "Named AI product owner for each production use case"
+      4: "Defined product-owner / translator career path with BU-embedded roles"
+      5: "Product owners carry P&L-linked AI targets"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (role charter)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Postings for \"AI product manager\" / \"analytics translator\"", validation: "[P1]"}
+  - id: D4.6
+    dimension: D4
+    question: "How are AI outcomes incentivised and specialists retained?"
+    anchors:
+      1: "Not addressed"
+      2: "Ad hoc retention payments"
+      3: "AI roles placed in compensation bands benchmarked to market"
+      4: "AI outcomes in BU leader incentive plans"
+      5: "Executive long-term incentives linked to AI targets"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (remuneration policy)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Remuneration report / proxy statement mentions of AI metrics in incentive plans", validation: "No published validation"}
+
+  # ---------------- D5 Operating model & workflow redesign ----------------
+  - id: D5.1
+    dimension: D5
+    question: "Have you redesigned work around AI or layered tools onto existing processes?"
+    anchors:
+      1: "Nothing changed"
+      2: "Tools added to unchanged processes"
+      3: "≥1 end-to-end process redesigned around AI and running in production"
+      4: "Standard redesign method with before/after process maps applied across domains"
+      5: "Processes designed agent-first with human roles explicitly redefined"
+    evidence_class_required: [D, O]
+    evidence_class_required_text: "D (process maps) + O"
+    kappa_subset: true
+    kappa_reason: "Redesign vs tool insertion — most important discriminator"
+    outside_in_proxies:
+      - {signal: "Case studies / results commentary describing \"redesigned\" or \"reinvented\" processes vs \"assistant deployed\"", validation: "McKinsey 55% vs 20% redesign [S4]; no outside-in validation"}
+  - id: D5.2
+    dimension: D5
+    question: "How is AI organised?"
+    anchors:
+      1: "No function"
+      2: "Informal community of practice"
+      3: "Central AI function with written mandate over standards, platform and governance"
+      4: "Hub-and-spoke: central enablement plus BU pods with shared funding"
+      5: "BU P&L owners run AI delivery; central function measured as an enabler"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (operating model doc)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Postings naming \"AI Centre of Excellence\"", validation: "[P5] ~60% of high-maturity centralise strategy, governance, data, infra"}
+      - {signal: "org announcements", validation: "[P5] ~60% of high-maturity centralise strategy, governance, data, infra"}
+  - id: D5.3
+    dimension: D5
+    question: "How is AI delivered?"
+    anchors:
+      1: "Waterfall or none"
+      2: "Pilots run as one-off projects"
+      3: "Persistent product teams releasing production AI at least monthly"
+      4: "Cycle time measured and improving; stage gates with explicit kill criteria"
+      5: "Continuous delivery with an experimentation platform"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (release records)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Engineering blog release cadence", validation: "No published validation"}
+      - {signal: "app release notes frequency", validation: "No published validation"}
+  - id: D5.4
+    dimension: D5
+    question: "How do pilots reach production?"
+    anchors:
+      1: "No pilots"
+      2: "Pilots with no defined path"
+      3: "Written gate criteria: owner, baseline, measurement plan, safety boundary"
+      4: "Time-to-production tracked; median ≤12 months"
+      5: ">60% of initiatives started in the last 24 months are in production"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (portfolio tracker)"
+    kappa_subset: true
+    kappa_reason: "Pipeline gate criteria"
+    outside_in_proxies:
+      - {signal: "Ratio of \"pilot\" to \"deployed/production\" language in press over 24 months", validation: "[P2] rubric distinguishes Pilot (3) from Production (4); [P4] 62% vs 12% deployed"}
+      - {signal: "10-K rubric L3 vs L4", validation: "[P2] rubric distinguishes Pilot (3) from Production (4); [P4] 62% vs 12% deployed"}
+  - id: D5.5
+    dimension: D5
+    question: "How is human oversight designed into AI workflows?"
+    anchors:
+      1: "Not designed"
+      2: "Ad hoc review"
+      3: "Human-in-the-loop points documented per production use case"
+      4: "Approval tiers by reversibility/impact (autonomous / notify / approve) encoded in policy and tooling"
+      5: "Override rates and response times monitored for automation bias"
+    evidence_class_required: [D, S]
+    evidence_class_required_text: "D (tier policy) + S"
+    kappa_subset: true
+    kappa_reason: "Approval-tier anchors"
+    outside_in_proxies:
+      - {signal: "Public statements on human oversight", validation: "No published validation"}
+      - {signal: "regulator disclosures (ATRS-style records where applicable)", validation: "No published validation"}
+  - id: D5.6
+    dimension: D5
+    question: "How is change managed for AI-driven process change?"
+    anchors:
+      1: "No change effort"
+      2: "Communications only"
+      3: "Named process owner and adoption plan per redesigned workflow"
+      4: "Change budget proportional to the people/process share of effort; adoption KPIs tracked"
+      5: "Continuous reinvention cadence with workforce transition plans"
+    evidence_class_required: [D, S]
+    evidence_class_required_text: "D (change plan) + S (KPIs)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Restructuring / role-redesign announcements", validation: "No published validation"}
+      - {signal: "workforce-transition programmes in annual report", validation: "No published validation"}
+
+  # ---------------- D6 Governance, risk & compliance ----------------
+  - id: D6.1
+    dimension: D6
+    question: "Do you run an AI management system? (ISO 42001 cl. 5.2, A.2, A.3; NIST Govern)"
+    anchors:
+      1: "No AI policy"
+      2: "Draft principles, not approved"
+      3: "Approved AI policy and acceptable-use policy; roles and concern-reporting route defined and communicated"
+      4: "Full AIMS: risk methodology, Statement of Applicability, internal audit and management review completed in the last 12 months"
+      5: "Third-party ISO/IEC 42001 certification or equivalent independent assurance"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (policy, SoA, audit report)"
+    kappa_subset: true
+    kappa_reason: "AIMS completeness"
+    framework_map: ["ISO 42001 Annex A: A.2 policies, A.3 roles", "NIST AI RMF Govern"]
+    outside_in_proxies:
+      - {signal: "ISO 42001 certification announcement (accredited body named)", validation: "BCG/MIT SMR: 25% fully mature RAI frameworks [S18]; cert registries not validated as maturity proxy"}
+      - {signal: "published RAI principles page", validation: "BCG/MIT SMR: 25% fully mature RAI frameworks [S18]; cert registries not validated as maturity proxy"}
+      - {signal: "RAI mentioned in annual report risk section", validation: "BCG/MIT SMR: 25% fully mature RAI frameworks [S18]; cert registries not validated as maturity proxy"}
+  - id: D6.2
+    dimension: D6
+    question: "Do you keep an AI inventory with risk tiering? (ISO A.4, A.10; MAS inventory fields; NIST Map)"
+    anchors:
+      1: "No inventory"
+      2: "Partial spreadsheet"
+      3: "Inventory of all production AI with purpose, approved scope, model type, data, dependencies, materiality rating, validation status, owner; third-party AI included"
+      4: "Materiality (impact / complexity / reliance) drives control depth; re-rated on change; rule-based overrides for employment, credit, biometrics"
+      5: "Inventory is a system of record integrated with CMDB; control function signs off ratings"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (inventory extract)"
+    kappa_subset: true
+    kappa_reason: "Inventory field completeness"
+    framework_map: ["ISO 42001 A.4 resources, A.10 supplier/customer", "NIST AI RMF Map", "MAS AIRG materiality, inventory"]
+    outside_in_proxies:
+      - {signal: "Regulator disclosures (ATRS-style records, AIA publications)", validation: "No published validation"}
+      - {signal: "postings for AI risk / model risk roles", validation: "No published validation"}
+  - id: D6.3
+    dimension: D6
+    question: "Are impact and risk assessments performed before deployment? (ISO cl. 6.1.4, A.5; NIST Map)"
+    anchors:
+      1: "Never"
+      2: "Ad hoc for some systems"
+      3: "Impact assessment with individual and societal sections completed for every material system pre-deployment"
+      4: "Documented methodology with triggers and thresholds; reassessment on scope or model change"
+      5: "Assessments published or independently reviewed"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (assessments)"
+    kappa_subset: false
+    framework_map: ["ISO 42001 A.5 impact assessment", "NIST AI RMF Map"]
+    outside_in_proxies:
+      - {signal: "Published impact assessments", validation: "No published validation"}
+      - {signal: "DPIA references in privacy notices", validation: "No published validation"}
+  - id: D6.4
+    dimension: D6
+    question: "How are AI systems tested and validated? (NIST Measure; MAS validation; AI Verify)"
+    anchors:
+      1: "Not tested beyond dev"
+      2: "Developer testing only"
+      3: "Pre-deployment tests for accuracy, fairness, robustness and hallucination documented for material systems"
+      4: "Independent validation for high-materiality systems, periodic re-validation, red-team before release"
+      5: "External assurance or testing (e.g. AI Verify process checks, third-party audit)"
+    evidence_class_required: [D, S]
+    evidence_class_required_text: "D (test reports) + S"
+    kappa_subset: true
+    kappa_reason: "Test vs independent validation boundary"
+    framework_map: ["ISO 42001 A.6 lifecycle (V&V, logging)", "NIST AI RMF Measure", "MAS AIRG independent validation"]
+    outside_in_proxies:
+      - {signal: "AI Verify / third-party testing participation", validation: "No published validation"}
+      - {signal: "bias-audit publications (e.g. NYC LL144)", validation: "No published validation"}
+  - id: D6.5
+    dimension: D6
+    question: "How are production AI systems monitored and incidents handled? (NIST Manage; ISO A.6.2.8, A.8)"
+    anchors:
+      1: "Not monitored"
+      2: "Ad hoc checks"
+      3: "Production monitoring with retained logs; internal AI incident reporting channel exists and is used"
+      4: "KPI/KRI review cadence per system owner; incident runbooks; change control with re-vetting triggers"
+      5: "Incident metrics reported to the board; external adverse-impact reporting route; incident communication plan tested"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (logs, incident register)"
+    kappa_subset: false
+    framework_map: ["ISO 42001 A.6 lifecycle, A.8 information/incident", "NIST AI RMF Manage"]
+    outside_in_proxies:
+      - {signal: "Entries in public AI incident databases", validation: "Deloitte APAC: 2 in 5 lack an incident reporting mechanism [S7]"}
+      - {signal: "regulator actions", validation: "Deloitte APAC: 2 in 5 lack an incident reporting mechanism [S7]"}
+      - {signal: "incident disclosure in annual report", validation: "Deloitte APAC: 2 in 5 lack an incident reporting mechanism [S7]"}
+  - id: D6.6
+    dimension: D6
+    question: "How are your AI agents governed (policy, accountability, approval of agent actions)? (OWASP GML 0–4 governance controls; MAS agentic expectations)"
+    anchors:
+      1: "Agents in use are unknown to governance (GML 0)"
+      2: "Agents piloted under the general AI policy only; no agent-specific approval (GML 1)"
+      3: "Published agent policy; named accountable executive per production agent; agent register (AI-BOM) recording purpose, owner and permitted actions; mandatory human approval for high-impact actions (GML 2)"
+      4: "Approval tiers by action reversibility and impact (autonomous / notify / approve) set per agent in machine-readable policy; register re-reviewed on change; agent incidents run through the AI incident process (GML 3)"
+      5: "Agent governance independently assured; tiers re-set on observed agent behaviour with control-function sign-off; agent risk reported to the board (GML 4)"
+    evidence_class_required: [D, S]
+    evidence_class_required_text: "D (agent policy, register) + S (approval records)"
+    kappa_subset: true
+    kappa_reason: "OWASP ladder mapping"
+    framework_map: ["OWASP Agentic GML 0–4 (governance controls)", "MAS AIRG agentic"]
+    note: "Level n corresponds to OWASP GML n−1 on the governance half of the ladder. v0.2 decision 12: kept separate from D3.5, which scores the technical controls; anchors rewritten so no control appears in both."
+    outside_in_proxies:
+      - {signal: "Public statements on agent deployments with/without governance language (policy, accountable owner, human approval)", validation: "[P8] 20% mature agent governance; [P11] BCG 5% full control set"}
+      - {signal: "postings for agent governance roles", validation: "[P8] 20% mature agent governance; [P11] BCG 5% full control set"}
+
+  # ---------------- D7 Culture & adoption ----------------
+  - id: D7.1
+    dimension: D7
+    question: "What share of employees use sanctioned AI tools?"
+    anchors:
+      1: "<10% monthly"
+      2: "10–25% monthly"
+      3: ">25% monthly on sanctioned tools with telemetry"
+      4: ">50% weekly active"
+      5: ">75% weekly active; usage part of role expectations"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (usage telemetry)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Employee review sites mentioning AI tools", validation: "[P7] WTI uses M365 telemetry; no firm-level public validation"}
+      - {signal: "vendor seat-count announcements", validation: "[P7] WTI uses M365 telemetry; no firm-level public validation"}
+  - id: D7.2
+    dimension: D7
+    question: "How ready are business units to use AI?"
+    anchors:
+      1: "BUs resist or ignore"
+      2: "Isolated champions"
+      3: "≥50% of BUs sponsor an AI use case in production"
+      4: "BU leaders request and co-fund AI initiatives"
+      5: "BU leaders are accountable for AI outcomes in their scorecards"
+    evidence_class_required: [I, D]
+    evidence_class_required_text: "I (≥2 BU leaders) + D"
+    kappa_subset: true
+    kappa_reason: "Interview-based (I evidence)"
+    outside_in_proxies:
+      - {signal: "BU-level AI announcements (not just corporate)", validation: "[P5] 57% vs 14% BU trust"}
+      - {signal: "regional/business-line case studies", validation: "[P5] 57% vs 14% BU trust"}
+  - id: D7.3
+    dimension: D7
+    question: "How does the organisation experiment and learn?"
+    anchors:
+      1: "No experimentation"
+      2: "Ad hoc trials, learnings not captured"
+      3: "Defined experiment process with documented learnings, including failures"
+      4: "Failed experiments reviewed without penalty; stop decisions recorded"
+      5: "Experiment velocity and learning metrics tracked and reported"
+    evidence_class_required: [D, I]
+    evidence_class_required_text: "D (experiment log) + I"
+    kappa_subset: true
+    kappa_reason: "Culture judgement"
+    outside_in_proxies:
+      - {signal: "Hackathon / innovation programme publicity", validation: "No published validation"}
+      - {signal: "engineering blog post-mortems", validation: "No published validation"}
+  - id: D7.4
+    dimension: D7
+    question: "How is unsanctioned (\"shadow\") AI handled?"
+    anchors:
+      1: "Unknown"
+      2: "Banned, not monitored"
+      3: "Sanctioned tools offered, policy published, discovery in place"
+      4: "Shadow use measured and converted to sanctioned tools"
+      5: "Near-zero shadow use with continuous discovery"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (discovery tooling)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Public policy on tool use", validation: "No published validation"}
+      - {signal: "news of bans or sanctioned rollouts", validation: "No published validation"}
+  - id: D7.5
+    dimension: D7
+    question: "How does user feedback shape AI systems?"
+    anchors:
+      1: "No channel"
+      2: "Complaints only"
+      3: "Feedback routed to product teams with response SLAs"
+      4: "User feedback and model performance jointly reviewed on a cadence"
+      5: "Human and AI learning loops both measured (MIT SMR \"augmented learner\" pattern)"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (feedback records)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "App-store review response rates", validation: "No published validation"}
+      - {signal: "public product feedback channels", validation: "No published validation"}
+  - id: D7.6
+    dimension: D7
+    question: "How transparent is AI use toward employees and customers?"
+    anchors:
+      1: "No communication"
+      2: "One-way announcements"
+      3: "Employees informed when AI affects their work; AI interaction disclosed to customers"
+      4: "Employee AI-trust pulse measured and acted on"
+      5: "Co-design with workforce; published commitments with reporting"
+    evidence_class_required: [S, D]
+    evidence_class_required_text: "S (pulse) + D"
+    kappa_subset: false
+    framework_map: ["ISO 42001 A.9 responsible use"]
+    outside_in_proxies:
+      - {signal: "Published AI transparency statements", validation: "No published validation"}
+      - {signal: "union/works-council agreements on AI", validation: "No published validation"}
+
+  # ---------------- D8 Value management ----------------
+  - id: D8.1
+    dimension: D8
+    question: "Do you baseline before deploying AI?"
+    anchors:
+      1: "Never"
+      2: "Anecdotal \"before\" descriptions"
+      3: "System-measured baseline captured before every production deployment"
+      4: "Baselines reviewed and signed by finance"
+      5: "Baselines reused for reforecast and post-implementation review"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (baseline records)"
+    kappa_subset: false
+    note: "v0.2 decision 4: the v0.1 combined \"D8.1–8.2\" proxy row is split; single proxy (†)."
+    outside_in_proxies:
+      - {signal: "Investor-day or results language on \"measured against baseline\"", validation: "DBS example [P12]; no cross-firm validation"}
+  - id: D8.2
+    dimension: D8
+    question: "Do you use control groups or counterfactuals?"
+    anchors:
+      1: "No"
+      2: "Before/after comparison only"
+      3: "Control group or holdout for ≥1 material use case"
+      4: "Standard for all material use cases where feasible; exceptions documented"
+      5: "Experimentation platform with causal methods; results audited"
+    evidence_class_required: [D, S]
+    evidence_class_required_text: "D (method) + S (results)"
+    kappa_subset: true
+    kappa_reason: "Control-group feasibility judgement"
+    note: "v0.2 decision 4: the v0.1 combined \"D8.1–8.2\" proxy row is split; single proxy (†)."
+    outside_in_proxies:
+      - {signal: "Investor-day or results language on \"control groups\" (e.g. DBS reports value in three buckets against control groups)", validation: "DBS example [P12]; no cross-firm validation"}
+  - id: D8.3
+    dimension: D8
+    question: "How is AI value tracked?"
+    anchors:
+      1: "Not tracked"
+      2: "Ad hoc claims"
+      3: "Quarterly tracking per production use case with a named owner"
+      4: "Value ledger reconciled with finance in three buckets: revenue, cost, risk avoided"
+      5: "Value reported in board pack or externally with audit trail"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (ledger)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Quantified AI value in results or investor day (e.g. S$ value, % EBIT)", validation: "[P2] rubric L4/L5; [P3] AIR Index"}
+  - id: D8.4
+    dimension: D8
+    question: "How is value attributed to AI vs other drivers?"
+    anchors:
+      1: "No rule"
+      2: "Claimed by project teams"
+      3: "Documented attribution rule separating AI from other drivers"
+      4: "Finance-approved methodology including haircuts and double-count checks"
+      5: "Independently reviewed (internal audit or external)"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (methodology)"
+    kappa_subset: true
+    kappa_reason: "Attribution rule quality"
+    outside_in_proxies:
+      - {signal: "Audit-committee or CFO statements on AI benefit measurement", validation: "No published validation"}
+  - id: D8.5
+    dimension: D8
+    question: "Do you stop initiatives on evidence?"
+    anchors:
+      1: "Nothing has ever been stopped"
+      2: "Informal"
+      3: "Stop conditions defined per use case at approval"
+      4: "≥1 initiative stopped on evidence in the last 12 months with funds reallocated"
+      5: "Portfolio managed on realised return with regular pruning"
+    evidence_class_required: [D]
+    evidence_class_required_text: "D (decision records)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Announced discontinuations or portfolio pruning", validation: "No published validation"}
+  - id: D8.6
+    dimension: D8
+    question: "Do you know the full cost of running AI?"
+    anchors:
+      1: "Unknown"
+      2: "Build cost only"
+      3: "3-year TCO including run and token costs per use case"
+      4: "Unit economics monitored (cost per transaction or outcome)"
+      5: "Cost per outcome benchmarked and optimised (e.g. model routing)"
+    evidence_class_required: [S]
+    evidence_class_required_text: "S (cost dashboard)"
+    kappa_subset: false
+    outside_in_proxies:
+      - {signal: "Commentary on AI run costs / token spend in results calls", validation: "[P2] notes AI bought as opex; no capex signal"}
+
+# §4 Value axis (reported separately; never merged into the capability score)
+value_axis:
+  output_format: "a four-cell profile (e.g. \"V1 B · V2 40–61% · V3 4 · V4 2\") displayed beside the capability band"
+  value_gap_flag: "raised when capability band is Scaling or Leading but V1 = Band A or V3 ≤ 2"
+  items:
+    - id: V1
+      question: "What share of EBIT in the last fiscal year is attributable to AI, under a finance-approved attribution rule?"
+      scale_type: band
+      scale: ["A", "B", "C"]
+      scale_labels: {A: "none / not measured", B: ">0 and <5%", C: "≥5%"}
+      evidence_required: "S (finance extract) + D (attribution rule, with the D8.4 organisation item score ≥3 in the evidenced view); otherwise recorded as Band A \"not evidenced\""
+      evidence_class_required: [S, D]
+      unevidenced_value: "A"
+      unevidenced_label: "not evidenced"
+      dependency: {item: D8.4, min_level: 3}
+      calibration_anchor: "McKinsey high performers = >5% EBIT + significant value ≈ 6% of respondents; 39% attribute any EBIT impact, most <5% [S4]"
+      note: "v0.2 decision 10: kept, and documented as the instrument's only cross-item dependency. The scorer checks the D8.4 organisation item score (median of capped responses) ≥3."
+    - id: V2
+      question: "Of AI initiatives started in the last 24 months, what share is in production (live, owned, with users)?"
+      scale_type: band
+      scale: ["<12%", "12–39%", "40–61%", "≥62%"]
+      evidence_required: "S (portfolio tracker); self-report capped at the 12–39% band"
+      evidence_class_required: [S]
+      self_report_cap: "12–39%"
+      calibration_anchor: "BCG future-built 62% deployed vs 12% laggards [S1]; Gartner high-maturity 45% of projects ≥3 yrs in production [S5]"
+      share_intervals:
+        - {code: "<12%", low: null, high: 12, high_inclusive: false}
+        - {code: "12–39%", low: 12, low_inclusive: true, high: 39, high_inclusive: true}
+        - {code: "40–61%", low: 39, low_inclusive: false, high: 61, high_inclusive: true}
+        - {code: "≥62%", low: 61, low_inclusive: false, high: null}
+      note: "v0.2 decision 8: upper-inclusive edges on the unrounded share p: p < 12 · 12 ≤ p ≤ 39 · 39 < p ≤ 61 · p > 61. Band codes unchanged; a numeric share in the responses CSV is mapped to its band code."
+    - id: V3
+      question: "How rigorous is value tracking?"
+      scale_type: level
+      scale: [1, 2, 3, 4, 5]
+      scale_labels:
+        1: "none"
+        2: "anecdotal"
+        3: "self-reported metric per use case"
+        4: "system-measured baseline, finance-reconciled"
+        5: "control groups + finance sign-off + audit trail"
+      evidence_required: "S (ledger) for ≥4"
+      evidence_class_required: [S]
+      self_report_cap: 3
+      calibration_anchor: "BCG >60% of future-built rigorously track vs 17% of stagnating [S1]; PwC leaders 80% more likely to systematically track [S8]; DBS three-bucket, control-group model [P12]"
+    - id: V4
+      question: "What is your agent control maturity?"
+      scale_type: level
+      scale: [0, 1, 2, 3, 4]
+      scale_labels: "OWASP Governance Maturity Level 0–4 on the full GML ladder (governance and technical controls together; D6.6 and D3.5 each score one half of it as capability items, V4 records the whole as an outcome and is assessed on its own evidence, with no scoring dependency on either item)"
+      evidence_required: "O (kill-switch test) + S (logs) for ≥3"
+      evidence_class_required: [O, S]
+      self_report_cap: 2
+      calibration_anchor: "Deloitte: 20% mature agent governance [S7]; BCG: 5% have the full control set for agents with decision authority [P11]"
+      note: "GML n corresponds to level n+1 on D6.6 and D3.5, so the V4 cap at 2 is consistent with the level-3 cap on both items."
+
+# §7 Inter-rater reliability test subset (κ)
+kappa:
+  items_count: 20
+  selection: "chosen to cover every dimension and all four evidence classes, weighted toward items most dependent on judgement"
+  design: "Two assessors score independently from the same evidence pack for ≥10 organisations (≥200 paired ratings)"
+  statistic: "Quadratic-weighted Cohen's κ per item (ordinal scale); plus exact-agreement %"
+  thresholds:
+    accept: 0.70
+    rewrite_anchors_low: 0.50
+    rules: "κw ≥ 0.70 accept; 0.50–0.69 rewrite anchors; <0.50 rewrite or drop item"
+  exit_criterion_v0_3: "≥16 of 20 items at κw ≥ 0.70, no item <0.50 (v0.2 resolved scoring ambiguities only; it did not run the κ test)"
+  exit_min_items_accept: 16
+  subset: [D1.1, D1.3, D1.5, D2.3, D2.5, D3.2, D3.5, D4.1, D4.4, D5.1, D5.4, D5.5, D6.1, D6.2, D6.4, D6.6, D7.2, D7.3, D8.2, D8.4]
+
+# §6 Calibration references (leader-share anchors for the Leading band, target 5–10%)
+calibration_references:
+  primary:
+  - {source: "BCG Widening AI Value Gap", leader_definition: "Future-built (>75 on 0–100)", share: "5%", year_n: "2025 / 1,250"}
+  - {source: "Accenture Front-runners", leader_definition: "Reinvention-ready and scaled multiple strategic bets", share: "8%", year_n: "2025 (2024 fieldwork) / 2,000"}
+  - {source: "MIT CISR", leader_definition: "Stage 4 \"AI future-ready\"", share: "7%", year_n: "2024–25 / 721 (2022 survey)"}
+  - {source: "McKinsey State of AI", leader_definition: ">5% EBIT from AI + significant value", share: "~6%", year_n: "2025 / 1,993"}
+  - {source: "IDC MaturityScape", leader_definition: "Optimized (stage 5) · top two stages", share: "3.1% · 12.8%", year_n: "2026 / 1,900"}
+  secondary: "Gartner high-maturity organisations average 4.2–4.5 on a 1–5 scale, low-maturity 1.6–2.2 [S5]; IDC global mean 2.43 on 1–5 [S6]; PwC leaders = top 20% by AI-attributable financial performance, capturing 74% of returns [S8]"
+
+# §5.6 Decisions resolved in v0.2 (one per ambiguity logged by the v0.1 transcription)
+decisions_v0_2:
+  - {id: 1, topic: "Band edges", decision: "Upper-inclusive closed intervals on the unrounded score: Stagnating ≤25 · Emerging >25–≤50 · Scaling >50–≤75 · Leading >75; \"Leading (≥76)\" corrected to >75", rationale: "Matches the worked check (50.0 = top of Emerging) and leaves no score unassigned", v0_1_interim: "Upper-inclusive edges", changed_scoring: false}
+  - {id: 2, topic: "Cap scope", decision: "Per response, before aggregation", rationale: "The web form has no consensus to cap; one rule for both channels, and the stricter one", v0_1_interim: "Per response", changed_scoring: false}
+  - {id: 3, topic: "Organisation item score", decision: "Median of capped responses; mean shown as secondary", rationale: "Robust to a few enthusiasts or sceptics in a group of 10–30; the mean–median gap remains visible", v0_1_interim: "Mean of capped rows", changed_scoring: true}
+  - {id: 4, topic: "Proxy count", decision: "Kept as written; 1–4 per item; the 10 single-proxy items marked †; D8.1/D8.2 shared row split", rationale: "States what exists rather than promising proxies no source yet supports", v0_1_interim: "As written", changed_scoring: false}
+  - {id: 5, topic: "D4.4 evidence", decision: "Follow the Ev≥4 column, I (≥2) + O; §7 text corrected", rationale: "The anchor's L4 (\"observable\" tool use) needs observation, not interviews alone", v0_1_interim: "Follow the Ev≥4 column", changed_scoring: false}
+  - {id: 6, topic: "Percentile ties", decision: "Mid-rank: 100 × (below + 0.5 × equal) / n", rationale: "Tied organisations get one value and the statistic is symmetric", v0_1_interim: "Mid-rank", changed_scoring: false}
+  - {id: 7, topic: "Region", decision: "Optional peer filter; required field in every benchmark row", rationale: "Most SG/APAC peer sets fall below n = 15 with region applied, but the field must exist to apply it later", v0_1_interim: "Region optional", changed_scoring: false}
+  - {id: 8, topic: "V2 edges", decision: "Upper-inclusive on the unrounded share: p < 12 · 12 ≤ p ≤ 39 · 39 < p ≤ 61 · p > 61", rationale: "Same convention as the capability bands; band codes and labels unchanged", v0_1_interim: "Upper-inclusive", changed_scoring: false}
+  - {id: 9, topic: "Band target shares", decision: "15 / 45 / 32.5 / 7.5 = 100%; BCG reference restated in band order as 14 / 46 / 35 / 5", rationale: "Shares must sum to 100% and be read in the same order as the bands", v0_1_interim: "Fix text", changed_scoring: false}
+  - {id: 10, topic: "V1 ↔ D8.4", decision: "Kept: V1 counts as evidenced only if the D8.4 organisation item score (evidenced view) is ≥3; the instrument's only cross-item dependency", rationale: "An EBIT share without a documented attribution rule is not evidence of value", v0_1_interim: "Implemented as stated (on the D8.4 mean)", changed_scoring: true}
+  - {id: 11, topic: "I (≥2)", decision: "Two interview references (or an interviewees count ≥2) must be visible in the evidence rows before the I class counts", rationale: "Makes the \"two independent interviewees\" rule checkable rather than an attestation", v0_1_interim: "Assessor attestation", changed_scoring: true}
+  - {id: 12, topic: "D3.5 vs D6.6", decision: "Both kept, not merged. D6.6 = governance of agents (policy, accountable executive, register, approval tiers); D3.5 = technical controls (identity, credentials, logging, sandbox, kill switch); anchors rewritten so no control appears in both", rationale: "Each half of the OWASP ladder is scored once, so agent controls are no longer double-counted", v0_1_interim: "Scored separately", changed_scoring: true}

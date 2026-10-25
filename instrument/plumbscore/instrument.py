@@ -1,4 +1,8 @@
-"""Load and validate instrument-v0.1.yaml (pydantic models)."""
+"""Load and validate the instrument YAML (pydantic models). Default: instrument-v0.2.yaml.
+
+Change log: v0.2 (2026-10-25) — default instrument v0.2; band intervals; V2 share
+intervals (decision 8); interview minimum (decision 11); decisions register (md §5.6).
+"""
 
 from __future__ import annotations
 
@@ -8,7 +12,9 @@ from typing import Literal, Optional, Union
 import yaml
 from pydantic import BaseModel, Field, field_validator, model_validator
 
-DEFAULT_INSTRUMENT_PATH = Path(__file__).resolve().parent.parent / "instrument-v0.1.yaml"
+INSTRUMENT_DIR = Path(__file__).resolve().parent.parent
+DEFAULT_INSTRUMENT_PATH = INSTRUMENT_DIR / "instrument-v0.2.yaml"
+V0_1_INSTRUMENT_PATH = INSTRUMENT_DIR / "instrument-v0.1.yaml"  # kept for history
 
 EvidenceClass = Literal["D", "S", "I", "O"]
 
@@ -50,6 +56,7 @@ class Band(BaseModel):
     name: str
     low: float
     high: float
+    interval: str = ""  # v0.2: upper-inclusive, e.g. "25 < C ≤ 50"
     meaning: str = ""
     target_share: str = ""
 
@@ -68,6 +75,22 @@ class ValueItem(BaseModel):
     dependency: Optional[dict] = None
     calibration_anchor: str = ""
     note: Optional[str] = None
+    share_intervals: Optional[list[dict]] = None  # V2 only (v0.2 decision 8)
+
+    def band_for_share(self, share: float) -> str:
+        """Map an unrounded share (0–100) to its band code using upper-inclusive
+        edges (v0.2 decision 8): p < 12 · 12 ≤ p ≤ 39 · 39 < p ≤ 61 · p > 61."""
+        if not self.share_intervals:
+            raise ValueError(f"{self.id}: no share intervals defined")
+        if not 0 <= share <= 100:
+            raise ValueError(f"{self.id}: share {share} outside 0–100")
+        for iv in self.share_intervals:
+            lo, hi = iv.get("low"), iv.get("high")
+            lo_ok = lo is None or (share >= lo if iv.get("low_inclusive") else share > lo)
+            hi_ok = hi is None or (share <= hi if iv.get("high_inclusive") else share < hi)
+            if lo_ok and hi_ok:
+                return str(iv["code"])
+        raise ValueError(f"{self.id}: share {share} not covered by the intervals")  # pragma: no cover
 
     def rank(self, value: Union[str, int]) -> int:
         """Position of a value on the ordinal scale (0 = lowest)."""
@@ -84,6 +107,8 @@ class VarianceSpec(BaseModel):
 
 class CapSpec(BaseModel):
     self_report_cap: int = 3
+    scope: str = "per_response"
+    interview_min_independent: int = 2  # v0.2 decision 11
     evidence_coverage_self_report_dominant_below: float = 0.60
 
 
@@ -124,6 +149,7 @@ class Instrument(BaseModel):
     items: list[Item]
     value_axis: dict
     kappa: KappaSpec
+    decisions_v0_2: list[dict] = Field(default_factory=list)
 
     # ---- derived helpers -------------------------------------------------
     @property

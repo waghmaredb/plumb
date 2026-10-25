@@ -2,7 +2,9 @@
 
 Columns: respondent_id, role_group [exco|operating], item_id, score,
 evidence_class [D|S|I|O|none], evidence_ref. Optional: role (free text used
-for the "roles at each extreme" output, §5.3 — roles, not names).
+for the "roles at each extreme" output, §5.3 — roles, not names);
+interviewees (integer: number of independent interviewees covered by the
+row's interview reference — v0.2 decision 11, see below).
 
 Capability items (D1.1–D8.6): score is an integer 1–5.
 Value-axis items (V1–V4) may appear in the same file; their score is the band
@@ -11,6 +13,11 @@ code / level on that item's own scale (e.g. "B", "40–61%", 4, 2).
 evidence_class may list several classes joined by "+" (e.g. "D+S") for items
 whose Ev≥4 column requires two classes; a single response row is then the
 assessor's record that both artefacts are logged.
+
+Interview evidence (v0.2 decision 11, md §5.4): an ``I`` class counts only when
+two independent interviewees are verifiable from the rows — either ≥2 distinct
+``evidence_ref`` values on the item's rows that carry ``I``, or a row whose
+``interviewees`` column is ≥2. The scorer checks this per item.
 """
 
 from __future__ import annotations
@@ -46,6 +53,7 @@ class Response(BaseModel):
     evidence_classes: frozenset[str] = frozenset()
     evidence_ref: str = ""
     role: str = ""
+    interviewees: Optional[int] = None
 
     @field_validator("role_group", mode="before")
     @classmethod
@@ -83,6 +91,19 @@ def _coerce_score(item_id: str, raw: str) -> Union[int, str]:
     return s
 
 
+def _coerce_interviewees(raw) -> Optional[int]:
+    s = ("" if raw is None else str(raw)).strip()
+    if not s:
+        return None
+    try:
+        v = int(float(s))
+    except ValueError as e:
+        raise ValueError(f"interviewees {raw!r} is not an integer") from e
+    if v < 0:
+        raise ValueError(f"interviewees {v} is negative")
+    return v
+
+
 def load_responses(path: Union[str, Path]) -> list[Response]:
     rows: list[Response] = []
     with open(path, newline="", encoding="utf-8") as fh:
@@ -105,6 +126,7 @@ def load_responses(path: Union[str, Path]) -> list[Response]:
                         evidence_classes=parse_evidence_classes(r.get("evidence_class")),
                         evidence_ref=(r.get("evidence_ref") or "").strip(),
                         role=(r.get("role") or "").strip(),
+                        interviewees=_coerce_interviewees(r.get("interviewees")),
                     )
                 )
             except Exception as e:  # re-raise with line number
@@ -121,5 +143,7 @@ def responses_from_records(records: Iterable[dict]) -> list[Response]:
         if "evidence_classes" not in r:
             r["evidence_classes"] = parse_evidence_classes(ec)
         r["score"] = _coerce_score(r["item_id"], str(r["score"]))
+        if "interviewees" in r:
+            r["interviewees"] = _coerce_interviewees(r["interviewees"])
         out.append(Response(**r))
     return out

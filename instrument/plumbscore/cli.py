@@ -16,13 +16,13 @@ from .scoring import score_responses
 
 
 def _build() -> argparse.ArgumentParser:
-    p = argparse.ArgumentParser(prog="plumbscore", description="PLUMB maturity instrument scorer (v0.1)")
-    p.add_argument("--instrument", help="path to instrument YAML (default: bundled instrument-v0.1.yaml)")
+    p = argparse.ArgumentParser(prog="plumbscore", description="PLUMB maturity instrument scorer (instrument v0.2)")
+    p.add_argument("--instrument", help="path to instrument YAML (default: bundled instrument-v0.2.yaml; instrument-v0.1.yaml is kept for history)")
     sub = p.add_subparsers(dest="cmd", required=True)
 
     s = sub.add_parser("score", help="score a response CSV and render a scorecard")
-    s.add_argument("responses", help="CSV: respondent_id, role_group, item_id, score, evidence_class, evidence_ref[, role]")
-    s.add_argument("--benchmark", help="benchmark CSV: org_id, sector, size_band[, region], D1..D8, total[, evidence_gated, as_of, population]")
+    s.add_argument("responses", help="CSV: respondent_id, role_group, item_id, score, evidence_class, evidence_ref[, role, interviewees]")
+    s.add_argument("--benchmark", help="benchmark CSV: org_id, sector, size_band, region, D1..D8, total[, evidence_gated, as_of, population]")
     s.add_argument("--population", choices=["self", "evidenced"], default="evidenced",
                    help="benchmark population to rank against (default: evidenced, i.e. engagement scores). The Tier-0 self-scored pool "
                         "is a different population and is never pooled with it (review 2026-10-25 Blocker 3)")
@@ -71,7 +71,8 @@ def main(argv: list[str] | None = None) -> int:
         if args.json_out:
             Path(args.json_out).write_text(json.dumps(res.model_dump(mode="json"), indent=2, ensure_ascii=False), encoding="utf-8")
         if args.out:
-            print(f"capability {res.capability_score_rounded} · {res.band} · {res.value_profile} · scorecard → {args.out}", file=sys.stderr)
+            print(f"capability {res.capability_score_rounded} · {res.band} (self-view {res.self_view_score_rounded} · {res.self_view_band}) · "
+                  f"{res.value_profile} · scorecard → {args.out}", file=sys.stderr)
         return 0
 
     if args.cmd == "kappa":

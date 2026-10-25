@@ -1,6 +1,6 @@
 """Peer percentile against an anonymised benchmark CSV (§5.5).
 
-Benchmark columns: org_id, sector, size_band, [region], D1..D8, total,
+Benchmark columns: org_id, sector, size_band, region, D1..D8, total,
 [evidence_gated 0/1], [as_of], [population self|evidenced].
 
 Populations (red-team review 2026-10-25, Blocker 3 / §2.3): the free Tier-0
@@ -13,7 +13,12 @@ population is chosen, and when the peer candidates fall below the §5.5
 minimum it returns a **rank within the named peers** (n disclosed) instead of
 a percentile.
 
+Region (v0.2 decision 7): optional as a peer filter, but a **required field in
+every benchmark row** — ``load_benchmark`` refuses a file without a ``region``
+column or with an empty region value. Percentile ties: mid-rank (decision 6).
+
 Change log: 2026-10-25 — population flag, no-pooling rule, rank-within-named-peers (review Blocker 3).
+v0.2 — region required in benchmark rows; mid-rank tie rule now an instrument rule (md §5.5).
 """
 
 from __future__ import annotations
@@ -60,7 +65,12 @@ class BenchmarkRow(BaseModel):
 def load_benchmark(path: Union[str, Path]) -> list[BenchmarkRow]:
     rows: list[BenchmarkRow] = []
     with open(path, newline="", encoding="utf-8") as fh:
-        for r in csv.DictReader(fh):
+        reader = csv.DictReader(fh)
+        if "region" not in (reader.fieldnames or []):
+            raise ValueError(f"{path}: benchmark rows must carry a region column (instrument v0.2 decision 7, §5.5)")
+        for n, r in enumerate(reader, start=2):
+            if not (r.get("region") or "").strip():
+                raise ValueError(f"{path}:{n}: empty region (required in every benchmark row, instrument v0.2 decision 7)")
             dims = {d: float(r[d]) for d in DIM_IDS if r.get(d) not in (None, "")}
             eg = r.get("evidence_gated")
             rows.append(
@@ -82,8 +92,8 @@ def load_benchmark(path: Union[str, Path]) -> list[BenchmarkRow]:
 def percentile_rank(value: float, population: list[float]) -> Optional[float]:
     """Mid-rank percentile: 100 × (below + 0.5 × equal) / n.
 
-    The md says only "percentile rank of C within the set"; mid-rank is the
-    scorer's choice (noted in the YAML).
+    Instrument rule since v0.2 (decision 6, md §5.5): tied organisations share
+    one value.
     """
     n = len(population)
     if n == 0:

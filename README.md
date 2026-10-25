@@ -25,7 +25,7 @@ compliance/    Risk tiers & gates, evidence-pack templates, regulatory status ma
                control-library schema + CSV (CSA AICM v1.1-keyed crosswalk)
 pipeline/      Verification pipeline spec + code: plumbverify (verification layer, 99 tests)
                and plumbresearch (Phase 1 outside-in modules + orchestrator, 46 tests)
-instrument/    Maturity instrument as YAML + plumbscore scorer (46 tests)
+instrument/    Maturity instrument as YAML + plumbscore scorer (75 tests)
 runs/          Real-subject runs (internal artefacts; see each README's "Released / Withheld" line)
 catalogue/     Use-case catalogue schema + 25 seed rows (APAC-weighted, with outcome metrics)
 commercial/    Pricing ladder, engagement charter, engagement-letter clauses, DPA outline,

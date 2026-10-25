@@ -1,4 +1,4 @@
-"""plumbscore — scorer for the PLUMB Enterprise AI Maturity Instrument v0.1.
+"""plumbscore — scorer for the PLUMB Enterprise AI Maturity Instrument v0.2 (reads instrument-v0.2.yaml by default).
 
 Section references (§) point at methodology/maturity-instrument.md.
 """
@@ -26,4 +26,4 @@ __all__ = [
     "render_scorecard",
 ]
 
-__version__ = "0.1.0"
+__version__ = "0.2.0"
