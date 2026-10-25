@@ -152,7 +152,7 @@ Budget indication (external only, 18 months): attestation US$150–250K; data st
 
 ---
 
-## 10. Decisions needed from you
+## 10. Decisions needed from you (resolved 2026-10-25 — see decisions.md; D3 reviewer still open)
 
 1. Wedge segment: Singapore FIs (recommended) vs Australian public-sector suppliers vs broad mid-market.
 2. Vehicle and timing for incorporation and founder-time clearance.
