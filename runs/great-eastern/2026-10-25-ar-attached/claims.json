@@ -1,0 +1,217 @@
+{
+  "subject": "great-eastern",
+  "run_id": "research-b2fa47751026",
+  "claims": [
+    {
+      "id": "great-eastern.ar.annual_report.2025.q1",
+      "text": "In 2025, we deployed an AI-enabled advisory platform that aims to reduce preparation time for financial advisors by approximately 75%, enabling them to focus more on customer engagement and advice.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "In 2025, we deployed an AI-enabled advisory platform that aims to reduce preparation time for financial advisors by approximately 75%, enabling them to focus more on customer engagement and advice.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.6",
+        "D5.4",
+        "D8.3"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): production, quantified"
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.q2",
+      "text": "We rolled out a proprietary AI-powered platform to automate medical claims, enhancing claim efficiency while improving customer experience.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "We rolled out a proprietary AI-powered platform to automate medical claims, enhancing claim efficiency while improving customer experience.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): production"
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.q3",
+      "text": "We are also testing an AI solution for complex underwriting cases to further improve automation and associated efficiency.” Letter to Shareholders Following the allotment and issuance of Bonus Ordinary Shares and Class C Non-Voting Shares on 19 August 2025 pursuant to Great Eastern Holdings' (GEH) one-forone bonus issue (“Bonus Issue”), the total number of issued shares of GEH is twice the number of shares pre-Bonus Issue.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "We are also testing an AI solution for complex underwriting cases to further improve automation and associated efficiency.” Letter to Shareholders Following the allotment and issuance of Bonus Ordinary Shares and Class C Non-Voting Shares on 19 August 2025 pursuant to Great Eastern Holdings' (GEH) one-forone bonus issue (“Bonus Issue”), the total number of issued shares of GEH is twice the number of shares pre-Bonus Issue.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.3",
+        "D1.6",
+        "D8.3"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): quantified, specificity"
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.q4",
+      "text": "Sharpened in-house analytics and AI for underwriting and medical claims to enhance accuracy and consistency, empowering employees to drive continuous improvement through more agile workflows. is the opportunity we provide our people to excel Great GREAT EASTERN HOLDINGS LIMITED 6",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Sharpened in-house analytics and AI for underwriting and medical claims to enhance accuracy and consistency, empowering employees to drive continuous improvement through more agile workflows. is the opportunity we provide our people to excel Great GREAT EASTERN HOLDINGS LIMITED 6",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.3"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): specificity"
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.c1",
+      "text": "NEA is advised by a Waste Management Facility External Advisory Panel comprising senior industry leaders with experience in managing large facilities and operations.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "NEA is advised by a Waste Management Facility External Advisory Panel comprising senior industry leaders with experience in managing large facilities and operations.",
+      "tier": "T2",
+      "instrument_items": [
+        "peer-seed"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.competitors"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "names competitor/peer: NEA"
+    },
+    {
+      "id": "great-eastern.peer.size.prudential-assurance-co-singapore-i527l",
+      "text": "Prudential Assurance Co Singapore (I527L) S$66.3 billion under management as at 31 December 2025 (AUM, not total assets)",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "peer-set",
+      "sources": [
+        "https://www.mas.gov.sg/-/media/mas-media-library/statistics/insurance-statistics/insurance-company-returns/annual_l/i527l/2025/2025.xlsx"
+      ],
+      "passage": null,
+      "tier": "T1",
+      "instrument_items": [
+        "peer-size"
+      ],
+      "signal_ids": [
+        "great-eastern.peerset.core_n"
+      ],
+      "value": null,
+      "unit": "USD bn",
+      "period": null,
+      "note": null
+    },
+    {
+      "id": "great-eastern.peer.size.income-insurance-ltd-i585c",
+      "text": "Income Insurance Ltd (I585C) Total Assets S$44.7 billion (PY24 S$43.4 billion)",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "peer-set",
+      "sources": [
+        "https://www.income.com.sg/getContentAsset/f39850fb-3691-42e4-b8b9-bfb476d651f8/05c6012c-3879-4f1c-b994-00e61e65c363/Income-Insurance-%E2%80%93-Annual-Report-2025.pdf?language=en"
+      ],
+      "passage": null,
+      "tier": "T2",
+      "instrument_items": [
+        "peer-size"
+      ],
+      "signal_ids": [
+        "great-eastern.peerset.core_n"
+      ],
+      "value": 35.0,
+      "unit": "USD bn",
+      "period": null,
+      "note": null
+    },
+    {
+      "id": "great-eastern.peer.size.singapore-life-ltd-singlife-i518c",
+      "text": "Singapore Life Ltd (Singlife, I518C) total assets over S$16 billion (newsroom, undated)",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "peer-set",
+      "sources": [
+        "https://www.mas.gov.sg/-/media/mas/statistics/insurance-returns/life-and-general-business/i518c/2025/2025.xlsx"
+      ],
+      "passage": null,
+      "tier": "T1",
+      "instrument_items": [
+        "peer-size"
+      ],
+      "signal_ids": [
+        "great-eastern.peerset.core_n"
+      ],
+      "value": null,
+      "unit": "USD bn",
+      "period": null,
+      "note": null
+    },
+    {
+      "id": "great-eastern.peer.size.aia-group-whole",
+      "text": "AIA Group (whole) total assets US$345,423 million at 31 December 2025",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "peer-set",
+      "sources": [
+        "https://www.aia.com/content/dam/group-wise/en/docs/investor-relations/2025/AIA%202025%20annual%20report_EN.pdf"
+      ],
+      "passage": null,
+      "tier": "T2",
+      "instrument_items": [
+        "peer-size"
+      ],
+      "signal_ids": [
+        "great-eastern.peerset.core_n"
+      ],
+      "value": 345.0,
+      "unit": "USD bn",
+      "period": null,
+      "note": null
+    }
+  ]
+}
