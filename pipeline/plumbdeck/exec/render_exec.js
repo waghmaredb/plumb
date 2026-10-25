@@ -1,0 +1,318 @@
+// PLUMB executive deck renderer.
+// Input: resolved.json from resolve_storyline.py (every face sentence already checked
+// against released evidence). Output: a 16:9 PowerPoint in the PLUMB executive style.
+// Nothing internal (claim ids, tiers, gap ids, interlock reasons) is rendered here.
+//
+// Usage: node render_exec.js resolved.json out.pptx
+"use strict";
+const fs = require("fs");
+const path = require("path");
+const pptxgen = require("pptxgenjs");
+
+const SKILL = process.env.PPTX_SKILL_DIR || "";
+let applyTheme = null;
+try { if (SKILL) applyTheme = require(path.join(SKILL, "scripts/apply_theme.js")).applyTheme; } catch (e) { applyTheme = null; }
+
+const [, , inFile, outFile] = process.argv;
+const story = JSON.parse(fs.readFileSync(inFile, "utf8"));
+const STATUS = story._status || { final: false, marker: "DRAFT FOR DISCUSSION" };
+
+// ---------------------------------------------------------------- design system
+const COL = {
+  ink: "13233A",       // dominant: titles, dark slides
+  text: "2B3645",      // body
+  muted: "667085",     // captions, sources
+  hair: "D7DCE3",      // hairlines, outlines
+  panel: "F3F5F8",     // quiet panels
+  teal: "0B6E6E",      // brand accent / "in use"
+  slate: "4B6584",     // "developed"
+  amber: "A86B12",     // "testing" / target
+  white: "FFFFFF",
+  onDark: "C9D1DC",
+};
+const F = { head: "Cambria", body: "Arial" };
+const THEME = {
+  name: "PLUMB Executive", headFontFace: F.head, bodyFontFace: F.body,
+  colors: { dk1: COL.ink, lt1: COL.white, dk2: COL.text, lt2: COL.panel,
+    accent1: COL.teal, accent2: COL.slate, accent3: COL.amber, accent4: COL.muted,
+    accent5: COL.hair, accent6: COL.ink, hlink: COL.teal, folHlink: COL.slate },
+};
+const W = 13.333, H = 7.5, MX = 0.6, CW = W - 2 * MX;
+const STATUS_COL = { "In use": COL.teal, "Developed": COL.slate, "Testing": COL.amber };
+
+const pres = new pptxgen();
+pres.layout = "LAYOUT_WIDE";
+pres.author = "PLUMB Advisory";
+pres.company = "PLUMB Advisory";
+pres.title = story.slides[0].title.text;
+pres.theme = { headFontFace: F.head, bodyFontFace: F.body };
+
+const footerLeft = `PLUMB Advisory   |   ${story.client}   |   Discussion document`;
+
+pres.defineSlideMaster({
+  title: "PLUMB_CONTENT",
+  background: { color: COL.white },
+  objects: [
+    { text: { text: footerLeft, options: { x: MX, y: 7.02, w: 8, h: 0.25, fontFace: F.body, fontSize: 8, color: COL.muted, margin: 0 } } },
+  ],
+  slideNumber: { x: W - MX - 0.5, y: 7.02, w: 0.5, h: 0.25, fontFace: F.body, fontSize: 8, color: COL.muted, align: "right" },
+});
+pres.defineSlideMaster({ title: "PLUMB_DARK", background: { color: COL.ink }, objects: [] });
+
+// ---------------------------------------------------------------- helpers
+const t = (el) => (el == null ? "" : typeof el === "string" ? el : el.text);
+
+function plumbMark(s, x, y, len, color, bob) {
+  // brand motif: a plumb line and bob
+  s.addShape(pres.shapes.LINE, { x, y, w: 0, h: len, line: { color, width: 1.25 } });
+  const r = bob || 0.11;
+  s.addShape(pres.shapes.OVAL, { x: x - r / 2, y: y + len, w: r, h: r * 1.25, fill: { color }, line: { color, width: 0 } });
+}
+
+function draftMarker(s, dark) {
+  if (!STATUS.marker) return;
+  s.addText(STATUS.marker, {
+    x: W - MX - 2.1, y: 0.32, w: 2.1, h: 0.28, isTextBox: true,
+    fontFace: F.body, fontSize: 8, bold: true, charSpacing: 1.5, align: "center", valign: "middle",
+    color: dark ? COL.onDark : COL.muted,
+    shape: pres.shapes.ROUNDED_RECTANGLE, rectRadius: 0.06, line: { color: dark ? COL.onDark : COL.hair, width: 0.75 },
+  });
+}
+
+function titleLines(txt) { return txt.length > 80 ? 2 : 1; }
+function contentTop(sl) { return titleLines(t(sl.title)) === 2 ? 2.05 : 1.6; }
+
+// text over a shape: draw the shape, then a separate zero-margin text box inside it
+function onShape(s, shape, box, text, txt) {
+  s.addShape(shape, { x: box.x, y: box.y, w: box.w, h: box.h, fill: { color: box.fill }, line: { color: box.line || box.fill, width: box.lineW || 0 } });
+  s.addText(txt, Object.assign({ x: box.x + (box.padL || 0.2), y: box.y, w: box.w - (box.padL || 0.2) - (box.padR || 0.2), h: box.h,
+    isTextBox: true, margin: 0, fontFace: F.body, valign: "middle" }, text));
+}
+
+function frame(sl, slideIdx) {
+  const s = pres.addSlide({ masterName: "PLUMB_CONTENT" });
+  plumbMark(s, MX + 0.04, 0.36, 0.17, COL.teal, 0.08);
+  s.addText((sl.section || "").toUpperCase(), {
+    x: MX + 0.22, y: 0.33, w: 7, h: 0.3, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 9.5, bold: true, color: COL.teal, charSpacing: 1.5, valign: "middle",
+  });
+  draftMarker(s, false);
+  s.addText(t(sl.title), {
+    x: MX, y: 0.78, w: CW - 0.4, h: 1.05, isTextBox: true, margin: 0,
+    fontFace: F.head, fontSize: 25, color: COL.ink, valign: "top", paraSpaceAfter: 0,
+  });
+  if (sl._source) {
+    s.addText(sl._source, { x: MX, y: 6.66, w: CW, h: 0.26, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 8.5, color: COL.muted, valign: "bottom" });
+  }
+  return s;
+}
+
+// ---------------------------------------------------------------- layouts
+function cover(sl) {
+  const s = pres.addSlide({ masterName: "PLUMB_DARK" });
+  draftMarker(s, true);
+  plumbMark(s, 10.6, 0.0, 4.55, COL.teal, 0.32);
+  s.addText(t(sl.eyebrow).toUpperCase(), { x: MX + 0.2, y: 1.75, w: 8.8, h: 0.35, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 12, bold: true, color: "5FB3B0", charSpacing: 2 });
+  s.addText(t(sl.title), { x: MX + 0.2, y: 2.2, w: 8.9, h: 2.2, isTextBox: true, margin: 0,
+    fontFace: F.head, fontSize: 40, color: COL.white, valign: "top" });
+  s.addText(`${t(sl.subtitle)}  ·  ${story.date_label}`, { x: MX + 0.2, y: 4.55, w: 8.9, h: 0.4, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 15, color: COL.onDark });
+  s.addText(t(sl.footnote), { x: MX + 0.2, y: 6.45, w: 8.9, h: 0.5, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 9.5, color: "8C99AA", valign: "bottom" });
+  s.addText("PLUMB ADVISORY", { x: W - MX - 2.6, y: 6.6, w: 2.6, h: 0.35, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 10, bold: true, color: COL.onDark, charSpacing: 3, align: "right" });
+}
+
+function execSummary(sl, i) {
+  const s = frame(sl, i);
+  const top = contentTop(sl) + 0.05, rowH = 1.18;
+  sl.points.forEach((p, k) => {
+    const y = top + k * rowH;
+    if (k > 0) s.addShape(pres.shapes.LINE, { x: MX, y: y - 0.12, w: CW, h: 0, line: { color: COL.hair, width: 0.75 } });
+    s.addText(String(k + 1), { x: MX, y, w: 0.6, h: 0.75, isTextBox: true, margin: 0,
+      fontFace: F.head, fontSize: 38, color: COL.teal, valign: "top" });
+    s.addText(t(p.head), { x: MX + 0.85, y, w: CW - 0.85, h: 0.36, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 16, bold: true, color: COL.ink, valign: "top" });
+    s.addText(t(p.body), { x: MX + 0.85, y: y + 0.4, w: CW - 1.6, h: 0.62, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 14, color: COL.text, valign: "top" });
+  });
+  const cy = top + 3 * rowH + 0.05;
+  onShape(s, pres.shapes.RECTANGLE, { x: MX, y: cy, w: CW, h: 0.55, fill: COL.panel, padL: 0.25 },
+    { fontSize: 13 }, [{ text: "Next   ", options: { bold: true, color: COL.teal } }, { text: t(sl.callout), options: { color: COL.ink } }]);
+}
+
+function chip(s, x, y, status) {
+  const c = STATUS_COL[status] || COL.muted;
+  s.addText(status.toUpperCase(), { x, y, w: 1.05, h: 0.24, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 7.5, bold: true, color: COL.white, charSpacing: 1, align: "center", valign: "middle",
+    shape: pres.shapes.ROUNDED_RECTANGLE, rectRadius: 0.05, fill: { color: c }, line: { color: c, width: 0 } });
+}
+
+function valueChain(sl, i) {
+  const s = frame(sl, i);
+  const n = sl.stages.length, gap = 0.12, cw = (CW - gap * (n - 1)) / n, top = contentTop(sl);
+  sl.stages.forEach((st, k) => {
+    const x = MX + k * (cw + gap);
+    onShape(s, k === 0 ? pres.shapes.PENTAGON : pres.shapes.CHEVRON,
+      { x, y: top, w: cw + (k < n - 1 ? 0.1 : 0), h: 0.5, fill: "E3E8EE", padL: k === 0 ? 0.16 : 0.4, padR: 0.3 },
+      { fontSize: 12, bold: true, color: COL.ink }, st.name);
+    let y = top + 0.68;
+    st.items.forEach((it) => {
+      const h = 1.22;
+      s.addShape(pres.shapes.RECTANGLE, { x, y, w: cw, h, fill: { color: COL.white }, line: { color: COL.hair, width: 0.75 } });
+      chip(s, x + 0.14, y + 0.14, it.status);
+      s.addText(it.text, { x: x + 0.14, y: y + 0.44, w: cw - 0.28, h: h - 0.52, isTextBox: true, margin: 0,
+        fontFace: F.body, fontSize: 12, color: COL.text, valign: "top" });
+      y += h + 0.14;
+    });
+  });
+  // legend
+  const ly = 6.08;
+  let lx = MX;
+  ["In use", "Developed", "Testing"].forEach((st) => { chip(s, lx, ly, st); lx += 1.2; });
+  s.addText(t(sl.legend_note), { x: lx + 0.1, y: ly - 0.06, w: CW - (lx - MX) - 0.1, h: 0.38, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 9.5, color: COL.muted, valign: "middle" });
+}
+
+function twoStats(sl, i) {
+  const s = frame(sl, i);
+  const gap = 0.35, cw = (CW - gap) / 2, top = contentTop(sl), h = 3.45;
+  sl.stats.forEach((st, k) => {
+    const x = MX + k * (cw + gap);
+    const isTarget = /TARGET/.test(st.tag);
+    s.addShape(pres.shapes.RECTANGLE, { x, y: top, w: cw, h, fill: { color: COL.panel }, line: { color: COL.panel, width: 0 } });
+    const c = isTarget ? COL.amber : COL.teal;
+    s.addText(st.tag, { x: x + 0.4, y: top + 0.35, w: 1.6, h: 0.28, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 8.5, bold: true, color: COL.white, charSpacing: 1.5, align: "center", valign: "middle",
+      shape: pres.shapes.ROUNDED_RECTANGLE, rectRadius: 0.05, fill: { color: c }, line: { color: c, width: 0 } });
+    s.addText(st.value, { x: x + 0.38, y: top + 0.75, w: cw - 0.8, h: 1.15, isTextBox: true, margin: 0,
+      fontFace: F.head, fontSize: 66, color: COL.ink, valign: "middle" });
+    s.addText(t(st.label), { x: x + 0.4, y: top + 1.95, w: cw - 0.8, h: 0.7, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 17, bold: true, color: COL.ink, valign: "top" });
+    s.addText(t(st.detail), { x: x + 0.4, y: top + 2.7, w: cw - 0.8, h: 0.6, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 13, color: COL.text, valign: "top" });
+  });
+  onShape(s, pres.shapes.RECTANGLE, { x: MX, y: top + h + 0.3, w: CW, h: 0.75, fill: COL.white, line: COL.hair, lineW: 0.75, padL: 0.25, padR: 0.3 },
+    { fontSize: 14 }, [{ text: "So what   ", options: { bold: true, color: COL.teal } }, { text: t(sl.so_what), options: { color: COL.ink } }]);
+}
+
+function timeline(sl, i) {
+  const s = frame(sl, i);
+  const bt = contentTop(sl), blockH = 3.6, off = Math.min(0.3, Math.max(0, (6.45 - bt - blockH) / 2));
+  const x0 = MX, x1 = 8.55, ly = bt + off + 0.95, n = sl.events.length;
+  s.addShape(pres.shapes.LINE, { x: x0 + 0.1, y: ly, w: x1 - x0 - 0.2, h: 0, line: { color: COL.hair, width: 2 } });
+  const step = (x1 - x0) / n;
+  sl.events.forEach((ev, k) => {
+    const cx = x0 + step * k + 0.12;
+    const r = ev.emphasis ? 0.3 : 0.22;
+    s.addShape(pres.shapes.OVAL, { x: cx, y: ly - r / 2, w: r, h: r,
+      fill: { color: ev.emphasis ? COL.teal : COL.white }, line: { color: COL.teal, width: 1.75 } });
+    s.addText(ev.when, { x: cx, y: ly - 0.78, w: step - 0.15, h: 0.4, isTextBox: true, margin: 0,
+      fontFace: F.head, fontSize: 18, bold: false, color: ev.emphasis ? COL.teal : COL.ink, valign: "bottom" });
+    s.addText(t(ev.text), { x: cx, y: ly + 0.35, w: step - 0.2, h: 2.4, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 13, bold: !!ev.emphasis, color: COL.text, valign: "top" });
+  });
+  // aside
+  const ax = 9.05, aw = W - MX - ax, ay = bt + off, ah = blockH;
+  s.addShape(pres.shapes.RECTANGLE, { x: ax, y: ay, w: aw, h: ah, fill: { color: COL.ink }, line: { color: COL.ink, width: 0 } });
+  s.addText(t(sl.aside.head).toUpperCase(), { x: ax + 0.35, y: ay + 0.35, w: aw - 0.7, h: 0.3, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 9.5, bold: true, color: "5FB3B0", charSpacing: 1.5 });
+  s.addText(t(sl.aside.body), { x: ax + 0.35, y: ay + 0.8, w: aw - 0.7, h: 1.5, isTextBox: true, margin: 0,
+    fontFace: F.head, fontSize: 22, italic: true, color: COL.white, valign: "top" });
+  s.addText(t(sl.aside.note), { x: ax + 0.35, y: ay + ah - 1.1, w: aw - 0.7, h: 0.8, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 12.5, color: COL.onDark, valign: "bottom" });
+}
+
+function twoColumns(sl, i) {
+  const s = frame(sl, i);
+  const gap = 0.35, cw = (CW - gap) / 2, top = contentTop(sl) + 0.1, h = 3.75;
+  [["left", false], ["right", true]].forEach(([key, quiet], k) => {
+    const col = sl[key], x = MX + k * (cw + gap);
+    s.addShape(pres.shapes.RECTANGLE, { x, y: top, w: cw, h,
+      fill: { color: quiet ? COL.panel : COL.white }, line: { color: quiet ? COL.panel : COL.hair, width: 0.75 } });
+    s.addText(col.head, { x: x + 0.35, y: top + 0.28, w: cw - 0.7, h: 0.4, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 15, bold: true, color: COL.ink });
+    col.items.forEach((it, j) => {
+      const y = top + 0.9 + j * 0.68;
+      if (quiet) {
+        s.addShape(pres.shapes.OVAL, { x: x + 0.37, y: y + 0.06, w: 0.2, h: 0.2, fill: { color: COL.panel }, line: { color: COL.muted, width: 1.25 } });
+      } else {
+        s.addShape(pres.shapes.OVAL, { x: x + 0.37, y: y + 0.06, w: 0.2, h: 0.2, fill: { color: COL.teal }, line: { color: COL.teal, width: 0 } });
+      }
+      s.addText(t(it), { x: x + 0.75, y, w: cw - 1.1, h: 0.6, isTextBox: true, margin: 0,
+        fontFace: F.body, fontSize: 14, color: COL.text, valign: "top" });
+    });
+  });
+  s.addText(t(sl.footnote), { x: MX, y: top + h + 0.15, w: CW, h: 0.5, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 9.5, italic: true, color: COL.muted, valign: "top" });
+}
+
+function questions(sl, i) {
+  const s = frame(sl, i);
+  const top = contentTop(sl) + 0.25, rowH = 0.9;
+  sl.questions.forEach((q, k) => {
+    const y = top + k * rowH;
+    if (k > 0) s.addShape(pres.shapes.LINE, { x: MX, y: y - 0.1, w: CW, h: 0, line: { color: COL.hair, width: 0.75 } });
+    s.addText(String(k + 1), { x: MX, y, w: 0.5, h: 0.6, isTextBox: true, margin: 0,
+      fontFace: F.head, fontSize: 26, color: COL.teal, valign: "top" });
+    s.addText(q.topic.toUpperCase(), { x: MX + 0.6, y: y + 0.1, w: 1.9, h: 0.3, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 9.5, bold: true, color: COL.teal, charSpacing: 1.5 });
+    s.addText(q.text, { x: MX + 2.6, y: y + 0.02, w: CW - 2.6, h: 0.66, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 16, color: COL.ink, valign: "top" });
+  });
+}
+
+function proposal(sl, i) {
+  const s = frame(sl, i);
+  const gap = 0.3, n = sl.columns.length, cw = (CW - gap * (n - 1)) / n, top = contentTop(sl) + 0.1, h = 1.95;
+  sl.columns.forEach((c, k) => {
+    const x = MX + k * (cw + gap);
+    s.addShape(pres.shapes.RECTANGLE, { x, y: top, w: cw, h, fill: { color: COL.panel }, line: { color: COL.panel, width: 0 } });
+    s.addText(c.head, { x: x + 0.3, y: top + 0.25, w: cw - 0.6, h: 0.4, isTextBox: true, margin: 0,
+      fontFace: F.head, fontSize: 19, color: COL.teal });
+    s.addText(c.body, { x: x + 0.3, y: top + 0.75, w: cw - 0.6, h: 1.1, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 13.5, color: COL.text, valign: "top" });
+  });
+  const py = top + h + 0.4, pn = sl.phases.length, pw = CW / pn;
+  sl.phases.forEach((p, k) => {
+    const x = MX + k * pw;
+    onShape(s, k === 0 ? pres.shapes.PENTAGON : pres.shapes.CHEVRON,
+      { x, y: py, w: pw + (k < pn - 1 ? 0.12 : 0), h: 0.95, fill: k === pn - 1 ? COL.teal : COL.ink, padL: k === 0 ? 0.3 : 0.6, padR: 0.45 },
+      { color: COL.white },
+      [{ text: p.when, options: { bold: true, fontSize: 13, breakLine: true } }, { text: p.what, options: { fontSize: 12 } }]);
+  });
+  s.addText(t(sl.ask), { x: MX, y: py + 1.2, w: CW, h: 0.4, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 13, color: COL.ink, valign: "top" });
+}
+
+function about(sl, i) {
+  const s = frame(sl, i);
+  const gap = 0.35, cw = (CW - gap) / 2, top = contentTop(sl) + 0.1, rh = 1.95;
+  sl.blocks.forEach((b, k) => {
+    const x = MX + (k % 2) * (cw + gap), y = top + Math.floor(k / 2) * (rh + 0.25);
+    const isStatus = b.head === "Status";
+    s.addShape(pres.shapes.RECTANGLE, { x, y, w: cw, h: rh,
+      fill: { color: isStatus && !STATUS.final ? "FBF6EC" : COL.panel }, line: { color: COL.panel, width: 0 } });
+    s.addText(b.head, { x: x + 0.3, y: y + 0.25, w: cw - 0.6, h: 0.35, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 13, bold: true, color: isStatus && !STATUS.final ? COL.amber : COL.teal });
+    s.addText(b.body, { x: x + 0.3, y: y + 0.68, w: cw - 0.6, h: rh - 0.85, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 13.5, color: COL.text, valign: "top" });
+  });
+}
+
+const LAYOUTS = { cover, exec_summary: execSummary, value_chain: valueChain, two_stats: twoStats,
+  timeline, two_columns: twoColumns, questions, proposal, about };
+
+story.slides.forEach((sl, i) => {
+  const fn = LAYOUTS[sl.layout];
+  if (!fn) throw new Error(`unknown layout ${sl.layout}`);
+  fn(sl, i);
+});
+
+(async () => {
+  await pres.writeFile({ fileName: outFile });
+  if (applyTheme) await applyTheme(outFile, THEME);
+  console.log(`wrote ${outFile} (${story.slides.length} slides, ${STATUS.final ? "FINAL" : STATUS.marker})`);
+})();

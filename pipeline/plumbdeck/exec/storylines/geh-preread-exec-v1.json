@@ -1,0 +1,156 @@
+{
+  "deck_id": "PLUMB-GEH-PREREAD",
+  "version": "1.0",
+  "client": "Great Eastern Holdings",
+  "audience": "Group CEO, COO, Chief Data & AI officer, CRO — pre-read before a first meeting",
+  "as_at": "FY2025 Annual Report",
+  "source_doc": "Great Eastern Holdings Annual Report FY2025",
+  "date_label": "October 2026",
+  "notes": "Every face sentence carries kind + support. kind=synthesis must be entailed by the cited released claims; kind=quote is verbatim; kind=question/offer/method are not findings. Resolver refuses any support id that is not released.",
+  "slides": [
+    {
+      "id": "cover",
+      "layout": "cover",
+      "eyebrow": {"kind": "label", "text": "Great Eastern Holdings"},
+      "title": {"kind": "label", "text": "AI at Great Eastern: momentum, transition and the questions ahead"},
+      "subtitle": {"kind": "label", "text": "An outside-in view from public disclosures  ·  Discussion document"},
+      "footnote": {"kind": "method", "text": "Prepared by PLUMB Advisory from Great Eastern’s FY2025 Annual Report only. Not reviewed by Great Eastern. No management input."}
+    },
+    {
+      "id": "exec-summary",
+      "layout": "exec_summary",
+      "section": "Executive summary",
+      "title": {"kind": "synthesis", "text": "Great Eastern has put AI to work in advice and claims; sustaining it now depends on leadership and governance clarity",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.leadership.1", "great-eastern.findings.leadership.successor", "great-eastern.findings.governance.1"]},
+      "points": [
+        {"head": {"kind": "synthesis", "text": "AI is already in production where it touches customers most",
+           "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2"]},
+         "body": {"kind": "synthesis", "text": "Great Eastern has deployed an AI advisory platform for its financial advisers and rolled out a proprietary platform that automates medical claims; in 2025, 75% of medical claims were turned around the same day.",
+           "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.deploy.4"]}},
+        {"head": {"kind": "synthesis", "text": "The leadership seat behind it was in transition",
+           "support": ["great-eastern.findings.leadership.1", "great-eastern.findings.leadership.successor"]},
+         "body": {"kind": "synthesis", "text": "The report states that the Managing Director, Group Data and AI, was expected to join OCBC in March 2026, with a successor to be named in due course.",
+           "support": ["great-eastern.findings.leadership.1", "great-eastern.findings.leadership.successor"]}},
+        {"head": {"kind": "synthesis", "text": "Governance of AI is asserted, but its framework is not described",
+           "support": ["great-eastern.findings.governance.1"]},
+         "body": {"kind": "synthesis", "text": "The report commits to “discipline and robust governance” as AI use expands, but does not set out an AI risk framework, inventory or accountable owner.",
+           "support": ["great-eastern.findings.governance.1"], "observation": "governance-absence"}}
+      ],
+      "callout": {"kind": "label", "text": "Five questions would turn this view into a basis for decisions — page 7"}
+    },
+    {
+      "id": "value-chain",
+      "layout": "value_chain",
+      "section": "Where AI is in use",
+      "title": {"kind": "synthesis", "text": "AI now spans the policy lifecycle, from advice to claims, with complex underwriting still in testing",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.deploy.3", "great-eastern.findings.deploy.4", "great-eastern.findings.deploy.5", "great-eastern.findings.deploy.6", "great-eastern.findings.deploy.7", "great-eastern.findings.governance.2"]},
+      "stages": [
+        {"name": "Advice & distribution", "items": [
+          {"text": "AI advisory platform for financial advisers", "status": "In use", "verb": "deployed", "support": ["great-eastern.findings.deploy.1"]}]},
+        {"name": "Underwriting", "items": [
+          {"text": "In-house analytics and AI for underwriting", "status": "In use", "verb": "sharpened", "support": ["great-eastern.ar.annual_report.2025.q6"], "pages": [8]},
+          {"text": "AI for complex underwriting cases", "status": "Testing", "verb": "testing", "support": ["great-eastern.findings.deploy.3"]}]},
+        {"name": "Onboarding", "items": [
+          {"text": "AI customer segmentation for instant approvals (Great CareShield)", "status": "In use", "verb": "leveraged", "support": ["great-eastern.findings.deploy.5"]}]},
+        {"name": "Claims", "items": [
+          {"text": "Proprietary platform automating medical claims", "status": "In use", "verb": "rolled out", "support": ["great-eastern.findings.deploy.2"]},
+          {"text": "Medical-bill OCR to detect wastage and abuse (Malaysia)", "status": "Developed", "verb": "developed", "support": ["great-eastern.findings.deploy.6"]}]},
+        {"name": "Risk & conduct", "items": [
+          {"text": "AI monitoring of transactions and sales for compliance risk", "status": "In use", "verb": "continuously monitoring", "support": ["great-eastern.findings.governance.2"]},
+          {"text": "AI model to identify potential misconduct", "status": "Developed", "verb": "developed", "support": ["great-eastern.findings.deploy.7"]}]}
+      ],
+      "legend_note": {"kind": "method", "text": "Status uses Great Eastern’s own verb for each initiative: deployed, rolled out, leveraged, sharpened or monitoring = in use; developed = developed; testing = testing."}
+    },
+    {
+      "id": "outcomes",
+      "layout": "two_stats",
+      "section": "Reported outcomes",
+      "title": {"kind": "synthesis", "text": "Reported outcomes are material, but one is a result and the other a target",
+        "support": ["great-eastern.findings.deploy.4", "great-eastern.findings.deploy.1"]},
+      "stats": [
+        {"value": "75%", "tag": "RESULT · 2025", "label": {"kind": "synthesis", "text": "of medical claims turned around the same day", "support": ["great-eastern.findings.deploy.4"]},
+         "detail": {"kind": "synthesis", "text": "“One of the fastest among Singapore’s health insurers”, based on Ministry of Health service indicators", "support": ["great-eastern.findings.deploy.4"]}},
+        {"value": "~75%", "tag": "TARGET", "label": {"kind": "synthesis", "text": "targeted reduction in financial advisers’ preparation time", "support": ["great-eastern.findings.deploy.1"]},
+         "detail": {"kind": "synthesis", "text": "The platform “aims to reduce” preparation time; no achieved figure is reported", "support": ["great-eastern.findings.deploy.1"]}}
+      ],
+      "so_what": {"kind": "synthesis", "text": "Neither figure is reported with a baseline, a measurement period or a financial value — the evidence a board would need to scale either.",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.4"], "observation": "measurement-absence"}
+    },
+    {
+      "id": "leadership",
+      "layout": "timeline",
+      "section": "Leadership",
+      "title": {"kind": "synthesis", "text": "The executive who led Data and AI was expected to move to OCBC in March 2026",
+        "support": ["great-eastern.findings.leadership.1", "great-eastern.findings.opmodel.1"]},
+      "events": [
+        {"when": "2025", "text": {"kind": "synthesis", "text": "Data & AI operating model restructured “to accelerate transformation”", "support": ["great-eastern.findings.opmodel.1"]}},
+        {"when": "2025", "text": {"kind": "synthesis", "text": "Managing Directors for Marketing, Customer and Digital, Premier Wealth and Regional Agency leave the Group", "support": ["great-eastern.findings.leadership.2"]}},
+        {"when": "Sep 2025", "text": {"kind": "synthesis", "text": "Marketing, Customer & Digital and Premier Wealth unified in a new Integrated Propositions and Platforms division", "support": ["great-eastern.findings.opmodel.2"]}},
+        {"when": "Mar 2026", "text": {"kind": "synthesis", "text": "Managing Director, Group Data and AI, expected to join OCBC as Head of the Group Data Office", "support": ["great-eastern.findings.leadership.1"]}, "emphasis": true}
+      ],
+      "aside": {"head": {"kind": "label", "text": "As at the FY2025 Annual Report"},
+        "body": {"kind": "quote", "text": "“The successors … will be named in due course.”", "support": ["great-eastern.findings.leadership.successor"]},
+        "note": {"kind": "method", "text": "We have not verified whether a successor has since been appointed. This is Question 1."}}
+    },
+    {
+      "id": "governance",
+      "layout": "two_columns",
+      "section": "Governance",
+      "title": {"kind": "synthesis", "text": "The report asserts governance of AI but does not describe the framework behind it",
+        "support": ["great-eastern.findings.governance.1"]},
+      "left": {"head": "What the FY2025 report says", "items": [
+        {"kind": "synthesis", "text": "AI use expanded “with discipline and robust governance”", "support": ["great-eastern.findings.governance.1"]},
+        {"kind": "synthesis", "text": "Board competencies include artificial intelligence and risk management", "support": ["great-eastern.findings.governance.3"]},
+        {"kind": "synthesis", "text": "Directors are to be paid for their contributions to IT infrastructure, data and AI initiatives", "support": ["great-eastern.findings.governance.4"]},
+        {"kind": "synthesis", "text": "AI is used to monitor compliance risk — AI for governance, not governance of AI", "support": ["great-eastern.findings.governance.2"]}]},
+      "right": {"head": "What it does not set out", "observation": "governance-absence", "items": [
+        {"kind": "observation", "text": "An AI policy or responsible-AI principles"},
+        {"kind": "observation", "text": "An inventory of AI systems or their risk materiality"},
+        {"kind": "observation", "text": "Model risk management applied to AI"},
+        {"kind": "observation", "text": "A named executive accountable for AI risk"}]},
+      "footnote": {"kind": "method", "text": "Full-text search of all 244 pages for 17 AI-governance terms (e.g. “responsible AI”, “model risk”, “FEAT”) returned no matches. OCBC group frameworks were not reviewed; absence from one document is not evidence of absence."}
+    },
+    {
+      "id": "questions",
+      "layout": "questions",
+      "section": "Questions for the leadership team",
+      "title": {"kind": "label", "text": "Five questions would turn this outside-in view into a basis for decisions"},
+      "questions": [
+        {"topic": "Leadership", "kind": "question", "text": "Who now owns the Data and AI agenda, and did its scope change with the move to OCBC?", "support": ["great-eastern.findings.leadership.1", "great-eastern.findings.leadership.successor"]},
+        {"topic": "Governance", "kind": "question", "text": "Where is the AI risk framework documented, and which parts are set by Great Eastern rather than OCBC group?", "support": ["great-eastern.findings.governance.1"]},
+        {"topic": "Regulation", "kind": "question", "text": "How complete is the inventory of AI systems, and how is each one rated for risk materiality?", "support": []},
+        {"topic": "Value", "kind": "question", "text": "How are the two 75% figures measured — baseline, period, population — and what are they worth?", "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.4"]},
+        {"topic": "Scale", "kind": "question", "text": "What evidence would move complex-case underwriting AI from testing into production, and who decides?", "support": ["great-eastern.findings.deploy.3"]}
+      ]
+    },
+    {
+      "id": "proposal",
+      "layout": "proposal",
+      "section": "Proposed next step",
+      "title": {"kind": "offer", "text": "A 12-day assessment would answer these questions with evidence, not opinion"},
+      "columns": [
+        {"head": "Where you stand", "body": "AI maturity scored on eight dimensions, ranked against named Singapore insurers, with the evidence behind every score"},
+        {"head": "Why you win", "body": "The three to five capabilities that pass a six-test right-to-win screen, and whether AI strengthens or erodes each"},
+        {"head": "Where AI pays", "body": "Three to five value pools and the specific use cases that capture them, each tiered for AI risk"}
+      ],
+      "phases": [
+        {"when": "Days 1–3", "what": "Public evidence and peer set"},
+        {"when": "Days 4–9", "what": "Leadership questionnaire and 10–12 interviews"},
+        {"when": "Days 10–12", "what": "Synthesis and leadership read-out"}
+      ],
+      "ask": {"kind": "offer", "text": "What we need: time from 10–12 leaders. No confidential data is required for this phase."}
+    },
+    {
+      "id": "about",
+      "layout": "about",
+      "section": "About this document",
+      "title": {"kind": "label", "text": "How this document was prepared"},
+      "blocks": [
+        {"head": "Source", "body": "Great Eastern Holdings Annual Report FY2025 (244 pages). Page references appear on each slide. No other source is used."},
+        {"head": "Method", "body": "Every statement traces to a stored copy of the source. Quotations match the source word for word. Status labels use Great Eastern’s own wording."},
+        {"head": "Limits", "body": "An outside-in view from one public document, as at its publication. It has not been reviewed by Great Eastern and contains no management input."},
+        {"head": "Status", "body": "STATUS_FROM_INTERLOCK"}
+      ]
+    }
+  ]
+}
