@@ -500,3 +500,89 @@ items:
     purpose: "Parent ADD strategy narrative"
     module: annual-report
     verify: carried_from_subject_yaml
+
+  # ------------------------------------------------------------------ 2026-10-26 refresh (runs/great-eastern/2026-10-26-update/RESEARCH.md)
+  # Located by WebSearch + WebFetch on 2026-10-26; sandbox egress to these hosts is CONNECT 403, so nothing below is hashed.
+  # Ranked by deck impact (rank in notes). Ranks 5 and 10 are existing items: aia-group-ar-2025, ocbc-1h26-media-release.
+  - id: upd-2026-10-mas-airm-guidelines
+    local_file: mas-airm-guidelines-2026.pdf
+    url: "https://www.mas.gov.sg/-/media/mas-media-library/regulation/guidelines/bd/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions/guidelines-on-artificial-intelligence-risk-management.pdf"
+    content_type: application/pdf
+    purpose: "MAS Guidelines on AI Risk Management (issued 7 Oct 2026): para 1.8 dates (s.3-4 from 7 Oct 2027; s.5-6 by 7 Oct 2028), 3.4-3.6 board/senior mgmt, 4.2-4.7 identification + inventory, 4.10-4.12 materiality (Impact/Complexity/Reliance), 5.10-5.11 third-party, s.5 lifecycle, s.6 capability"
+    module: regulatory
+    verify: url_confirmed
+    date: 2026-10-07
+    notes: "Rank 1. URL carried from compliance/regulatory-status-map.md v0.1.1 (text read from the MAS PDF there); paragraph numbers must be re-read from the hashed file."
+    alternates:
+      - "https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions"
+  - id: upd-2026-10-geh-agm-presentation-20260414
+    local_file: geh-20260414-agm-outcome-and-presentation.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20260414-27th-agm-outcome-and-presentation-slides.pdf"
+    content_type: application/pdf
+    purpose: "AGM 2026 deck: slide 5 'Great Eastern Strategic Growth Priorities' — three pillars (Tailored Offerings & Engagement; Advisory & Service Excellence; Organisation & Culture) with 'AI-enabled personalisation in engagement', 'End-to-end AI and technology embedding'; Key Enablers incl. 'Data Analytics & Artificial Intelligence'"
+    module: annual-report
+    instrument_items: [D1.1, D2]
+    verify: url_confirmed
+    date: 2026-04-14
+    notes: "Rank 2. Slide numbers are printed slide numbers; the PDF opens with the AGM-outcome announcement, so PDF page index differs. figure_verify on all quotes."
+  - id: upd-2026-10-geh-agm-minutes-20260513
+    local_file: geh-20260513-minutes-27th-agm.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20260513-minutes-of%2027th-agm-held-on-14-apr-2026.pdf"
+    content_type: application/pdf
+    purpose: "Group CEO Greg Hingston's AGM remarks: customer segmentation large language model (p.5), Data and AI re-organisation and new skill sets (p.6), analytics/AI to reduce claims fraud, wastage and abuse (p.6); no named successor to Zhao Jingyuan / Jimmy Tong"
+    module: earnings-calls
+    instrument_items: [D1.1, D2]
+    verify: url_confirmed
+    date: 2026-05-13
+    notes: "Rank 3. Closest GEH has to a call transcript. WebFetch quotes truncated at 125 chars — re-extract full sentences from the hashed file."
+  - id: upd-2026-10-geh-2q26-media-release
+    local_file: geh-2q26-media-release.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/2026-2q26-media-release.pdf"
+    content_type: application/pdf
+    purpose: "1H-26 results: profit attributable S$849.5m (+43%), 2Q-26 S$503.2m (+103%), TWNS S$813.2m (+15%), NBEV S$405.3m (+28%), interim dividend 35 cents; no AI statement"
+    module: financials
+    instrument_items: [V1, KPI]
+    verify: url_confirmed
+    date: 2026-07-31
+    notes: "Rank 4. 3 pages. figure_verify. Companion HTML: https://www.greateasternlife.com/sg/en/about-us/media-centre/media-releases/great-eastern-sustains-strong-business-momentum-1h2026.html"
+    alternates:
+      - "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/2026-2q26-financial-summary.pdf"
+  - id: upd-2026-10-prudential-fy25-results-presentation
+    local_file: prudential-plc-fy25-results-presentation.pdf
+    url: "https://www.prudentialplc.com/content/dam/prudential-plc/newsroom/company-news/2026/FY25-Results-Presentation.pdf"
+    content_type: application/pdf
+    purpose: "Peer AI outcomes: slide 13 >$300m APE via Customer Engagement platform and >$100m Fraud, Waste & Abuse savings (data analytics and AI platforms), 50% underwriting-time cut (HK); slide 14 Singapore agent productivity +15% (PRUAction)"
+    module: peer-set
+    verify: url_confirmed
+    date: 2026-03-18
+    notes: "Rank 6. figure_verify. Prudential plc AR 2025 (not readable via WebFetch): https://www.prudentialplc.com/content/dam/prudential-plc/investor/results-and-reports/lastest-annual-report/prudential-plc-ar-2025.pdf.coredownload.inline.pdf ; AI governance page: https://prudentialplc.com/en/site-services/ai-statement"
+    alternates:
+      - "https://www.hkexnews.hk/listedco/listconews/sehk/2026/0423/2026042300087.pdf"
+  - id: upd-2026-10-geh-1h26-results-and-fs
+    local_file: geh-20260731-half-yearly-results-and-fs.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20260731-half-yearly-results-and-fs-fy26.pdf"
+    content_type: application/pdf
+    purpose: "1H-26 condensed FS: insurance revenue S$3,674.4m, insurance service expenses S$2,693.3m (Section A p.2), Note 6 expenses total S$3,278.0m (p.22) — refreshes the value-sizing cost base"
+    module: financials
+    instrument_items: [V1, D8.3]
+    verify: url_confirmed
+    date: 2026-07-31
+    notes: "Rank 7. Footers run to Page 42. Note 6 reconciliation to P&L unclear in WebFetch extract — figure_verify."
+  - id: upd-2026-10-mas-airm-media-release
+    local_file: mas-airm-media-release-20261007.html
+    url: "https://www.mas.gov.sg/news/media-releases/2026/mas-sets-out-supervisory-expectations-on-responsible-ai-adoption-by-financial-institutions"
+    content_type: text/html
+    purpose: "MAS media release for AIRM: effective 7 Oct 2027; s.3-4 from 7 Oct 2027, s.5-6 by 7 Oct 2028; board oversight, inventories, materiality, lifecycle controls, third-party accountability; agentic-AI consultation in 2027"
+    module: regulatory
+    verify: url_confirmed
+    date: 2026-10-07
+    notes: "Rank 8. FEAT/Veritas context: https://www.mas.gov.sg/publications/monographs-or-information-paper/2018/FEAT ; https://www.mas.gov.sg/schemes-and-initiatives/Veritas"
+  - id: upd-2026-10-manulife-ai-platform-release
+    local_file: manulife-enterprise-ai-platform-20261013.html
+    url: "https://www.prnewswire.com/news-releases/manulife-launches-enterprise-ai-platform-to-scale-ai-solutions-and-deliver-business-value-across-global-operations-302906120.html"
+    content_type: text/html
+    purpose: "Peer AI value disclosure: '$1 billion in cumulative enterprise AI value by 2027', '$300 million achieved as of year-end 2025'; Singapore Sales Agent; Responsible AI Principles"
+    module: peer-set
+    verify: url_confirmed
+    date: 2026-10-13
+    notes: "Rank 9. Newswire copy of a Manulife release (no manulife.com release URL located). Principles: https://www.manulife.com/ca/en/about-us/ai/responsible-ai-principles"
