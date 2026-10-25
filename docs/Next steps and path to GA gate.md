@@ -159,3 +159,13 @@ Budget indication (external only, 18 months): attestation US$150–250K; data st
 3. Build the verification layer in-house (recommended, it is the IP) vs licence a deep-research product.
 4. Budget ceiling for the 18-month attestation stack and whether to pursue AI TAP in wave 2 or defer.
 5. Who is the independent reviewer at G1 (needs to be someone who did not run the agents).
+
+
+## Addendum 2026-10-25 — C4 (written-claim checking) measured short of target
+
+Offline matcher on 175 author-labelled GEH pairs: false-SUPPORT 2.6% (95% upper 7.4%) against a 2% target; first-run held-out 7–10%. No unsupported claim passes after fixes; the 3 misses are partial claims that silently drop a qualifier. NLI/embedding backends are built but unmeasured (weights unobtainable in the sandbox).
+
+Added G1 conditions:
+- Until NLI is pulled and calibrated: every load-bearing qualitative claim decided by the offline matcher is in the reviewer's mandatory check list, not the random sample.
+- The independent reviewer re-labels the calibration set blind (spec T-03 wants ≥300 pairs; 175 today).
+- `plumbverify models pull` on a machine with internet, then `plumbverify calibrate --split all` — first NLI numbers.

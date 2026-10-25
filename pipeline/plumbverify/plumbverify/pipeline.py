@@ -8,12 +8,14 @@ Every step is written to the hash-chained log as a tool call.
 """
 from __future__ import annotations
 
+import re
 import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Optional
 
 from . import match as m
+from . import semantic as sem
 from .fetch import EvidenceStore, Fetcher
 from .extract import page_of, split_passages_paged
 from .log import HashChainLog
@@ -26,7 +28,7 @@ from .tier import TierRules, aigen_score, assign_tier, load_tier_rules
 from .upstream import count_independent_upstreams, is_aggregator, trace_upstream
 
 MODEL_ID = "plumbverify-rules"
-MODEL_VERSION = "0.4.0"  # 0.4: build_profile / C2a (red-team review 2026-10-25, Blocker 2)
+MODEL_VERSION = "0.5.0"  # 0.4: build_profile / C2a (red-team review 2026-10-25, Blocker 2); 0.5: C4 fact verification (semantic.py)
 
 
 class Verifier:
@@ -50,6 +52,9 @@ class Verifier:
         self.log = log
         self.rules = tier_rules or load_tier_rules()
         self.semantic = semantic
+        # 0.5: fact claims go through the C4 verifier (nli -> embedding -> offline, plus contradiction rules).
+        # `semantic` may be None (default chain), a C4Verifier, a C4 backend, or a plain score-only SemanticMatcher.
+        self.c4 = sem.C4Verifier.from_matcher(semantic, supported=supported_threshold, partial=partial_threshold)
         self.region = region
         self.quote_threshold = quote_threshold
         self.supported_threshold = supported_threshold
@@ -130,7 +135,16 @@ class Verifier:
         page_index = {p.text: p.page for p in paged}
         reasons: list[str] = []
         if claim.kind == ClaimKind.number:
-            nm = m.number_claim_match(claim.text, passages, self.semantic, self.supported_threshold)
+            # 0.5: match number claims against sentence windows that contain the claim's figures
+            # (layout lines split "SGD739.7" from "million" and starve the context score); fall back to passages
+            win = _number_windows(claim.text, src.text_extract)
+            if win:
+                page_index = {**page_index, **{w: pg for w, pg in win if w not in page_index}}
+            cand = [w for w, _ in win] or passages
+            nm = m.number_claim_match(claim.text, cand, self.semantic if not isinstance(self.semantic, sem.C4Verifier) else None,
+                                      self.supported_threshold)
+            if nm.label == "unsupported" and win:
+                nm = m.number_claim_match(claim.text, passages, None, self.supported_threshold)
             if nm.check is None or not nm.check.claim_numbers:
                 reasons.append("claim tagged as number but no number parsed from its text")
                 status = CitationStatus.unverified
@@ -144,15 +158,38 @@ class Verifier:
                                f"{m.NUMBER_CONTEXT_THRESHOLD} and no semantic support")
             else:
                 status = CitationStatus.verified
+            # 0.5: the C4 contradiction rules also apply to the passage the number matched in
+            # ("reduced by 75%" vs "aims to reduce by approximately 75%", "grew 15%" vs "a decline of 15%")
+            rules: list = []
+            if nm.passage and status != CitationStatus.unverified:
+                # evaluate on the sentence window that carries the claim's numbers, not on a layout line
+                ctx = _number_context(claim.text, nm.passage, src.text_extract)
+                rules = sem.contradiction_rules(claim.text, ctx)
+            if any(r.effect == "contradiction" for r in rules):
+                status = CitationStatus.unverified
+                reasons.append("C4 contradiction rule(s): " + "; ".join(str(r) for r in rules if r.effect == "contradiction"))
+            elif rules and status == CitationStatus.verified:
+                status = CitationStatus.partial
+                reasons.append("C4 rule(s) cap at PARTIAL: " + "; ".join(str(r) for r in rules))
             return Citation(claim_id=claim.id, source_url=url, passage=nm.passage, page=page_index.get(nm.passage),
-                            match_score=round(nm.score, 4), status=status, reasons=reasons)
-        pm = m.claim_match(claim.text, passages, self.semantic, self.supported_threshold, self.partial_threshold)
+                            match_score=round(nm.score, 4), status=status, reasons=reasons,
+                            matcher="number-gate", rules_fired=[str(r) for r in rules])
+        # 0.5: fact claims - C4 verifier over sentence windows (layout lines are too short to carry a claim)
+        windows = sem.sentence_windows(src.text_extract)
+        if not windows:
+            windows = [(p.text, p.page) for p in paged]
+        a = self.c4.best(claim.text, windows)
         status = {"supported": CitationStatus.verified, "partial": CitationStatus.partial,
-                  "unsupported": CitationStatus.unverified}[pm.label]
+                  "unsupported": CitationStatus.unverified}[a.label]
         if status != CitationStatus.verified:
-            reasons.append(f"passage match {pm.score:.2f} (supported >= {self.supported_threshold}, partial >= {self.partial_threshold})")
-        return Citation(claim_id=claim.id, source_url=url, passage=pm.passage, page=page_index.get(pm.passage),
-                        match_score=round(pm.score, 4), status=status, reasons=reasons)
+            reasons.append(f"C4 {a.matcher} score {a.score:.2f} (raw {a.raw_score:.2f}; supported >= {self.supported_threshold}, "
+                           f"partial >= {self.partial_threshold})")
+            reasons.extend(f"C4 rule {r}" for r in a.rules)
+        page = a.page if a.page is not None else (page_index.get(a.passage) or (
+            page_of(src.text_extract, a.passage, m.normalize) if a.passage else None))
+        return Citation(claim_id=claim.id, source_url=url, passage=a.passage, page=page,
+                        match_score=round(a.score, 4), status=status, reasons=reasons, matcher=a.matcher,
+                        backend_scores=a.backend_scores, rules_fired=a.rules_fired, decomposition=a.decomposition)
 
     # -- run -----------------------------------------------------------------
     def run(self, claims: list[Claim], run_id: Optional[str] = None) -> VerificationReport:
@@ -165,7 +202,8 @@ class Verifier:
             citations.extend(cites)
             self._log(run_id, "pipeline.cite", claim.text,
                       [{"tool": "match", "claim_id": claim.id, "source": c.source_url, "status": c.status.value,
-                        "score": c.match_score} for c in cites],
+                        "score": c.match_score, "matcher": c.matcher, "backend_scores": c.backend_scores,
+                        "rules_fired": c.rules_fired} for c in cites],
                       outcome="matched")
             # S4
             ind = 0
@@ -214,6 +252,37 @@ class Verifier:
                                                     "blocked": gate.blocked_count, "build_profile": self.build_profile}],
                   outcome="PASS" if gate.passed else "FAIL", metrics=metrics)
         return report
+
+
+def _number_windows(claim: str, text: str) -> list[tuple[str, object]]:
+    """Sentence windows that contain every number literal of the claim (cheap prefilter before parsing)."""
+    lits = [re.sub(r"[^\d.]", "", t.raw.split()[0] if t.raw.split() else t.raw).rstrip(".") for t in m.parse_numbers(claim)]
+    lits = [re.sub(r"^[^\d]+", "", x) for x in lits if x]
+    if not lits:
+        return []
+    out = []
+    for w, page in sem.sentence_windows(text):
+        flat = w.replace(",", "")
+        if all(x in flat for x in lits):
+            out.append((w, page))
+    return out
+
+
+def _number_context(claim: str, passage: str, text: str) -> str:
+    """Sentence window around a number claim's matched passage: among windows that
+    contain every claim number (and overlap the matched passage), the one with the
+    best offline key-term score. Falls back to the passage itself."""
+    norm_p = m.normalize(passage)[:60]
+    best, best_s = passage, -1.0
+    for w, _page in sem.sentence_windows(text):
+        if norm_p not in m.normalize(w):
+            continue
+        if not m.number_in_passage(claim, w).passed:
+            continue
+        s = sem.key_term_recall(claim, w)[0]
+        if s > best_s:
+            best, best_s = w, s
+    return best
 
 
 def _rate(decisions) -> float:

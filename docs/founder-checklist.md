@@ -8,6 +8,7 @@ Change log: 2026-10-25 — converted to checkboxes and parked; F6 split (GE done
 
 - [ ] **F4 — Name the independent reviewer** (D3). Real person, CV on file, per-deck fee agreed (S$2–4K/deck if paid); must not have run the agents. *Blocks: G1 close, any charter or proposal.* Record in `docs/decisions.md` D3.
 - [ ] **F26 — Re-run Great Eastern from a laptop with internet.** `bash pipeline/plumbresearch/data-packs/great-eastern/fetch-datapack.sh` → `plumbresearch run plumbresearch/subjects/great-eastern.yaml --out out --data-dir data` → `plumbverify reconcile --store out/great-eastern/evidence`. ~1 hour. *Blocks: first client-grade output (G1).*
+- [ ] **F27 — Pull the verification models** on the same laptop as F26: `plumbverify models pull`, then `plumbverify calibrate calibration/geh_c4_v1.jsonl --split all`. ~20 min. *Blocks: written-claim checking meeting its 2% target (G1).*
 - [ ] **F5 — Conflict declaration** for Maybank, Great Eastern and OCBC (GEH parent) under C6 of `commercial/conflict-check-procedure.md`. 15 min. *Blocks: showing any alpha output externally.*
 - [ ] **F25 — Record the D7 clearance basis** in `docs/decisions.md`: written employer clearance, or the documented reason none is needed. *Blocks: design-partner contracts (G2).*
 

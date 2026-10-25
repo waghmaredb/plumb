@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plumbverify"
-version = "0.3.1"
+version = "0.5.0"
 description = "PLUMB verification layer: citation, claim and quotation verification with block-not-flag enforcement and hash-chained logging (spec PI-CV v0.1)."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -22,6 +22,8 @@ dependencies = [
 extract = ["trafilatura>=1.8"]
 pdf-fallback = ["pdfminer.six>=20231228"]
 test = ["pytest>=7.4"]
+# C4 model backends (NLI cross-encoder, sentence embeddings) and `plumbverify models pull`; CPU is enough
+models = ["sentence-transformers>=2.7", "transformers>=4.40", "torch>=2.2", "huggingface_hub>=0.23"]
 
 [project.scripts]
 plumbverify = "plumbverify.cli:main"

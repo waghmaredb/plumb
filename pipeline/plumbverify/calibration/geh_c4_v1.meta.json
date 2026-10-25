@@ -1,0 +1,24 @@
+{
+  "name": "geh_c4_v1",
+  "spec": "PI-CV v0.1 criterion C4 (claim-to-passage support), test T-03 in miniature",
+  "source_document": "Great Eastern Holdings Limited Annual Report 2025 (244 pp.), attached PDF; passages extracted with plumbverify 0.3.1 extract_pdf (pdftotext -layout + split_columns) and checked to occur verbatim (whitespace-normalised) on the stated page",
+  "source_url_declared": "https://links.sgx.com/1.0.0/corporate-announcements/LNEPNAAMA9G4OO20/880681_GEH%20Annual%20Report%20FY2025.pdf",
+  "pairs": 175,
+  "splits": {
+    "dev": "39 pairs; used while writing the offline rules",
+    "heldout": "91 pairs; written before the matcher; evaluated once with rules frozen (first-run numbers below), then inspected and used for bug fixes, so it is no longer clean held-out data",
+    "fresh": "45 pairs from pages 10 and 48-53, written after the first freeze and evaluated once before the last fix (counted_noun_mismatch); the author knew the rules when writing them"
+  },
+  "label_scheme": {
+    "supported": "the passage alone entails the whole claim (paraphrase allowed, hedges kept)",
+    "partial": "part of the claim is supported; an added detail, scope, reason or dropped hedge/qualifier is not",
+    "unsupported": "the passage contradicts the claim or lacks its core assertion: wrong number, entity, year or date; production-vs-pilot flip; direction or negation flip; superlative or approximation inflation"
+  },
+  "label_status": "Labels are author-assigned by the pipeline developer and are NOT acceptance evidence. They must be re-labelled blind by the independent reviewer (spec C16) before any number derived from this file is quoted as T-03 evidence; the spec's T-03 needs >= 300 reviewer-labelled pairs.",
+  "first_run_results_offline_baseline": {
+    "heldout_first_run": {"false_support": "4/57", "rate": 0.070, "wilson_upper95": 0.167, "supported_precision": 0.87, "supported_recall": 0.79},
+    "fresh_first_run": {"false_support": "3/30", "rate": 0.100, "wilson_upper95": 0.256, "supported_precision": 0.79, "supported_recall": 0.73},
+    "lexical_reference_heldout": {"false_support": "6/57", "rate": 0.105, "supported_recall": 0.26},
+    "lexical_reference_fresh": {"false_support": "3/30", "rate": 0.100, "supported_recall": 0.33}
+  }
+}

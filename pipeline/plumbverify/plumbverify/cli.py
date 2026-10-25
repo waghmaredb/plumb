@@ -6,6 +6,8 @@
   plumbverify report report.json --format md [--out report.md] [--seed N]
   plumbverify ingest <file> --url <declared_url> --store DIR [--supplied-by NAME] [--doc KEY]
   plumbverify reconcile --store DIR [--url URL] [--archive]
+  plumbverify calibrate calibration/geh_c4_v1.jsonl [--split heldout|dev|fresh|all] [--target-false-support 0.02] [--json OUT]
+  plumbverify models status | pull [--nli ID] [--embedding ID] [--only nli|embedding] [--dir DIR]
 """
 from __future__ import annotations
 
@@ -136,6 +138,68 @@ def _cmd_report(args: argparse.Namespace) -> int:
     return 0 if report.build_pass else 1
 
 
+def _cmd_calibrate(args: argparse.Namespace) -> int:
+    from .calibrate import calibrate, format_table, load_pairs
+    from .semantic import EmbeddingBackend, NLIBackend, OfflineBaseline
+    pairs = load_pairs(args.file, split=args.split)
+    if not pairs:
+        print(f"no pairs in split {args.split!r}", file=sys.stderr)
+        return 2
+    backends = []
+    for name in [b.strip() for b in args.backends.split(",") if b.strip()]:
+        if name == "nli":
+            backends.append(NLIBackend(model_id=args.nli, cache_dir=args.dir))
+        elif name == "embedding":
+            backends.append(EmbeddingBackend(model_id=args.embedding, cache_dir=args.dir))
+        elif name == "offline":
+            backends.append(OfflineBaseline())
+        else:
+            print(f"unknown backend {name!r}", file=sys.stderr)
+            return 2
+    results, status = calibrate(pairs, backends, target_false_support=args.target_false_support)
+    print(format_table(results, status, args.split, args.target_false_support))
+    if args.json:
+        Path(args.json).write_text(json.dumps({"file": str(args.file), "split": args.split,
+                                               "target_false_support": args.target_false_support, "backends": status,
+                                               "results": [r.as_dict() for r in results]}, indent=2), encoding="utf-8")
+        print(f"wrote {args.json}")
+    worst = max((r.false_support_rate for r in results if not r.backend.startswith("lexical")), default=0.0)
+    return 0 if worst <= args.target_false_support else 1
+
+
+def _cmd_models(args: argparse.Namespace) -> int:
+    from .semantic import (DEFAULT_EMBEDDING_MODEL, DEFAULT_NLI_MODEL, C4Verifier, EmbeddingBackend, NLIBackend,
+                           OfflineBaseline, model_path)
+    nli_id, emb_id = args.nli or DEFAULT_NLI_MODEL, args.embedding or DEFAULT_EMBEDDING_MODEL
+    if args.action == "status":
+        v = C4Verifier(backends=[NLIBackend(nli_id, cache_dir=args.dir), EmbeddingBackend(emb_id, cache_dir=args.dir), OfflineBaseline()])
+        print(json.dumps(v.status(), indent=2))
+        return 0
+    try:
+        from huggingface_hub import snapshot_download  # type: ignore
+    except ImportError:
+        print("models pull needs huggingface_hub: pip install 'plumbverify[models]'", file=sys.stderr)
+        return 2
+    targets = [("nli", nli_id), ("embedding", emb_id)]
+    if args.only:
+        targets = [t for t in targets if t[0] == args.only]
+    rc = 0
+    for kind, mid in targets:
+        dest = model_path(mid, args.dir)
+        dest.parent.mkdir(parents=True, exist_ok=True)
+        try:
+            snapshot_download(repo_id=mid, local_dir=str(dest),
+                              allow_patterns=["*.json", "*.txt", "*.model", "*.safetensors", "*.bin", "*.py", "*tokenizer*", "*vocab*", "*.spm"])
+            print(f"{kind}: {mid} -> {dest}")
+        except Exception as e:  # network / auth / missing repo
+            print(f"{kind}: could not pull {mid}: {e}", file=sys.stderr)
+            rc = 1
+    if rc == 0:
+        print("copy the model directory to the verification host's PLUMBVERIFY_MODEL_DIR (default ~/.cache/plumbverify/models) "
+              "if this machine is not the one that runs `plumbverify verify`")
+    return rc
+
+
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="plumbverify", description="PLUMB verification layer (PI-CV v0.1)")
     sub = p.add_subparsers(dest="cmd", required=True)
@@ -185,6 +249,25 @@ def build_parser() -> argparse.ArgumentParser:
     rc.add_argument("--archive", action="store_true", help="fall back to a Wayback snapshot when the live URL fails (network)")
     rc.add_argument("--archive-save", action="store_true")
     rc.set_defaults(func=_cmd_reconcile)
+
+    cal = sub.add_parser("calibrate", help="measure C4 SUPPORTED precision/recall and false-SUPPORT rate per backend on a labelled JSONL set")
+    cal.add_argument("file")
+    cal.add_argument("--split", default="heldout", help="dev | heldout | fresh | all (default heldout)")
+    cal.add_argument("--backends", default="nli,embedding,offline", help="comma list, tried if live (default nli,embedding,offline)")
+    cal.add_argument("--target-false-support", type=float, default=0.02)
+    cal.add_argument("--nli", default=None, help="NLI model id (default cross-encoder/nli-deberta-v3-small)")
+    cal.add_argument("--embedding", default=None, help="embedding model id (default sentence-transformers/all-MiniLM-L6-v2)")
+    cal.add_argument("--dir", default=None, help="model cache directory (default $PLUMBVERIFY_MODEL_DIR or ~/.cache/plumbverify/models)")
+    cal.add_argument("--json", default=None, help="also write the full per-pair results as JSON")
+    cal.set_defaults(func=_cmd_calibrate)
+
+    mo = sub.add_parser("models", help="C4 model weights: 'status' shows which backends are live, 'pull' downloads weights (needs internet)")
+    mo.add_argument("action", choices=["status", "pull"])
+    mo.add_argument("--nli", default=None)
+    mo.add_argument("--embedding", default=None)
+    mo.add_argument("--only", choices=["nli", "embedding"], default=None)
+    mo.add_argument("--dir", default=None)
+    mo.set_defaults(func=_cmd_models)
 
     l = sub.add_parser("verify-log", help="verify hash-chain integrity of a JSONL log")
     l.add_argument("log")

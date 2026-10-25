@@ -195,6 +195,8 @@ def render_markdown(report: VerificationReport, seed: Optional[int] = None, samp
         if d and d.blocked:
             status = "BLOCKED"
         score = f"{best.match_score:.2f}" if best else "-"
+        if best and best.matcher and c.kind == ClaimKind.fact:  # 0.5: which C4 backend decided, so the reviewer can weigh it
+            score += f" ({best.matcher})"
         tier = src.tier.value if src else "-"
         indep = str(d.independent_upstreams) if (d and c.kind == ClaimKind.number and c.load_bearing) else "n/a"
         reasons = "; ".join(d.reasons) if d and d.reasons else ""

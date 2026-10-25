@@ -147,6 +147,10 @@ class Citation(BaseModel):
     status: CitationStatus = CitationStatus.unverified
     reasons: list[str] = Field(default_factory=list)
     labels: list[str] = Field(default_factory=list, description="visible caveats that travel with the citation into output, e.g. the attached label (0.3)")
+    matcher: Optional[str] = Field(default=None, description="C4 backend that supplied the support score: nli | embedding | offline | custom | lexical (0.5)")
+    backend_scores: dict[str, float] = Field(default_factory=dict, description="score from every live C4 backend for the chosen passage (0.5)")
+    rules_fired: list[str] = Field(default_factory=list, description="C4 contradiction / cap rules that fired on the chosen passage (0.5)")
+    decomposition: Optional[dict] = Field(default=None, description="rule-based claim decomposition: subject, predicate, object, numbers, years, qualifiers, modality (0.5)")
 
     @property
     def locator(self) -> str:
