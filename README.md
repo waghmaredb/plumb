@@ -66,12 +66,14 @@ commercial/    Pricing ladder, engagement charter, engagement-letter clauses, DP
 - [x] Engagement charter, AI-use disclosure and engagement-letter clauses (`commercial/`)
 - [x] Pricing ladder one-pager (`commercial/`)
 - [ ] Decisions: wedge segment, build-vs-licence verification layer, G1 independent reviewer, attestation budget, entity
-- [ ] Verifications: MAS AIRM primary text; SS 680 / EDGE with Enterprise Singapore; AI TAP application requirements; AICM v1.1 objective IDs; LLM vendor Singapore routes + ZDR in writing
+- [x] Verification: MAS AIRM primary text (7 Oct 2026 PDF) — section refs corrected across compliance/
+- [~] Verification: AICM v1.1 — 18 domains/prefixes confirmed; 28/40 objective IDs confirmed from v1.0.3 rendering, 12 candidate; spreadsheet needs CSA login
+- [ ] Verifications remaining: SS 680 / EDGE with Enterprise Singapore; AI TAP application requirements; LLM vendor Singapore routes + ZDR in writing
 
 ## Top open items before G1 (alpha)
 
-1. Load the CSA AICM v1.1 spreadsheet and fill the TBD objective IDs in `control-library.csv`.
-2. Fetch the MAS AI Risk Management Guidelines PDF (7 Oct 2026) and correct section numbering in the tier table and evidence pack.
+1. Log in to CSA, download the AICM v1.1 spreadsheet, confirm the 28 objective IDs and resolve the 12 `TBD [candidate]` rows in `control-library.csv`.
+2. ~~Fetch the MAS AIRM PDF and correct section numbering~~ Done 2026-10-25. Residual: confirm the response-to-feedback paper qualifier (lifecycle controls for high-risk use cases "as soon as possible").
 3. Confirm Singapore endpoints and zero-data-retention in writing for each LLM vendor before any client data enters the pipeline.
 4. Pick the two alpha companies and build their peer sets per the documented funnel.
 5. Run the 20-item κ subset of the maturity instrument with two raters.
