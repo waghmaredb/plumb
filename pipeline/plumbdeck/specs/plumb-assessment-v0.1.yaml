@@ -1,0 +1,295 @@
+# PLUMB assessment deck spec v0.1 — implements the ghost deck S01–S34 + A1–A7
+# (methodology/ghost-deck-template.md v0.1.1). IDs are stable; unused optional
+# IDs are deleted for a client, never renumbered.
+#
+# kind:     cover | disclosure | data (claim-sourced) | register (build-report-sourced) | placeholder
+# exhibit:  cover | disclosure | peer_funnel | signals_table | scorecard_two_axis | gap_register | evidence_log | placeholder
+# title:    action title template (R3: <=15 words, lint-enforced). Tokens: {client} {client_full} {date} {fy}
+#           {n_released} {n_withheld} plus exhibit tokens; {token|word} / {token|Word} spell 0-12.
+# title_withheld: used when a token in `title` is bound to withheld data (no withheld number ever renders);
+#           also the title of a slide whose bound data is entirely withheld (auto-placeholder).
+# requires: what a placeholder needs before it can be built ("requires engagement data").
+#
+# The schema is closed. There is no key that relaxes the S02 interlock.
+
+spec_version: "0.1"
+name: Verified Enterprise AI Journey Assessment
+ghost_deck: methodology/ghost-deck-template.md v0.1.1
+
+deliverable:
+  id: "PLUMB-{subject_slug}-{run_id}"
+  version: "0.1"
+  firm: PLUMB
+  tools: []            # model register entries (vendor / model / version, platform, region, retention) — added per engagement
+  scope_of_ai: research and source retrieval; rule-based claim extraction and verification
+  verification_control_owner: "[Name, role]"
+  corrections_contact: "[contact]"
+
+slides:
+  - id: S01
+    section: Cover
+    kind: cover
+    exhibit: cover
+    title: "{client_full}: Verified Enterprise AI Journey Assessment — board read-out, {date}"
+
+  - id: S02
+    section: AI-use disclosure and verification statement
+    kind: disclosure
+    exhibit: disclosure
+    title: "This deck is AI-assisted, human-accountable, and every citation was verified before release"
+    title_withheld: "DRAFT — not for board use: {n_released} claims released, {n_withheld} withheld and listed"
+
+  - id: S03
+    section: Executive summary (SCQA)
+    kind: placeholder
+    title: "[H] {client}'s [named strength] is [hollowing]; [n] AI domains [recover the margin]"
+    requires: ["every exec-summary number RELEASED with two upstreams (load-bearing, C3/C6)", right-to-win and scorecard findings, value pools and headline use cases]
+    exhibit_note: SCQA four-box — Situation, Complication, Question, Answer
+
+  - id: S04
+    section: Executive summary (answer detail)
+    kind: placeholder
+    title: "[H] [n] gated use cases, led by [use case], pay back within [n] months"
+    requires: [right-to-win exhibit, value-pool table, use-case portfolio, conservative business cases]
+
+  - id: S05
+    section: Context and peer set
+    kind: placeholder
+    title: "[H] [Segment A] and [segment B] carry most of {client}'s profit"
+    requires: [engagement charter scope, client P&L by segment (QA2) or filed segment note (T1/T2)]
+
+  - id: S06
+    section: Context and peer set
+    kind: data
+    exhibit: peer_funnel
+    bind:
+      signal: "{subject_slug}.peerset.core_n"
+    title: "{n_core|Word} core peers were selected by a documented funnel, including {n_exited|word} exited peers"
+    title_withheld: "[H] {client}'s core peer set awaits verified sizes before the funnel can close"
+    so_what: the peer set bounds every ranking on S07 and S09; below n = 15 they are ranked lists, never percentiles.
+    exhibit_note: peer-set protocol funnel (seed, similarity, 0.3x–3x size band, regime, core/secondary, exited) with named peers
+
+  - id: S07
+    section: Context and peer set
+    kind: placeholder
+    title: "[H] {client} ranks [k] of [n] on economic profit"
+    requires: ["NOPLAT, invested capital and WACC per peer from filings", derivation computed in code]
+
+  - id: S08
+    section: Where you are
+    kind: data
+    exhibit: scorecard_two_axis
+    title: "{org} scores {capability} of 100, {band}, with {value_headline}"
+    source:
+      tier: T1
+      doc: "{org_label} maturity responses, PLUMB instrument v{instrument_version} (n={n_respondents})"
+      date: "{date}"
+      confidence: interview-anecdote
+    so_what: the gap between self-view and evidenced view is the client's artefact to-do list for the 90-day plan (S31).
+    exhibit_note: two-axis scorecard — self-view and evidenced view side by side, value axis V1–V4
+
+  - id: S09
+    section: Where you are
+    kind: data
+    exhibit: signals_table
+    title: "{client}'s FY{fy} annual report reaches level {rubric_level} of 5 on the AI-disclosure rubric"
+    title_withheld: "{client}'s outside-in AI signals are partly withheld pending verification"
+    so_what: outside-in disclosure corroborates the self-report but cannot lift any item above level 3 without engagement evidence (S08).
+    exhibit_note: outside-in signals; ranked list of named peers once peer signal values are released
+
+  - id: S10
+    section: Where you are
+    kind: placeholder
+    title: "[H] [ExCo] rate [dimension] a full level [above] [operating managers]"
+    requires: [raw self-report levels from 10–30 respondents (>=5 for sigma), respondent roles]
+
+  - id: S11
+    section: Where you are
+    kind: placeholder
+    title: "[H] [Compliance sub-dimension] reaches level [n]; [named controls] do not yet exist"
+    requires: [D6.1–D6.6 scores with artefact IDs, inventory record, kill-switch test record, vendor-evidence review]
+
+  - id: S12
+    section: Where you are
+    kind: placeholder
+    title: "[H] [Instrument] binds {client} from [date]; [n] domains fall under its high-materiality track"
+    requires: [jurisdiction list from charter, domain list from S21, regulatory-status map rows with VERIFY flags]
+
+  - id: S13
+    section: Why you exist
+    kind: placeholder
+    title: "[H] [n] capabilities pass all six right-to-win criteria"
+    requires: [long list of 8–15 candidates with evidence packs, C1–C6 scores and evidence classes]
+
+  - id: S14
+    section: Why you exist — reason 1
+    kind: placeholder
+    title: "[H] [Capability statement] is a [strengthening / hollowing] advantage"
+    requires: [evidence pack facts RELEASED, interview quotes string-matched, hollowing-check metrics vs peer set]
+
+  - id: S15
+    section: Why you exist — reason 2
+    kind: placeholder
+    title: "[H] [Capability statement] is a [strengthening / hollowing] advantage"
+    requires: [as S14]
+
+  - id: S16
+    section: Why you exist — reason 3
+    kind: placeholder
+    title: "[H] [Capability statement] is a [strengthening / hollowing] advantage"
+    requires: [as S14]
+
+  - id: S17
+    section: Why you exist — reason 4 (optional)
+    kind: placeholder
+    optional: true
+    title: "[H] [Capability statement] is a [strengthening / hollowing] advantage"
+    requires: [as S14]
+
+  - id: S18
+    section: Why you exist — reason 5 or temporary edge (optional)
+    kind: placeholder
+    optional: true
+    title: "[H] [Candidate] is a benefit without a barrier, not a reason to exist"
+    requires: [as S14]
+
+  - id: S19
+    section: Why you exist — coherence and hollowing summary
+    kind: placeholder
+    title: "[H] [n] of [n] strengths are hollowing, which makes them the largest value pools"
+    requires: [H1–H5 results, 3-year margin and pricing-power series vs peer median, attacker map]
+
+  - id: S20
+    section: Where to improve
+    kind: placeholder
+    title: "[H] [Leaf KPI 1], [leaf KPI 2] and [leaf KPI 3] move most economic profit"
+    requires: [client KPI extract (QA2) or outside-in proxies, peer medians per leaf, sensitivity computed in code]
+
+  - id: S21
+    section: Where to improve
+    kind: placeholder
+    title: "[H] Of [n] domains screened, [domains A–C] clear the value-feasibility bar"
+    requires: [criterion scores with rationale, sponsor per selected domain]
+
+  - id: S22
+    section: Where to improve
+    kind: placeholder
+    title: "[H] The [n] pools are worth [S$X–Y] realised against a [S$Z+] ceiling"
+    requires: [function cost base per domain, ceiling and realised references with upstream pairs]
+
+  - id: S23
+    section: Which use cases — portfolio
+    kind: placeholder
+    title: "[H] [n] use cases pass all five hard gates; [n] are Likely wins"
+    requires: [scored use-case matrix, intake scores C1–C5 and overrides, signed gate checklists]
+
+  - id: S24
+    section: Which use cases — domain 1
+    kind: placeholder
+    title: "[H] [Use cases A–C] lead domain 1 at tier [Tn–Tn]"
+    requires: [per-use-case matrix rows, owner and KPI, baseline extract reference, tier worksheet]
+
+  - id: S25
+    section: Which use cases — domain 2
+    kind: placeholder
+    title: "[H] [Use cases A–C] lead domain 2 at tier [Tn–Tn]"
+    requires: [as S24]
+
+  - id: S26
+    section: Which use cases — domain 3
+    kind: placeholder
+    title: "[H] [Use cases A–C] lead domain 3 at tier [Tn–Tn]"
+    requires: [as S24]
+
+  - id: S27
+    section: Which use cases — domain 4 (optional)
+    kind: placeholder
+    optional: true
+    title: "[H] [Use cases A–C] lead domain 4 at tier [Tn–Tn]"
+    requires: [as S24]
+
+  - id: S28
+    section: Which use cases — domain 5 (optional)
+    kind: placeholder
+    optional: true
+    title: "[H] [Use cases A–C] lead domain 5 at tier [Tn–Tn]"
+    requires: [as S24]
+
+  - id: S29
+    section: Business cases summary
+    kind: placeholder
+    title: "[H] Conservative cases clear payback norms for [n] of [n] use cases"
+    requires: [seven-section business case per use case, system-measured baselines (G3), inference-price sensitivity]
+
+  - id: S30
+    section: Responsible-AI and agent gate summary
+    kind: placeholder
+    title: "[H] [n] use cases are GO, [n] CONDITIONAL on [named conditions]"
+    requires: [signed gate checklists, kill-switch test records, vendor assessments, ISO 42001 / NIST AI RMF mapping]
+
+  - id: S31
+    section: Roadmap 30/60/90
+    kind: placeholder
+    title: "[H] The first 90 days build [the inventory, baselines and first control group]"
+    requires: [owner per lane, dependencies from CONDITIONAL items in S30]
+
+  - id: S32
+    section: Roadmap 6/12 months
+    kind: placeholder
+    title: "[H] By month 12, [use cases] are in production with finance-reconciled value"
+    requires: [business-case timelines, regulatory binding dates, client capacity constraints]
+
+  - id: S33
+    section: Measurement design
+    kind: placeholder
+    title: "[H] Every use case gets a system baseline, holdout group and stop condition before build"
+    requires: [baseline extracts, named statistical owner, finance attribution rule (D8.4)]
+
+  - id: S34
+    section: Risks and open items
+    kind: placeholder
+    title: "[H] [n] open items, led by [item], must close before the board decision"
+    requires: [risk register entries (artefact 3), VERIFY register, gap register disposition]
+
+  - id: A1
+    section: Appendix — evidence log
+    kind: data
+    exhibit: evidence_log
+    title: "{n_released|Word} released claims trace to a hashed source passage"
+    title_withheld: "[H] No claim is released yet, so the evidence log is empty"
+
+  - id: A2
+    section: Appendix — source tiers
+    kind: placeholder
+    title: "[H] Sources are tiered T1–T5 and T5 is never a source of record"
+    requires: [source store export with tier counts used in the deck]
+
+  - id: A3
+    section: Appendix — confidence labels
+    kind: placeholder
+    title: "[H] Every metric carries one of four confidence labels"
+    requires: [claim store export with label counts used in the deck]
+
+  - id: A4
+    section: Appendix — methodology notes
+    kind: placeholder
+    title: "[H] Scores follow published anchors, weights and gates the client can re-run"
+    requires: [kit version numbers, working-value register]
+
+  - id: A5
+    section: Appendix — benchmark n and composition
+    kind: placeholder
+    title: "[H] The peer benchmark holds n=[n] evidenced entries, defined on [date]"
+    requires: [benchmark database extract]
+
+  - id: A6
+    section: Appendix — gap and VERIFY register
+    kind: register
+    exhibit: gap_register
+    title: "{n_withheld|Word} claims were removed rather than flagged; {n_verify} items remain unconfirmed"
+
+  - id: A7
+    section: Appendix — reviewer worksheet summary
+    kind: placeholder
+    title: "[H] The independent reviewer sampled [n] claims and found [n] non-resolving sources"
+    requires: [signed QA gate 3 worksheet]

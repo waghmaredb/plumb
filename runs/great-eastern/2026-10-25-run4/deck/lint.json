@@ -1,0 +1,42 @@
+{
+  "ok": true,
+  "errors": [],
+  "warnings": [
+    {
+      "check": "placeholders",
+      "slide": null,
+      "message": "36 placeholder slide(s) with [H] titles (requires engagement data / withheld): S03, S04, S05, S06, S07, S08, S10, S11, S12, S13, S14, S15, S16, S17, S18, S19, S20, S21, S22, S23, S24, S25, S26, S27, S28, S29, S30, S31, S32, S33, S34, A2, A3, A4, A5, A7; deck is not board-ready"
+    }
+  ],
+  "draft": true,
+  "interlock": {
+    "passed": false,
+    "reasons": [
+      "internal profile",
+      "1 attachment unreconciled",
+      "resolution 0.2",
+      "no QA gate 3 sign-off"
+    ],
+    "build_profile": "internal",
+    "resolution": 0.2,
+    "attachments_total": 1,
+    "attachments_unreconciled": 1,
+    "attachments_mismatch": 0,
+    "released": 11,
+    "withheld": 4,
+    "awaiting_reconciliation": 0,
+    "operators": [
+      "Deepak Waghmare"
+    ],
+    "signoff_path": null,
+    "signoff_status": "absent",
+    "reviewer": null,
+    "reviewer_role": null,
+    "approver": null,
+    "approver_role": null,
+    "signoff_date": null,
+    "run_id": "research-4f4e22fab7c2",
+    "banner": "DRAFT — not for board use (internal profile; 1 attachment unreconciled; resolution 0.2; no QA gate 3 sign-off)",
+    "outcome": "Released: 11 claims. Withheld: 4 claims (listed)."
+  }
+}
