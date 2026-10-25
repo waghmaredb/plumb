@@ -10,6 +10,7 @@
 | Version | Date | Author | Change |
 |---|---|---|---|
 | v0.1 | 2026-10-25 | Founder | Initial drafting notes and model clauses from engagement-framework and compliance-layer reports |
+| v0.1.1 | 2026-10-25 | Product | Clause 3.6 "refund on fabrication" added (model wording, counsel review) per red-team review 2026-10-25, Major / §3.5; clause 1.3 dependencies split by Phase A / Phase B (Blocker 4); counsel item 8 added |
 
 ---
 
@@ -36,14 +37,14 @@
 | Drafting note | Position |
 |---|---|
 | Scope lives in the charter | The letter incorporates the engagement charter as Schedule 1; the charter's sections 1–2 define scope and outputs; the charter's decision log governs changes |
-| Fixed fee tied to client dependencies | Timeline, not fee, moves when the client misses day 5 (data) or day 10 (interviews); change order after 10 working days |
+| Fixed fee tied to client dependencies | Phase A: timeline, not fee, moves when the client misses day 10 (interviews); there is no data dependency. Phase B: the day-5 data cut-off counts from onboarding clearance. Change order after 10 working days |
 | Deliverables list | Must match the standard list in the framework report so that the client cannot later argue an output was implied |
 
 > **1.1 Services.** PLUMB Advisory Pte. Ltd. **[VERIFY entity name on incorporation]** ("PLUMB") will perform the Verified Enterprise AI Journey Assessment described in the Engagement Charter at Schedule 1 (the "Services") and deliver the outputs listed in Schedule 1 section 2 (the "Deliverables").
 >
 > **1.2 Exclusions.** The Services do not include implementation of any use case, vendor selection, systems design, legal or regulatory advice, tax advice, audit or assurance opinions, or any work after the date of the final Deliverable, unless separately agreed in writing.
 >
-> **1.3 Client dependencies.** The Client will provide the data items and access listed in Schedule 1 section 4 by the dates stated and will make the persons listed in Schedule 1 section 5 available. Where the Client does not, the timeline extends day-for-day up to ten working days without change to the fee; thereafter PLUMB may issue a change order.
+> **1.3 Client dependencies.** The Client will make the persons listed in Schedule 1 section 5 available and, for Phase B only, provide the data items listed in Schedule 1 section 4.2 by the dates stated, counted from the date the Client confirms its third-party onboarding of PLUMB has cleared. Phase A requires no confidential data from the Client. Where the Client does not meet a dependency, the affected phase's timeline extends day-for-day up to ten working days without change to the fee; thereafter PLUMB may issue a change order.
 >
 > **1.4 Changes.** Changes to scope are recorded in the Charter decision log and, where they affect fee or timeline, confirmed by written change order signed by both parties.
 
@@ -88,6 +89,8 @@
 > **3.4 Limits.** The verification standard confirms the existence, content and independence of sources. It does not warrant the accuracy of information published by third parties, including regulators, exchanges, companies, data vendors and the press, nor the accuracy of information supplied by the Client or by interviewees. Benchmark percentiles depend on the composition and size of the peer set, which is disclosed on each exhibit. Regulatory positions change frequently; information is current as at the date stated on each Deliverable.
 >
 > **3.5 Correction.** If, within twelve months of issue, the Client identifies a citation in a Deliverable that does not resolve, a quotation that does not match its source, or a load-bearing number that does not meet clause 3.1(c), PLUMB will investigate, correct the Deliverable at no charge, record the matter in the engagement file and, where the error affects a finding, re-issue the affected finding.
+>
+> **3.6 Refund on fabrication.** *(Model wording for counsel review; the per-instance amount, the aggregate ceiling and the interaction with clause 4 and PI cover are to be set with counsel and the insurer **[VERIFY]**.)* If any citation in a delivered Deliverable does not resolve to the source PLUMB stored for it (matched by the content hash recorded in the evidence appendix), or any quotation in a delivered Deliverable does not match the stored source after whitespace normalisation, then for each such instance (a) PLUMB will refund [S$[ ] / [ ]% of the fee] to the Client, up to an aggregate of [100]% of the fee paid under this letter, and (b) PLUMB will re-issue the Deliverable with the instance corrected or removed, within [10] working days, at no charge. An instance is established by PLUMB's own re-check or by the Client's written notice identifying the citation or quotation, and is confirmed by the independent reviewer named in Schedule 1. The refund is payable within [30] days of confirmation and is in addition to the correction remedy in clause 3.5. This clause does not apply to a source that resolved and matched at delivery and was later altered or withdrawn by its publisher, provided the stored copy and hash still match the evidence appendix.
 
 ---
 
@@ -99,7 +102,7 @@
 | Carve-outs that cannot be capped | Fraud, wilful misconduct; anything Singapore law does not permit to be excluded |
 | Consequential loss | Excluded |
 | Decisions remain the client's | Deliverables inform a decision; they are not the decision |
-| Interaction with clause 3.5 | Correction at no charge is the primary remedy for verification failures; damages beyond that are subject to the cap |
+| Interaction with clauses 3.5 and 3.6 | Correction at no charge plus the stated per-instance refund on fabrication are the primary remedies for verification failures; damages beyond that are subject to the cap. Counsel to decide whether 3.6 refunds count toward the cap |
 
 > **4.1 Nature of the Deliverables.** The Deliverables are advisory. Decisions on whether and how to act on them, including any investment, deployment, hiring, procurement or regulatory decision, are made by the Client alone.
 >
@@ -242,9 +245,9 @@
 >
 > **12.2** Either party may terminate immediately for the other's material breach not remedied within [10] working days of notice, or for insolvency.
 >
-> **12.3 Design partner.** If PLUMB misses the day-20 delivery by more than ten working days for reasons within its control, the Client may terminate and pay only for Phase 1 and Phase 2 outputs delivered.
+> **12.3 Design partner.** If PLUMB misses the Phase A day-12 delivery by more than ten working days for reasons within its control, the Client may terminate and pay only for Phase 1 and Phase 2 outputs delivered.
 >
-> **12.4 Survival.** Clauses 3.5, 4, 5, 6, 7, 8, 13 and the DPA survive termination.
+> **12.4 Survival.** Clauses 3.5, 3.6, 4, 5, 6, 7, 8, 13 and the DPA survive termination.
 
 ---
 
@@ -280,3 +283,4 @@
 | 5 | Dispute clause: expert determination for Tier 2 measurement; SMC/SIAC model wording | Speed vs enforceability |
 | 6 | Whether clause 3.5 correction remedy should be expressed as the sole remedy for verification failures | Insurer position |
 | 7 | Reference and benchmark-consent interaction with client confidentiality for listed clients | Disclosure rules |
+| 8 | Clause 3.6 refund on fabrication: per-instance amount, aggregate ceiling, whether it sits inside or outside the clause 4.2 cap, insurer consent | Must be louder than the Deloitte precedent and still insurable (red-team review §3.5) |

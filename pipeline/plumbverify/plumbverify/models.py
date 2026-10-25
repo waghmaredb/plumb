@@ -47,6 +47,8 @@ class Reconciliation(str, Enum):
 
 #: label every citation from an unreconciled ATTACHED source must carry
 ATTACHED_LABEL = "attached; publisher hash unreconciled"
+#: prefix the policy layer keys on (spec C2a); any label starting with it marks an unreconciled attachment
+ATTACHED_LABEL_PREFIX = "attached;"
 
 
 class ClaimKind(str, Enum):
@@ -168,6 +170,7 @@ class ClaimDecision(BaseModel):
     labels: list[str] = Field(default_factory=list, description="labels carried by the supporting citations (e.g. attached; publisher hash unreconciled)")
     independent_upstreams: int = 0
     upstream_pairs: list[UpstreamPair] = Field(default_factory=list)
+    withheld_awaiting_reconciliation: bool = Field(default=False, description="C2a: blocked in a client build only because its support is an unreconciled attachment (0.4)")
 
 
 class GapEntry(BaseModel):
@@ -180,6 +183,7 @@ class VerificationReport(BaseModel):
     run_id: str
     generated_at: datetime = Field(default_factory=utcnow)
     spec_version: str = "PI-CV v0.1"
+    build_profile: str = Field(default="client", description="'client' (C2a: unreconciled attachments BLOCKED) or 'internal' (labelled path) (0.4)")
     sources: list[Source] = Field(default_factory=list)
     claims: list[Claim] = Field(default_factory=list)
     citations: list[Citation] = Field(default_factory=list)

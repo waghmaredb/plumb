@@ -2993,7 +2993,7 @@
   ],
   "percentile": {
     "scope": "peer",
-    "label": "peer set n=17",
+    "label": "peer set n=17; population: evidenced",
     "n": 17,
     "n_peer_candidates": 17,
     "peer_n_sufficient": true,
@@ -3004,7 +3004,18 @@
       "region": "SG"
     },
     "peer_set_date": "2026-10-01",
-    "evidence_gated_share": 0.23529411764705882,
+    "evidence_gated_share": 1.0,
+    "population": {
+      "population": "evidenced",
+      "n_in_population": 26,
+      "n_excluded_other_population": 14,
+      "n_untagged": 0,
+      "populations_present": [
+        "evidenced",
+        "self"
+      ]
+    },
+    "peer_rank": null,
     "total_percentile": 35.294117647058826,
     "dimension_percentiles": {
       "D1": 47.05882352941177,
@@ -3027,16 +3038,16 @@
       "D8": 52.6
     },
     "global_median_by_dimension": {
-      "D1": 45.45,
-      "D2": 47.25,
+      "D1": 46.1,
+      "D2": 49.45,
       "D3": 46.150000000000006,
-      "D4": 47.3,
-      "D5": 43.400000000000006,
-      "D6": 45.65,
-      "D7": 47.95,
-      "D8": 50.25
+      "D4": 49.5,
+      "D5": 43.150000000000006,
+      "D6": 49.9,
+      "D7": 50.599999999999994,
+      "D8": 52.45
     },
-    "global_median_total": 44.355000000000004,
+    "global_median_total": 46.295,
     "set_median_total": 47.87
   }
 }

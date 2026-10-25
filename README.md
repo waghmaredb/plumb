@@ -4,13 +4,17 @@
 
 **Status:** v0.1 — G0 design-freeze candidate. Nothing here has been run on a real client. Every file carries its own status header and change-log.
 
-An AI-first consulting methodology and tool that researches a client and its competitors from public sources, scores enterprise AI maturity against peers, and produces three outputs at Big-4 quality with every citation verified:
+**Change log:** 2026-10-25 — present-tense quality claims replaced with the design target and the measured state (red-team review 2026-10-25, Blocker 5 / §2.1); retainer renamed (review §4.5).
+
+An AI-first consulting methodology and tool that researches a client and its competitors from public sources, scores enterprise AI maturity against peers, and produces three outputs:
 
 1. **Why they exist** — the 3–5 distinctive capabilities that pass a six-criterion right-to-win test, tagged for the AI era.
 2. **Where to improve** — the 3–5 value pools (make money / save money / avoid risk) from a driver tree and a 2–5 domain rule.
 3. **Exactly which AI use cases** — scored, gated, tiered for risk, with a business case and an audit-ready evidence pack.
 
-The differentiator is not the AI; it is the **verification pipeline** (every citation resolves, every quote string-matches its source, every load-bearing number has two independent upstreams, unverifiable claims are blocked not flagged) and the **compliance layer** (ISO 42001 / NIST AI RMF / MAS AIRM / EU AI Act / OWASP / ATLAS woven into scoring, gating and deliverables).
+**Design target (not yet met):** every number in the deck traces to a fetched, hashed source, or it is not in the deck; every quotation string-matches its source; every load-bearing number has two independent upstreams; claims that cannot be verified are listed in the gap register, not hidden. **Current measured state** — first real run (`runs/great-eastern/2026-10-25-ar-attached/`): citation resolution 0.2 (1 of 5 sources, an unreconciled attachment), 1 extractor defect (leadership-title lexicon missed the client's MD of Data & AI), 4 of 5 peer-size claims withheld; no deck has yet passed QA gate 3 with a named independent reviewer. Until one has, the sentence we can stand behind is: *every claim we could not verify is listed, not hidden.*
+
+The differentiator is not the AI; it is the **verification pipeline** (fetch-and-hash store, quotation string-match, two-independent-upstream rule, block-not-flag with a gap register) and the **compliance layer** (ISO 42001 / NIST AI RMF / MAS AIRM / EU AI Act / OWASP / ATLAS woven into scoring, gating and deliverables).
 
 ## Repository layout
 
@@ -19,9 +23,10 @@ docs/          Research reports that justify the design (3 files, ~350 sources)
 methodology/   The engagement IP: maturity instrument, right-to-win kit, value & use-case kit
 compliance/    Risk tiers & gates, evidence-pack templates, regulatory status map,
                control-library schema + CSV (CSA AICM v1.1-keyed crosswalk)
-pipeline/      Verification pipeline spec + code: plumbverify (verification layer, 84 tests)
-               and plumbresearch (Phase 1 outside-in modules + orchestrator, 30 tests)
-instrument/    Maturity instrument as YAML + plumbscore scorer (45 tests)
+pipeline/      Verification pipeline spec + code: plumbverify (verification layer, 99 tests)
+               and plumbresearch (Phase 1 outside-in modules + orchestrator, 46 tests)
+instrument/    Maturity instrument as YAML + plumbscore scorer (46 tests)
+runs/          Real-subject runs (internal artefacts; see each README's "Released / Withheld" line)
 catalogue/     Use-case catalogue schema + 25 seed rows (APAC-weighted, with outcome metrics)
 commercial/    Pricing ladder, engagement charter, engagement-letter clauses, DPA outline,
                conflict-check procedure
@@ -45,7 +50,8 @@ commercial/    Pricing ladder, engagement charter, engagement-letter clauses, DP
 | 11 | `pipeline/verification-pipeline-spec.md` | Control objective PI-CV, 16 components, G1/GA thresholds, vendor rules, 30-claim reviewer sampling protocol |
 | 12 | `catalogue/use-case-catalogue-seed.csv` | Schema + 25 seed rows |
 | 13 | `methodology/ghost-deck-template.md` | Storyline rules, 34-slide ghost deck, QA gate 3 reviewer checklist, titles-only example |
-| 14 | `commercial/` | Pricing ladder, charter, letter clauses, DPA outline, conflict check (see its README) |
+| 14 | `commercial/` | Pricing ladder (Tier 1 Phase A / Phase B, Benchmark Refresh retainer), charter, letter clauses, DPA outline, conflict check (see its README) |
+| 15 | `docs/red-team-review-2026-10-25.md` | Independent red-team review of the customer journey; the product-side fixes are applied across the files above and cited by finding number in each change log |
 
 ## Evidence discipline (applies to every file)
 
@@ -77,11 +83,11 @@ commercial/    Pricing ladder, engagement charter, engagement-letter clauses, DP
 
 | Package | What works | Fixture-only / stubbed |
 |---|---|---|
-| `pipeline/plumbverify` 0.2.0 | fetch+hash store, URL health, quote (exact) and claim matching, number normalisation, two-upstream independence, tiering, block-not-flag, hash-chained log, PDF extraction w/ OCR flag, Wayback, upstream tracing, reviewer report | semantic matcher, AI-gen classifier, OCR engine, 24h re-check job |
-| `pipeline/plumbresearch` | annual-report rubric + competitor/leadership extraction, peer funnel 0.3x–3x, postings share, call density, KPI percentiles, C10 cap/checkpoint, orchestrator → claims/report/peer-set/signals/gap register | posting/transcript/patent collection (CSV), economic profit until cost_of_equity set, funnel text-similarity step |
-| `instrument/plumbscore` | cap rule, σ flags, ExCo gap, value axis, peer percentile (n≥15), weighted κ, Markdown scorecard | Tier-0 web form |
+| `pipeline/plumbverify` 0.4.0 | fetch+hash store, URL health, quote (exact) and claim matching, number normalisation, two-upstream independence, tiering, block-not-flag, build profiles (C2a: client builds withhold unreconciled attachments), hash-chained log, PDF extraction w/ OCR flag, Wayback, upstream tracing, reviewer report | semantic matcher (qualitative claims pass through a stub, so only number and quotation claims are machine-verified today), AI-gen classifier, OCR engine, 24h re-check job |
+| `pipeline/plumbresearch` | annual-report rubric + competitor/leadership extraction (lexicon-based; one known miss, see runs/), peer funnel 0.3x–3x, postings share, call density, KPI percentiles, C10 cap/checkpoint, orchestrator → claims/report/peer-set/signals/gap register, `--profile client|internal` | posting/transcript/patent collection (CSV), economic profit until cost_of_equity set, funnel text-similarity step |
+| `instrument/plumbscore` | cap rule, σ flags, ExCo gap, value axis, peer percentile (n≥15, within one population only), rank-within-named-peers when n<15, weighted κ, Markdown scorecard | Tier-0 web form |
 
-Run the alphas: place the annual-report PDFs under `pipeline/plumbresearch/data/<subject>/` (file names in the subject YAML), then `plumbresearch run plumbresearch/subjects/maybank.yaml --out out --data-dir data`.
+Run the alphas: place the annual-report PDFs under `pipeline/plumbresearch/data/<subject>/` (file names in the subject YAML), then `plumbresearch run plumbresearch/subjects/maybank.yaml --out out --data-dir data`. Sandbox runs without egress use `--profile internal` and are internal artefacts; nothing is shown externally until a run has been executed with egress and `plumbverify reconcile` returns MATCH on every attachment.
 
 ## Top open items before G1 (alpha)
 

@@ -11,7 +11,7 @@
 | Version | Date | Author | Change |
 |---|---|---|---|
 | v0.1 | 2026-10-25 | Pipeline lead | Initial draft: control objective, components, thresholds, evidence base, vendor rules, test plan |
-| | | | |
+| v0.1.1 | 2026-10-25 | Product | Rule C2a (attached-document policy by build profile) added after the red-team review 2026-10-25, Blocker 2 / §2.6; implemented in plumbverify 0.4 (`build_profile`, `--profile`) |
 
 ---
 
@@ -77,6 +77,7 @@ Architecture note: discovery may use breadth tools; the evidence set that reache
 |---|---|---|---|---|---|---|---|
 | C1 | Fetcher + content hash store | Fetch each candidate source once, store raw bytes and text extract, compute SHA-256, record final URL after redirects and fetch timestamp; immutable object store keyed by hash | Candidate URL from agent | `Source` record FETCHED | Timeout 20 s; max body 25 MB; user-agent declared; robots.txt honoured; per-domain rate limit | Non-2xx or timeout goes to C2; parse failure stores bytes and marks `text_extract=null` (claim cannot match, see C3) | CL-001 |
 | C2 | URL health check with retry and archive policy | Classify URL health: HEAD then GET; retry 3x with exponential backoff (2 s, 8 s, 32 s) across two egress IPs; on persistent failure query Wayback for a snapshot within 24 months; classify LIVE / ARCHIVED / DEAD / LIKELY_HALLUCINATED (no DNS, no archive, pattern-plausible path) | URL, fetch result | `health_class`, `archive_url` | Re-check all LIVE URLs within 24 h of deck release; ARCHIVED citable only with archive URL and hash shown; DEAD and LIKELY_HALLUCINATED never citable | DEAD / LIKELY_HALLUCINATED sources force dependent claims to UNSUPPORTED (then C10) | CL-002 |
+| C2a | Attached-document policy by build profile | A person-supplied document stored under its declared publisher URL (state ATTACHED) is citable only as far as the build profile allows. **CLIENT-FACING builds** (`build_profile = "client"`, the default): an ATTACHED source with reconciliation != MATCH is treated as BLOCKED; every claim whose only support it is, is withheld and listed in the gap register with the reason "awaiting publisher reconciliation". **INTERNAL / draft builds** (`build_profile = "internal"`): the labelled path remains; the claim is released carrying the label `attached; publisher hash unreconciled` and the build may not leave the firm | `Source` (ATTACHED, `reconciliation`), build profile | Claim BLOCKED (client) or released with label (internal); gap-register reason; metric `withheld_awaiting_reconciliation` | Default profile is client; profile recorded on the report and in every policy log record; reconciliation MATCH lifts the withholding with no other change; MISMATCH blocks in both profiles | A claim with a second, independently fetched supporting source is released in a client build without the label | CL-002, CL-011 |
 | C3 | Claim extraction | Split module drafts into atomic claims; tag type (number / quotation / qualitative), module, and load-bearing flag (any number or quotation in the executive summary, scorecards, value-pool sizing, or use-case business cases is load-bearing by default) | Module draft, citations | `Claim` records EXTRACTED | Load-bearing default rules are code, not model judgement; model may propose additional load-bearing flags, never remove them | Claims with no citation are UNSUPPORTED immediately | CL-003 |
 | C4 | Claim-to-passage match | For each claim-source pair: exact or normalised string match on numbers and named entities, then semantic match of claim against candidate passages; record best passage and score | `Claim`, `Source.text_extract` | `match_scores[]`, state MATCHED / PARTIAL / UNSUPPORTED | Number claims: the number (with unit and period) must appear in the passage or be derivable by a logged arithmetic step; semantic threshold: SUPPORTED at or above 0.85, PARTIAL 0.70–0.85, UNSUPPORTED below 0.70 (cosine on the configured embedding model; thresholds calibrated against reviewer labels at G1 and re-tuned per release) | PARTIAL is treated as UNSUPPORTED for load-bearing claims; allowed for non-load-bearing qualitative claims only if a second source reaches SUPPORTED | CL-003 |
 | C5 | Quotation exact match | Any span marked as quotation must exact-match the stored text after Unicode and whitespace normalisation; ellipses permitted only with logged omitted span | `Claim` (type quotation) | pass / fail | Zero tolerance; no fuzzy matching | Fail forces BLOCKED (not UNSUPPORTED); quotation cannot be downgraded to paraphrase automatically | CL-004 |
@@ -100,10 +101,10 @@ Architecture note: discovery may use breadth tools; the evidence set that reache
 | S2 | Fetch and hash every candidate source (C1); health check (C2); tier (C8); AI-gen and farm scoring (C7) | Sources in citable states only |
 | S3 | Extract claims (C3); match to passages (C4); quotation check (C5) | Claim states assigned |
 | S4 | Upstream graph and independence check for load-bearing numbers (C6); label confidence (C9) | Pairs recorded |
-| S5 | Block (C11); write gap register | Zero BLOCKED in released set |
+| S5 | Apply C2a for the build profile; block (C11); write gap register | Zero BLOCKED in released set |
 | S6 | 24-hour pre-release re-check of all LIVE URLs (C2) | Resolution 100% |
 | S7 | Independent reviewer sampling and QA gate 3 signature (C16) | Thresholds in section 4 |
-| S8 | Deck export lint: confidence labels, tier display, AI-use disclosure block (EP-10) present | Lint pass |
+| S8 | Deck export lint: confidence labels, tier display, AI-use disclosure block (EP-10) present; S02 verification statement rendered only if the build report shows citation resolution = 1.0, every attachment reconciled MATCH and build profile = client, otherwise the "DRAFT — not for board use" banner (ghost deck R8/R9) | Lint pass |
 
 ---
 

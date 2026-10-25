@@ -13,6 +13,7 @@ Design constraints inherited from the research base: leader share in the top ban
 | Version | Date | Change | Author |
 |---|---|---|---|
 | v0.1 | 2026-10-25 | Initial draft: 48 capability items, 4 value items, scoring spec, calibration, κ subset | Methodology |
+| v0.1.1 | 2026-10-25 | Cap-rule transparency: rule shown to respondents on screen one and in the invitation email; scorecards show self-view and evidenced view side by side (red-team review 2026-10-25, Major / §2.2). Peer percentile only within one population (self vs evidenced, never pooled) and replaced by rank within named peers when n < 15 (Blocker 3 / §2.3) | Product |
 | v0.2 | — | Planned: anchors revised after κ test on ≥10 organisations; weights re-fitted after n≥100 benchmark entries | — |
 
 ---
@@ -25,9 +26,10 @@ Design constraints inherited from the research base: leader share in the top ban
 | Value axis | 4 items (V1–V4), reported as a profile beside the capability score, never averaged into it |
 | Level semantics | L1 absent · L2 ad hoc / pilot · **L3 in production with owner, budget, controls (production boundary)** · L4 scaled, measured, standardised · L5 embedded in decisions/products, externally evidenced or independently assured |
 | Evidence classes | **D** document (policy, board paper, assessment report) · **S** system record (logs, dashboards, HRIS/LMS/finance extracts, inventory) · **I** interview (≥2 independent interviewees agree) · **O** observation (assessor sees the system, workflow or artefact live) |
-| Cap rule | Self-reported scores are capped at level 3 unless an artefact of the item's required evidence class is logged (§5.4) |
+| Cap rule | Self-reported scores are capped at level 3 unless an artefact of the item's required evidence class is logged (§5.4). **Shown to respondents before they answer:** screen one of the instrument (web form and engagement survey alike) and the invitation email state "a self-report above 3 is recorded at 3 unless an evidence class is logged; levels 4–5 are evidence levels — choose them, then name or attach the artefact" (wording: `commercial/engagement-charter-template.md` §5.1) |
+| Scorecard views | Every scorecard shows the **self-view** (consensus of raw self-reports, uncapped) and the **evidenced view** (cap rule applied) side by side; the difference is listed per item as the artefacts that would move it. The evidenced view is the score of record |
 | Outside-in proxies | 2–4 per item; corroborate only, never lift a score (§5.4) |
-| Output | Weighted 0–100 capability score and band; value-axis profile; per-item σ with flags; peer percentile with n disclosed; evidence coverage % |
+| Output | Weighted 0–100 capability score and band (self-view and evidenced view); value-axis profile; per-item σ with flags; peer percentile with n disclosed where the peer set has n ≥ 15 within one population, otherwise rank within named peers (§5.5); evidence coverage % |
 
 Evidence class codes in item tables: the class listed is the **minimum** required to score 4 or 5. Where two are listed (e.g. "D+S"), both are required.
 
@@ -301,7 +303,7 @@ The **production boundary is the 50 line**. Target shares follow the BCG 2025 di
 
 | Rule | Detail |
 |---|---|
-| Cap | Any item where the organisation's consensus self-report is 4 or 5 is **recorded at 3** until an artefact of the item's Ev≥4 class is logged in the evidence register with an artefact ID, date and reviewer |
+| Cap | Any item where the organisation's consensus self-report is 4 or 5 is **recorded at 3** until an artefact of the item's Ev≥4 class is logged in the evidence register with an artefact ID, date and reviewer. The rule is disclosed to respondents on screen one and in the invitation email (§1), and both views are reported (§1 "Scorecard views") |
 | Lift | With the required artefact logged, the item is scored at the level the artefact supports (which may be below the self-report) |
 | Interview evidence | Where Ev≥4 is D or S, interview agreement alone lifts to at most 3; where Ev≥4 is I, two independent interviewees must agree and the assessor records both references |
 | Outside-in signals | Corroborate only. A proxy can be cited to **challenge** a self-report downward or to pre-populate a draft score, never to lift above 3 |
@@ -313,7 +315,8 @@ The **production boundary is the 50 line**. Target shares follow the BCG 2025 di
 | Output | Rule |
 |---|---|
 | Peer set | Industry × region (APAC sub-region) × size band; built by the documented peer-set funnel used in Phase 1 |
-| Minimum n | n ≥ 15 for a peer percentile; otherwise fall back to global benchmark and label the output "global, peer n insufficient" |
+| Minimum n | n ≥ 15 for a peer percentile; otherwise report the **rank within the named peers** with each peer's value shown, labelled "global, peer n insufficient", and no percentile |
+| Populations | Tier-0 self-scored entries (capped ≤ 3, `population = self`) and evidence-gated engagement entries (`population = evidenced`) are different populations and are never pooled into one percentile (`instrument/README.md`) |
 | Percentile | Percentile rank of C within the set; also reported per dimension and for V2/V3 |
 | Disclosure | n, peer-set definition date and the share of peer entries that are evidence-gated vs self-scored only (free instrument entries) are printed on the scorecard |
 

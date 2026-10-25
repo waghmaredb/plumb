@@ -7,4 +7,4 @@ from .models import (  # noqa: F401
 from .pipeline import Verifier, load_claims  # noqa: F401
 from .report import build_sample, render_markdown  # noqa: F401
 
-__version__ = "0.3.0"
+__version__ = "0.3.1"

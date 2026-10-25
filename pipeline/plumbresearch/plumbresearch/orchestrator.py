@@ -12,6 +12,10 @@ claim through plumbverify, and writes the outputs:
 Module order matters once: the annual-report module's competitor names feed
 the peer-set funnel. There is no other cross-module context (C10: "no
 cross-module context carry other than the structured claim store").
+
+Change log: 2026-10-25 — `build_profile` pass-through to plumbverify (spec C2a,
+red-team review Blocker 2) and signals.md outcome wording "Released: N claims.
+Withheld: M claims (listed)" in place of "build FAIL" (review §5.4 / Blocker 6).
 """
 from __future__ import annotations
 
@@ -24,6 +28,7 @@ from typing import Callable, Optional
 from plumbverify.log import HashChainLog
 from plumbverify.models import CitationStatus
 from plumbverify.pipeline import Verifier
+from plumbverify.policy import BUILD_PROFILES, DEFAULT_BUILD_PROFILE, present_outcome
 
 from .context import DEFAULT_CAP, RunContext, ToolCapExceeded
 from .models import Gap, ModuleResult, ResearchClaim, Signal
@@ -89,10 +94,15 @@ def _module_fns(ctx: RunContext, competitors_box: dict) -> dict[str, Callable[[R
 
 def run_subject(subject: Subject, out_dir: str | Path, data_dir: str | Path, *, fixtures: bool = False, cap: int = DEFAULT_CAP,
                 modules: Optional[list[str]] = None, as_of: Optional[date] = None, offline: bool = False,
-                ctx: Optional[RunContext] = None) -> RunOutcome:
+                ctx: Optional[RunContext] = None, build_profile: str = DEFAULT_BUILD_PROFILE) -> RunOutcome:
+    """`build_profile` (spec C2a): "client" (default) withholds every claim whose only support is an
+    attached document with reconciliation != MATCH; "internal" releases them with the attached label."""
+    if build_profile not in BUILD_PROFILES:
+        raise ValueError(f"build_profile must be one of {BUILD_PROFILES}, got {build_profile!r}")
     ctx = ctx or RunContext.build(subject, out_dir, data_dir, fixtures=fixtures, cap=cap, as_of=as_of, offline=offline)
     out_dir = ctx.out_dir
-    ctx.log_call("orchestrator", "run_start", subject.slug, "ok", fixtures=fixtures, cap=cap, modules=modules or MODULE_ORDER)
+    ctx.log_call("orchestrator", "run_start", subject.slug, "ok", fixtures=fixtures, cap=cap, modules=modules or MODULE_ORDER,
+                 build_profile=build_profile)
     competitors_box: dict = {}
     fns = _module_fns(ctx, competitors_box)
     results: list[ModuleResult] = []
@@ -111,7 +121,8 @@ def run_subject(subject: Subject, out_dir: str | Path, data_dir: str | Path, *, 
     gaps = [g for r in results for g in r.gaps]
 
     # --- verification (S2–S5) over the structured claim store ---------------
-    verifier = Verifier(fetcher=ctx.fetcher, store=ctx.store, log=ctx.log, tier_rules=ctx.tier_rules, region=ctx.region)
+    verifier = Verifier(fetcher=ctx.fetcher, store=ctx.store, log=ctx.log, tier_rules=ctx.tier_rules, region=ctx.region,
+                        build_profile=build_profile)
     report = verifier.run(list(claims), run_id=ctx.run_id)
     decisions = {d.claim_id: d for d in report.decisions}
     for s in signals:
@@ -161,6 +172,9 @@ def _write_outputs(ctx: RunContext, o: RunOutcome) -> None:
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "cap": ctx.cap,
         "fixtures": ctx.fixtures,
+        "build_profile": o.report.build_profile,
+        "outcome": present_outcome(len(o.claims), o.report.metrics.get("blocked_claims", 0),
+                                   o.report.metrics.get("withheld_awaiting_reconciliation", 0)),
         "modules": [{"module": r.module, "claims": len(r.claims), "signals": len(r.signals), "gaps": len(r.gaps), "tool_calls": r.tool_calls,
                      "restarts": r.restarts, "escalated": r.escalated, "data_available": r.data_available, "detail": r.detail} for r in o.modules],
         "signals": [s.model_dump(mode="json") for s in o.signals],
@@ -212,13 +226,56 @@ def signals_markdown(o: RunOutcome) -> str:
         L.append(f"| {r.module} | {r.tool_calls} | {r.restarts} | {'yes' if r.escalated else 'no'} | {len(r.claims)} | {len(r.signals)} | {'yes' if r.data_available else 'no'} |")
     L.append("")
     m = o.report.metrics
-    L.append(f"Verification: {m.get('claims')} claims, {m.get('blocked_claims')} BLOCKED, build {'PASS' if o.report.build_pass else 'FAIL'}; "
-             f"citation resolution {m.get('citation_resolution_rate')}, quotation pass rate {m.get('quotation_pass_rate')}, "
-             f"two-upstream coverage {m.get('two_upstream_coverage')}, AI/farm pages cited {m.get('aigen_or_farm_cited')}.")
+    # Run-presentation format (red-team review 2026-10-25 §5.4): lead with what was released, list what was withheld
+    # and why, never "Build: FAIL". The PASS/FAIL gate state lives in report.json for the operator.
+    L.append("## Run outcome")
+    L.append("")
+    L.append(f"**{present_outcome(len(o.claims), m.get('blocked_claims', 0), m.get('withheld_awaiting_reconciliation', 0))}** "
+             f"Build profile: `{o.report.build_profile}`"
+             + (" (client-facing: claims resting on an unreconciled attachment are withheld, spec C2a)." if o.report.build_profile == "client"
+                else " (internal draft: claims resting on an unreconciled attachment are released with the attached label; not for client use)."))
+    L.append("")
+    if o.report.gap_register:
+        L.append("Removed, not footnoted:")
+        L.append("")
+        L.append("| Claim | Source attempted | Reason | What would resolve it |")
+        L.append("|---|---|---|---|")
+        by_id = {c.id: c for c in o.claims}
+        for g in o.report.gap_register:
+            c = by_id.get(g.claim_id)
+            srcs = "; ".join(getattr(c, "sources", []) or []) if c else ""
+            srcs = srcs if len(srcs) < 90 else srcs[:87] + "..."
+            reason = "; ".join(g.reasons).replace("|", "/")
+            fix = _what_would_resolve(reason)
+            L.append(f"| {g.claim_id} | {srcs} | {reason[:160]} | {fix} |")
+        L.append("")
+    L.append(f"Footer: run `{o.run_id}` · citation resolution {m.get('citation_resolution_rate')} · quotation pass rate {m.get('quotation_pass_rate')} · "
+             f"two-upstream coverage {m.get('two_upstream_coverage')} · AI/farm pages cited {m.get('aigen_or_farm_cited')} · "
+             f"reviewer human-read: not yet recorded.")
     if o.attached_documents:
         L.append("")
         L.extend(attached_documents_markdown(o))
     return "\n".join(L)
+
+
+def _what_would_resolve(reason: str) -> str:
+    """Gap-register column 'what would resolve it' (review §5.4 item 3), keyed on the blocking reason."""
+    r = reason.lower()
+    if "awaiting publisher reconciliation" in r:
+        return "run `plumbverify reconcile` with egress; MATCH releases the claim"
+    if "mismatch" in r:
+        return "obtain the published copy or correct the declared URL; re-ingest"
+    if "dead" in r or "likely_hallucinated" in r or "not citable" in r:
+        return "re-run from a machine with egress, or attach the document under its publisher URL"
+    if "single-upstream" in r:
+        return "a second independent upstream (original filing or dataset), or re-label non-load-bearing with rationale"
+    if "quotation" in r or "c5" in r:
+        return "re-extract the quotation from the stored text; multi-column pages need layout-aware extraction"
+    if "confidence label" in r:
+        return "set the C9 confidence label on the claim"
+    if "no citation" in r:
+        return "cite a fetchable source"
+    return "see reason; reviewer to decide"
 
 
 def attached_documents_markdown(o: RunOutcome, heading: str = "## Attached documents (reconciliation status)") -> list[str]:
@@ -228,9 +285,10 @@ def attached_documents_markdown(o: RunOutcome, heading: str = "## Attached docum
     on it inherit the label."""
     L = [heading, "",
          "A person attached these documents instead of the pipeline fetching them. Each is stored and cited under the declared "
-         "publisher URL. `pending` / `UNAVAILABLE` = the publisher hash is unreconciled and every claim from the document is released "
-         "with the label `attached; publisher hash unreconciled`; `MATCH` = the publisher's bytes are identical and the document now "
-         "counts as fetched; `MISMATCH` = the attachment is not the published document and every claim citing it is BLOCKED. "
+         "publisher URL. `pending` / `UNAVAILABLE` = the publisher hash is unreconciled: in a **client** build every claim resting only on "
+         "the document is withheld (gap register: awaiting publisher reconciliation, spec C2a); in an **internal** build it is released "
+         "with the label `attached; publisher hash unreconciled`. `MATCH` = the publisher's bytes are identical and the document now "
+         "counts as fetched; `MISMATCH` = the attachment is not the published document and every claim citing it is BLOCKED in any profile. "
          "Run `plumbverify reconcile --store <out>/<slug>/evidence` when egress is available.", "",
          "| Document | Declared URL | File | Supplied by | Supplied at | SHA-256 (attached) | State | Reconciliation | SHA-256 (publisher) | Claims released / blocked |",
          "|---|---|---|---|---|---|---|---|---|---|"]
@@ -290,7 +348,10 @@ def gap_register_markdown(o: RunOutcome) -> str:
             if r.get("reconciliation") == "MISMATCH":
                 L.append(f"- **{r.get('document_key') or r['url']}: MISMATCH** — the attached file is not the document at the declared URL; "
                          f"{r.get('claims_blocked', 0)} claim(s) BLOCKED. Obtain the published copy or correct the declared URL and re-ingest.")
+            elif o.report.build_profile == "client":
+                L.append(f"- {r.get('document_key') or r['url']}: publisher hash unreconciled; {r.get('claims_blocked', 0)} claim(s) withheld, "
+                         f"awaiting publisher reconciliation (C2a), until `plumbverify reconcile` returns MATCH.")
             else:
                 L.append(f"- {r.get('document_key') or r['url']}: publisher hash unreconciled; {r.get('claims_released', 0)} released claim(s) carry the attached label "
-                         f"until `plumbverify reconcile` returns MATCH.")
+                         f"until `plumbverify reconcile` returns MATCH (internal build; not for client use).")
     return "\n".join(L) + "\n"

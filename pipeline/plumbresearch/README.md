@@ -14,7 +14,7 @@ fully testable offline.
 pip install -e ../plumbverify && pip install -e ".[test]"      # pyproject pins plumbverify by absolute path; see note below
 plumbresearch run plumbresearch/fixtures/acme-bank/subject.yaml --out out --fixtures   # offline demo
 plumbresearch ingest plumbresearch/subjects/great-eastern.yaml --file ~/Downloads/geh-ar-fy2025.pdf --doc annual_report-2025 --out out --supplied-by "Deepak Waghmare"
-pytest                                                          # 35 tests, no network
+pytest                                                          # 46 tests, no network
 ```
 
 Exit code follows plumbverify: 0 when the build gate passes (zero BLOCKED
@@ -29,8 +29,8 @@ ceiling of 60).
 | `subjects/maybank.yaml`, `subjects/great-eastern.yaml` | the two G1 alpha subjects pre-filled from `docs/alpha-targets.md` (listing, tickers, IR URLs, FY, documents, size, core / secondary / exited peers with every `[VERIFY]` preserved) |
 | `models.py` | `ResearchClaim` (plumbverify `Claim` + passage, tier, instrument items, signal ids), `Signal`, `Gap`, `ModuleResult`, `confidence_for_tier` |
 | `context.py` | `RunContext` (store, log, fetcher, data dir, budget per module), `ToolBudget` / `ToolCapExceeded` (C10), `Checkpoint`, `ResearchFetcher` (plumbverify Fetcher + PDF line unwrapping; prefers an ATTACHED document in the store over a 404 and reconciles it against the publisher on online runs), `LocalDocTransport` (serves local PDFs under their IR URL, and the fixture web), `RunContext.attached_documents()` |
-| `textutil.py` | AI-term lexicon, sentence splitter that unwraps hard-wrapped lines, NER-lite for organisation names, competitor-context patterns |
-| `modules/annual_report.py` | 1–5 AI disclosure rubric, named-competitor extraction, leadership-structure extraction |
+| `textutil.py` | AI-term lexicon, sentence splitter that unwraps hard-wrapped lines (`sentences_paged` keeps the page), NER-lite for organisation names (suffix-terminated capitalised runs, or a known peer alias from the subject YAML; bare acronyms are not hits), competitor-context patterns that ignore period comparisons ("compared with FY2025") |
+| `modules/annual_report.py` | 1–5 AI disclosure rubric, named-competitor extraction (requires an org hit), leadership-structure extraction (any C-level / MD / Head / Director / VP title with Data, Analytics, AI, Digital or Machine Learning scope; name-above-title and name-before-title layouts; returns title, names, context, page and `role_class` CAIO-equivalent / CDO-equivalent / CDigO / other) |
 | `modules/postings.py` | AI-skill share of postings (24-month window, peer comparison), `PostingsSource` protocol, CSV implementation, lexicon |
 | `modules/earnings_calls.py` | AI mentions per 1,000 words, prepared vs Q&A, `TranscriptSource` protocol, file implementation |
 | `modules/patents.py` | AI patent counts, `PatentSource` protocol, CSV implementation, PatentsView client (untested), EPO OPS stub |

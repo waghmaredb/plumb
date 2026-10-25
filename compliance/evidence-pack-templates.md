@@ -11,6 +11,7 @@
 |---|---|---|---|
 | v0.1 | 2026-10-25 | Methodology lead | Initial draft from compliance-layer research report and notes |
 | v0.1.1 | 2026-10-25 | Methodology lead | All MAS AIRM references reconciled to the MAS PDF: section headings and paragraph numbers added in the mapping key and every artefact row; inventory field 9 renamed "model review status" (4.7); "Impact × Complexity × Reliance" replaced with the Guidelines' wording (4.10–4.12); unsupported "count of material use cases on one provider in risk appetite" replaced with 5.11(c) concentration-risk consideration; "audit trails available to MAS" replaced with 5.17 (documentation sufficient for an independent party) and 3.6 (demonstrate oversight to MAS); agentic clauses pinned to 1.11, fn 25, 5.15, 5.23(a) and (d), 5.3; artefact 9 corrected to state that the Guidelines contain no incident-notification-to-MAS clause; s.5 sub-heading list corrected (no separate "validation" or "decommissioning" heading; decommissioning sits at 5.26 under Change Management). [VERIFY] flags on section numbering and agentic clauses removed; per-regime incident clocks and the response-paper qualifier remain [VERIFY]. Primary URL added. |
+| v0.1.2 | 2026-10-25 | Product | §12.1 render interlock: the verification statement renders only when the build report shows citation resolution = 1.0 and every attachment reconciled MATCH; otherwise the deck carries "DRAFT — not for board use" (red-team review 2026-10-25, Blocker 2 / §3.1). Approver wording made singular until a second named member exists (§3.1, Minor) |
 
 ---
 
@@ -212,7 +213,17 @@ Place on the inside cover or final page of every report, deck, memo and data fil
 
 ### 12.1 Full form (reports and decks)
 
-> **AI-assisted, human-accountable.** This deliverable was prepared with the assistance of artificial-intelligence tools and reviewed, edited and approved by named members of [Firm], who take full editorial and professional responsibility for its content regardless of the use of generative AI.
+**Render interlock (hard rule).** The "Verification performed" paragraph below is a factual statement and is never typed: its fields are populated from the build report. It renders **only** when the build report shows (a) citation resolution rate = 1.0, (b) every attached document reconciled MATCH (`attached_unreconciled = 0`, `attached_mismatch = 0`), and (c) build profile = `client`. If any condition fails, the paragraph is not rendered, S02 and every slide header carry the banner **"DRAFT — not for board use"**, and the deck may not be exported as a deliverable (ghost deck R8/R9; pipeline S8). The deck-export lint checks the *truth* of S02 against the build report, not only its presence.
+
+| Field | Populated from |
+|---|---|
+| [date range] | build report: earliest and latest `fetched_at` of cited sources |
+| Resolution rate | build report `citation_resolution_rate` (must be 1.0) |
+| Attachments reconciled | build report `attached_unreconciled`, `attached_mismatch` (both 0) |
+| Claims withheld | build report `blocked_claims` and gap register (stated as "Released: N claims. Withheld: M claims (listed in the gap register)") |
+| Approver, verification control owner | QA gate 3 worksheet and engagement charter §8 |
+
+> **AI-assisted, human-accountable.** This deliverable was prepared with the assistance of artificial-intelligence tools and reviewed, edited and approved by [a named member / named members] of [Firm], who [takes / take] full editorial and professional responsibility for its content regardless of the use of generative AI. *(Use the singular until a second named professional has reviewed the deliverable.)*
 >
 > **Tools and models used.** [Vendor / model / version], accessed via [platform], processed in [region], with [zero-data-retention / 30-day retention / other] confirmed in writing on [date]. [Repeat per tool.] Scope of AI assistance: [research and source retrieval / first-draft text / data analysis / translation / summarisation]. No AI tool executed actions in client systems; all external communications and writes were human-approved.
 >
@@ -225,6 +236,8 @@ Place on the inside cover or final page of every report, deck, memo and data fil
 ### 12.2 Short form (memos, data files, slide footers)
 
 > AI-assisted; human-reviewed and approved by [Name, role], [date]. Models: [list]. All citations fetched and verified; unverified items marked [VERIFY]. [Firm] takes full responsibility for this content. Deliverable [ID] v[v].
+
+The short form is subject to the same interlock as §12.1: "All citations fetched and verified" renders only when the build report meets conditions (a)–(c); otherwise the footer reads "DRAFT — not for board use. Deliverable [ID] v[v]."
 
 ### 12.3 Procurement-stage disclosure (RFQ / proposal)
 

@@ -2,6 +2,8 @@
 
 **Status: v0.1, mirrors `methodology/maturity-instrument.md` v0.1 (2026-10-25).** The YAML is a transcription, not a second source of truth: when the markdown changes, regenerate or re-diff the YAML (`tests/test_instrument_yaml.py` fails if questions, anchors, evidence classes, weights or the κ subset drift).
 
+Change log: 2026-10-25 — benchmark `population` flag, no-pooling rule and rank-within-named-peers exhibit (red-team review 2026-10-25, Blocker 3); 46 tests.
+
 ```
 instrument/
 ├── instrument-v0.1.yaml      48 capability items, 4 value items, weights, bands, scoring rules, κ subset
@@ -9,12 +11,12 @@ instrument/
 │   ├── instrument.py         load + validate the YAML
 │   ├── responses.py          load respondent CSV
 │   ├── scoring.py            cap rule, item/dimension/total, bands, variance, value axis
-│   ├── benchmark.py          peer percentile (n≥15 rule, fallback label, disclosure)
+│   ├── benchmark.py          peer percentile (n≥15 rule, population split, rank-within-named-peers fallback, disclosure)
 │   ├── kappa.py              quadratic-weighted Cohen's κ on the 20-item subset
 │   ├── scorecard.py          Markdown scorecard (S08–S11)
 │   └── cli.py                `plumbscore score …`, `plumbscore kappa …`
 ├── examples/                 synthetic, clearly fictional inputs and the outputs they produce
-├── tests/                    pytest (45 tests)
+├── tests/                    pytest (46 tests)
 └── pyproject.toml
 ```
 
@@ -48,7 +50,16 @@ python -m pytest -q
 | `evidence_class` | `D`, `S`, `I`, `O`, `none`; two classes joined with `+` (e.g. `D+S`) when the item's Ev≥4 column requires both |
 | `evidence_ref` | artefact id in the evidence register |
 
-**Benchmark CSV** — `org_id, sector, size_band, [region], D1…D8, total, [evidence_gated 0/1], [as_of]`. Dimension scores and total on 0–100.
+**Benchmark CSV** — `org_id, sector, size_band, [region], D1…D8, total, [evidence_gated 0/1], [as_of], [population self|evidenced]`. Dimension scores and total on 0–100.
+
+| `population` | Who is in it | How it was scored |
+|---|---|---|
+| `self` | Tier-0 free web-form entries | Self-scored, every item capped at 3, no evidence register, respondent self-selected |
+| `evidenced` | Engagement entries | Evidence-gated by an assessor against a logged evidence register (§5.4) |
+
+**These are two different populations and must never be pooled into one percentile** (red-team review 2026-10-25, Blocker 3 / §2.3). A `self` entry cannot exceed C = 50, so pooling would push every evidenced organisation up the distribution and make a capped pool look like a peer set. `peer_percentile` raises if the set is mixed and no population is named; `plumbscore score --population` defaults to `evidenced` (the engagement case). When the column is absent the loader derives it from `evidence_gated` (1 → `evidenced`, 0 → `self`); untagged rows belong to neither population and are excluded when one is named.
+
+**Peer n below 15.** A percentile is not reported. The scorecard's S09 instead shows the **rank within the named peers (n disclosed)**, each peer's capability and dimension values visible, and the standing line "global, peer n insufficient". No global percentile is substituted. This is the Tier-1 exhibit for Singapore FI peer sets (typically n = 9) until the evidenced benchmark reaches n ≥ 15 for the segment.
 
 **Rater CSVs (κ)** — `org_id, item_id, score`, one file per rater.
 
@@ -95,6 +106,6 @@ The self-scored web version has no evidence register, so:
 All example data is synthetic. **Harbourline Mutual Bank does not exist.** `examples/generate_examples.py` (seed 20261025) writes:
 
 - `responses_harbourline_fictional.csv` — 12 respondents (5 ExCo, 7 operating) × 48 items + V1–V4. Built so that ExCo over-rate D2/D4/D5 (gap > 0.75), several items cross σ > 1.0, ExCo claim 4–5 without evidence (cap), two-class items carry only one class (still capped: D1.4 D-only, D2.6 D-only, D4.4 I-only), and a handful of items carry qualifying evidence (lift). Result: 42.6 / Emerging, evidence coverage 25% (self-report-dominant), V1 A (not evidenced) · V2 12–39% · V3 3 · V4 2.
-- `benchmark_synthetic_40.csv` — 40 fictional organisations. Stratified by target band 6 / 18 / 13 / 3 (15% / 45% / 32.5% / 7.5%, Leading inside the 5–10% window). Per organisation: a latent total drawn uniformly inside the band, dimension scores = latent + N(0, 9) clipped to 0–100 and rounded to 0.1, total recomputed exactly as the §2 weighted sum; redraw if the recomputed total leaves the band. 17 rows are `banking × large × SG` so the example peer set clears n ≥ 15; `--sector insurance --size-band mid` demonstrates the "global, peer n insufficient" fallback. ~40% flagged `evidence_gated`.
+- `benchmark_synthetic_40.csv` — 40 fictional organisations. Stratified by target band 6 / 18 / 13 / 3 (15% / 45% / 32.5% / 7.5%, Leading inside the 5–10% window). Per organisation: a latent total drawn uniformly inside the band, dimension scores = latent + N(0, 9) clipped to 0–100 and rounded to 0.1, total recomputed exactly as the §2 weighted sum; redraw if the recomputed total leaves the band. 17 rows are `banking × large × SG`, all `population = evidenced`, so the example peer set clears n ≥ 15 inside the evidenced population; `--sector insurance --size-band mid` demonstrates the rank-within-named-peers fallback. The remaining rows are ~40% `evidenced`, the rest `self`.
 - `rater_a.csv`, `rater_b.csv` — 12 fictional organisations × the 20 κ-subset items; rater B disagrees by one level ~18% of the time (~45% on D1.1, D4.1, D7.3).
 - `scorecard_harbourline.md` / `.json` — the outputs of the command above.

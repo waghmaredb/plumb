@@ -157,6 +157,11 @@ def gen_benchmark(path: Path) -> None:
             sector, size, region = "banking", "large", "SG"
         else:
             sector, size, region = rng.choice(SECTORS), rng.choice(SIZES), rng.choice(REGIONS)
+        # ~40% evidence-gated overall; the banking × large × SG peer set is entirely evidence-gated so the
+        # example clears n ≥ 15 inside the `evidenced` population (populations are never pooled; review 2026-10-25 Blocker 3).
+        # The rng draw is kept for every row so the rater files further down are unchanged.
+        drawn = 1 if rng.random() < 0.4 else 0
+        evidence_gated = 1 if i <= 16 else drawn
         out.append(
             {
                 "org_id": f"ORG-{i:03d}",
@@ -164,8 +169,9 @@ def gen_benchmark(path: Path) -> None:
                 "size_band": size,
                 "region": region,
                 **r,
-                "evidence_gated": 1 if rng.random() < 0.4 else 0,
+                "evidence_gated": evidence_gated,
                 "as_of": "2026-10-01",
+                "population": "evidenced" if evidence_gated else "self",
             }
         )
     rows = out

@@ -34,21 +34,21 @@ Instrument v0.1 · respondents n=12 (ExCo 5, operating 7) · scores after cap ru
 
 ## S09 · Peer percentile
 
-**Harbourline Mutual Bank (fictional) sits at the 35th percentile overall** but 24th on Value management (D8) — peer set n=17.
+**Harbourline Mutual Bank (fictional) sits at the 35th percentile overall** but 24th on Value management (D8) — peer set n=17; population: evidenced.
 
-Peer set: sector=banking, size_band=large, region=SG · n=17 (peer; minimum n for a peer percentile is 15) · peer-set definition date: 2026-10-01 · share of entries evidence-gated: 24%
+Peer set: sector=banking, size_band=large, region=SG · n=17 (peer; minimum n for a peer percentile is 15) · peer-set definition date: 2026-10-01 · population: evidenced · share of entries evidence-gated: 100%
 
 | Dim | Score | Set median | Global median | Percentile |
 |---|---|---|---|---|
-| D1 | 50.3 | 52.5 | 45.5 | 47 |
-| D2 | 38.9 | 54.3 | 47.2 | 41 |
+| D1 | 50.3 | 52.5 | 46.1 | 47 |
+| D2 | 38.9 | 54.3 | 49.5 | 41 |
 | D3 | 46.9 | 48.1 | 46.2 | 41 |
-| D4 | 35.8 | 53.1 | 47.3 | 35 |
-| D5 | 43.8 | 43.6 | 43.4 | 59 |
-| D6 | 47.2 | 52.9 | 45.6 | 47 |
-| D7 | 48.6 | 55.1 | 48.0 | 41 |
-| D8 | 32.3 | 52.6 | 50.2 | 24 |
-| **Total** | **42.6** | 47.9 | 44.4 | **35** |
+| D4 | 35.8 | 53.1 | 49.5 | 35 |
+| D5 | 43.8 | 43.6 | 43.2 | 59 |
+| D6 | 47.2 | 52.9 | 49.9 | 47 |
+| D7 | 48.6 | 55.1 | 50.6 | 41 |
+| D8 | 32.3 | 52.6 | 52.5 | 24 |
+| **Total** | **42.6** | 47.9 | 46.3 | **35** |
 
 ## S10 · Leadership-perception variance
 

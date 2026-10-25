@@ -1,5 +1,7 @@
-"""plumbresearch run <subject.yaml> --out DIR [--data-dir DIR] [--fixtures] [--cap N] [--modules a,b] [--as-of YYYY-MM-DD] [--offline]
-plumbresearch ingest <subject.yaml> --file PATH --doc <document-key> [--out DIR] [--supplied-by NAME]"""
+"""plumbresearch run <subject.yaml> --out DIR [--data-dir DIR] [--fixtures] [--cap N] [--modules a,b] [--as-of YYYY-MM-DD] [--offline] [--profile client|internal]
+plumbresearch ingest <subject.yaml> --file PATH --doc <document-key> [--out DIR] [--supplied-by NAME]
+
+Change log: 2026-10-25 — `--profile` pass-through (spec C2a, red-team review Blocker 2)."""
 from __future__ import annotations
 
 import argparse
@@ -7,6 +9,8 @@ import json
 import sys
 from datetime import date
 from pathlib import Path
+
+from plumbverify.policy import BUILD_PROFILES, DEFAULT_BUILD_PROFILE, present_outcome
 
 from .orchestrator import MODULE_ORDER, run_subject
 from .subject import load_subject
@@ -26,9 +30,12 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--cap", type=int, default=40, help="C10 tool-call cap per module run (default 40; hard ceiling 60)")
     r.add_argument("--modules", default=None, help="comma-separated subset of: " + ",".join(MODULE_ORDER))
     r.add_argument("--as-of", default=None, help="window end date (default today)")
+    r.add_argument("--profile", choices=list(BUILD_PROFILES), default=DEFAULT_BUILD_PROFILE,
+                   help="build profile (spec C2a): 'client' (default) withholds every claim whose only support is an attached document "
+                        "with reconciliation != MATCH; 'internal' releases them with the attached label (drafts and sandbox runs only)")
 
     i = sub.add_parser("ingest", help="attach a local copy of a declared subject document (annual report PDF) into the run's evidence store "
-                                      "under the document's publisher URL; cited with the label 'attached; publisher hash unreconciled' until reconciled")
+                                      "under the document's publisher URL; withheld in client builds / labelled in internal builds until reconciled")
     i.add_argument("subject", help="subject YAML")
     i.add_argument("--file", required=True, help="the attached file (PDF or HTML)")
     i.add_argument("--doc", required=True, help="document key from the subject YAML: '<kind>-<fy>' (e.g. annual_report-2025), an explicit `key:`, the URL or the local_file name")
@@ -65,8 +72,9 @@ def ingest_document(subject_path: str | Path, file: str | Path, doc_key: str, ou
         "store": str(store_dir), "state": src.state.value, "sha256": src.sha256, "tier": src.tier.value,
         "page_count": src.page_count, "needs_ocr": src.needs_ocr, "text_chars": len(src.text_extract or ""),
         "label": src.attached_label, "provenance": src.provenance, "error": src.error,
-        "next": [f"plumbresearch run {subject_path} --out {out_root} --offline   # uses the attachment, claims carry the attached label",
-                 f"plumbverify reconcile --store {store_dir}   # when egress is available: MATCH lifts the label, MISMATCH blocks"],
+        "next": [f"plumbresearch run {subject_path} --out {out_root} --offline --profile internal   # draft: claims carry the attached label",
+                 f"plumbverify reconcile --store {store_dir}   # when egress is available: MATCH lifts the label, MISMATCH blocks",
+                 f"plumbresearch run {subject_path} --out {out_root}   # client build (default): unreconciled attachments are withheld (C2a)"],
     }
 
 
@@ -94,10 +102,12 @@ def main(argv: list[str] | None = None) -> int:
             print(f"unknown module(s): {bad}", file=sys.stderr)
             return 2
         out = run_subject(subject, Path(args.out) / subject.slug, data_dir, fixtures=args.fixtures, cap=args.cap, modules=mods,
-                          as_of=date.fromisoformat(args.as_of) if args.as_of else None, offline=args.offline)
+                          as_of=date.fromisoformat(args.as_of) if args.as_of else None, offline=args.offline,
+                          build_profile=args.profile)
         m = out.report.metrics
-        print(f"{subject.slug}: {len(out.modules)} modules, {len(out.claims)} claims, {m.get('blocked_claims')} BLOCKED, "
+        print(f"{subject.slug} [{out.report.build_profile} build]: {len(out.modules)} modules, {len(out.claims)} claims, {m.get('blocked_claims')} BLOCKED, "
               f"{len(out.signals)} signals, build {'PASS' if out.report.build_pass else 'FAIL'} -> {out.out_dir}")
+        print("  " + present_outcome(len(out.claims), m.get("blocked_claims", 0), m.get("withheld_awaiting_reconciliation", 0)))
         for g in out.report.gap_register:
             print(f"  BLOCKED {g.claim_id}: {g.text[:80]}")
         for e in out.escalations:

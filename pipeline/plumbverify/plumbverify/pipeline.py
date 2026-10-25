@@ -21,12 +21,12 @@ from .models import (
     Citation, CitationStatus, Claim, ClaimKind, HealthClass, Source, SourceState, Tier,
     VerificationReport,
 )
-from .policy import build_gate, decide
+from .policy import BUILD_PROFILES, DEFAULT_BUILD_PROFILE, BuildProfile, build_gate, decide
 from .tier import TierRules, aigen_score, assign_tier, load_tier_rules
 from .upstream import count_independent_upstreams, is_aggregator, trace_upstream
 
 MODEL_ID = "plumbverify-rules"
-MODEL_VERSION = "0.3.0"
+MODEL_VERSION = "0.4.0"  # 0.4: build_profile / C2a (red-team review 2026-10-25, Blocker 2)
 
 
 class Verifier:
@@ -41,7 +41,10 @@ class Verifier:
         quote_threshold: float = m.QUOTE_THRESHOLD,
         supported_threshold: float = m.SUPPORTED_THRESHOLD,
         partial_threshold: float = m.PARTIAL_THRESHOLD,
+        build_profile: BuildProfile = DEFAULT_BUILD_PROFILE,
     ):
+        if build_profile not in BUILD_PROFILES:
+            raise ValueError(f"build_profile must be one of {BUILD_PROFILES}, got {build_profile!r}")
         self.store = store
         self.fetcher = fetcher or Fetcher(store=store)
         self.log = log
@@ -51,6 +54,9 @@ class Verifier:
         self.quote_threshold = quote_threshold
         self.supported_threshold = supported_threshold
         self.partial_threshold = partial_threshold
+        # C2a: "client" (default) blocks claims whose only support is an unreconciled attachment;
+        # "internal" keeps the labelled path for drafts and sandbox runs
+        self.build_profile: BuildProfile = build_profile
         self._source_cache: dict[str, Source] = {}
 
     # -- logging helper ------------------------------------------------------
@@ -172,10 +178,11 @@ class Verifier:
                           [{"tool": "independence", "claim_id": claim.id, "independent_upstreams": ind,
                             "accepted": uc.accepted}], outcome="counted")
             # S5
-            d = decide(claim, cites, ind, pairs)
+            d = decide(claim, cites, ind, pairs, build_profile=self.build_profile)
             decisions.append(d)
             self._log(run_id, "pipeline.policy", claim.text,
-                      [{"tool": "block_not_flag", "claim_id": claim.id, "blocked": d.blocked, "reasons": d.reasons}],
+                      [{"tool": "block_not_flag", "claim_id": claim.id, "blocked": d.blocked, "reasons": d.reasons,
+                        "build_profile": self.build_profile}],
                       outcome="BLOCKED" if d.blocked else d.status.value)
         gate = build_gate(claims, decisions)
         sources = list(self._source_cache.values())
@@ -196,12 +203,15 @@ class Verifier:
             "attached_mismatch": sum(1 for s in sources if s.reconciliation is not None and s.reconciliation.value == "MISMATCH"),
             "claims_on_unreconciled_attachments": len({c.claim_id for c in citations if any(
                 l.startswith("attached;") for l in c.labels) and c.status != CitationStatus.blocked}),
+            # 0.4 / C2a: claims a client build withheld solely because their attachment is unreconciled
+            "withheld_awaiting_reconciliation": gate.withheld_awaiting_reconciliation,
+            "released_claims": len(claims) - gate.blocked_count,
         }
-        report = VerificationReport(run_id=run_id, generated_at=datetime.now(timezone.utc), sources=sources,
-                                    claims=claims, citations=citations, decisions=decisions,
+        report = VerificationReport(run_id=run_id, generated_at=datetime.now(timezone.utc), build_profile=self.build_profile,
+                                    sources=sources, claims=claims, citations=citations, decisions=decisions,
                                     gap_register=gate.gap_register, build_pass=gate.passed, metrics=metrics)
         self._log(run_id, "pipeline.run", run_id, [{"tool": "build_gate", "passed": gate.passed,
-                                                    "blocked": gate.blocked_count}],
+                                                    "blocked": gate.blocked_count, "build_profile": self.build_profile}],
                   outcome="PASS" if gate.passed else "FAIL", metrics=metrics)
         return report
 

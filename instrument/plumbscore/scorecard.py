@@ -97,6 +97,32 @@ def render_scorecard(instrument: Instrument, res: ScoreResult, title: str = "") 
     p = res.percentile
     if not p:
         L.append("No benchmark supplied; percentile not computed.")
+    elif p.get("peer_rank"):
+        # Peer n below the §5.5 minimum: show the rank within the named peers, each peer's value visible,
+        # instead of a percentile against a benchmark of nobody (red-team review 2026-10-25, Blocker 3).
+        pr = p["peer_rank"]
+        L.append(f"**{org} ranks {pr['rank']} of {pr['n'] + 1} within the named peer set (n={pr['n']})** — "
+                 f"peer n insufficient for a percentile (minimum {p['min_n']}, §5.5); no percentile is reported.")
+        L.append("")
+        pop = (p.get("population") or {}).get("population")
+        L.append(
+            f"Peer set: {', '.join(f'{k}={v}' for k, v in p['filters'].items())} · "
+            f"peer-set definition date: {p.get('peer_set_date') or 'not supplied'} · "
+            f"population: {pop or 'not tagged'} (self-scored and evidence-gated entries are never pooled)"
+        )
+        L.append("")
+        L.append("| Rank | Organisation | Capability score | " + " | ".join(d.id for d in res.dimensions) + " |")
+        L.append("|---|---|---|" + "---|" * len(res.dimensions))
+        rows = [{"org_id": org, "total": res.capability_score, "dims": {d.id: d.score for d in res.dimensions}, "_self": True}]
+        rows += pr["peers"]
+        rows.sort(key=lambda r: (r["total"] if r["total"] is not None else -1), reverse=True)
+        for i, r in enumerate(rows, start=1):
+            name = f"**{r['org_id']}**" if r.get("_self") else r["org_id"]
+            L.append(f"| {i} | {name} | {_f(r['total'])} | " + " | ".join(_f(r['dims'].get(d.id)) for d in res.dimensions) + " |")
+        L.append("")
+        L.append(f"> **{instrument.scoring.peer_percentile.fallback_label}** — no global percentile is shown in its place: "
+                 "the global pool is not the client's peer set and the client cannot inspect it. Rank is on the capability score only; "
+                 "outside-in peer values corroborate and never lift (§5.4).")
     else:
         tp = p.get("total_percentile")
         dp = p.get("dimension_percentiles", {})
@@ -111,10 +137,12 @@ def render_scorecard(instrument: Instrument, res: ScoreResult, title: str = "") 
         L.append(line + f" — {p['label']}.")
         L.append("")
         eg = p.get("evidence_gated_share")
+        pop = (p.get("population") or {}).get("population")
         L.append(
             f"Peer set: {', '.join(f'{k}={v}' for k, v in p['filters'].items()) or 'none (global)'} · "
             f"n={p['n']} ({p['scope']}; minimum n for a peer percentile is {p['min_n']}) · "
             f"peer-set definition date: {p.get('peer_set_date') or 'not supplied'} · "
+            f"population: {pop or 'not tagged'} · "
             f"share of entries evidence-gated: {_pct(eg) if eg is not None else 'not recorded'}"
         )
         if not p.get("peer_n_sufficient"):

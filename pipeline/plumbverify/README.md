@@ -1,4 +1,4 @@
-# plumbverify 0.3.0
+# plumbverify 0.3.1
 
 PLUMB's verification layer (decision D2: build in-house). Implements the
 engineering side of `../verification-pipeline-spec.md` (PI-CV v0.1) as a
@@ -12,7 +12,7 @@ plumbverify verify-log .plumbverify/inference.jsonl
 plumbverify report report.json --format md [--out report.md] [--seed N] [--sample-min 30]
 plumbverify ingest <file> --url <declared_url> --store DIR [--supplied-by NAME] [--doc KEY]
 plumbverify reconcile --store DIR [--url URL] [--all] [--archive]
-pytest                      # 94 tests, fully offline (httpx.MockTransport)
+pytest                      # 99 tests, fully offline (httpx.MockTransport)
 ```
 
 `report --format md` renders the reviewer-facing Markdown: a claim table
@@ -23,6 +23,16 @@ and the section 6.2 sampling worksheet skeleton (P1 eligibility, P4 per-claim
 rows, P5 C7 agreement, P6 totals, P7 decision). The sample is stratified per
 P3 and drawn with a recorded random seed, so `--seed N` reproduces it.
 `--format json` pretty-prints the report. Exit code mirrors the build gate.
+
+### What changed in 0.3.1: layout-aware PDF extraction (two-column pages)
+
+pypdf reads a two-column page line by line, so sentences from adjacent columns interleave and a C5 quotation lifted from such a page cannot exact-match the stored text. `extract.extract_pdf` now prefers a layout-preserving engine and re-orders columns:
+
+- Engine order: `pdftotext -layout` (poppler, via subprocess, when the binary is on PATH) -> `pdfplumber` (`extract_text(layout=True)`, when installed) -> `pypdf` -> `pdfminer.six`. The engine used is reported in `PdfExtraction.engine` / `Extraction.engine` (`pdftotext-layout`, `pdfplumber-layout`, `pypdf`, `pdfminer`); `extract_pdf(..., layout=False)` skips the layout engines.
+- `extract.split_columns(page_text)`: on a layout dump, lines vote for a gutter (a run of >= 6 spaces with text on both sides, or a right-column-only line indented >= 24 characters); a page splits when >= 40% of its non-blank lines agree on the same x-offset (25% inside an already split column, so three-column pages and pull quotes come out column by column). Lines are grouped into blocks that respect or cross the gutter; full-width blocks (headings, tables) stay in place, and inside a two-column block the left column is emitted first, then the right. Page tagging (`PAGE_SEP`, `p. N`) is unchanged.
+- Fixture test: a generated two-column PDF (reportlab) whose left column reads A1 A2 A3 and right column B1 B2 B3 must extract as A1 A2 A3 B1 B2 B3, with `quote_match` passing on an A2+A3 quotation and failing on the interleaved A1+B1 reading.
+
+Measured on the Great Eastern FY2025 annual report (244 pp): 15 of 15 reference sentences (including the two-line name-above-title management layout) are contiguous with the layout path versus 14/15 for pypdf, and the share of sentences unique to one engine (a proxy for column interleaving) fell from 5.8% (pypdf) to 4.4%.
 
 ### What changed in 0.3.0: attached documents
 
@@ -53,7 +63,7 @@ See `examples/claims.json` for the input shape.
 |---|---|---|
 | `models.py` | `Source`, `Claim`, `Citation`, `ClaimDecision`, `VerificationReport`, enums for tier / health / state / confidence label | 3.1 state model |
 | `fetch.py` | `Fetcher` (20 s timeout, 3 retries at 2/8/32 s, 25 MB cap, declared UA), `EvidenceStore` (sqlite index + raw bytes keyed by SHA-256, immutable), `check_health` (HEAD then GET, LIVE / ARCHIVED / DEAD / LIKELY_HALLUCINATED, `recheck_after` = +24 h), `ArchiveProvider` interface with `NullArchive` and `WaybackArchive` (availability API, 24-month window, opt-in save) | C1, C2 |
-| `extract.py` | `sniff_content_type` (magic bytes beat headers), HTML main-text extraction (trafilatura when installed, bs4 fallback), PDF extraction (`extract_pdf`: pypdf then pdfminer.six, per-page text, `needs_ocr` for scanned files), `extract_document`, page-aware `split_passages_paged` and `page_of` | feeds C1/C3/C4 |
+| `extract.py` | `sniff_content_type` (magic bytes beat headers), HTML main-text extraction (trafilatura when installed, bs4 fallback), PDF extraction (`extract_pdf`: `pdftotext -layout` then pdfplumber with `split_columns` for multi-column pages, then pypdf, then pdfminer.six; per-page text, `needs_ocr` for scanned files, engine reported), `extract_document`, page-aware `split_passages_paged` and `page_of` | feeds C1/C3/C4, C5 on multi-column PDFs |
 | `match.py` | quotation exact / near-exact match with ellipsis handling; claim-to-passage lexical match with `SemanticMatcher` plug-in; number parsing and number-in-passage check (commas, %, currency prefixes, k/m/bn/tn scale words); number-claim matcher | C4, C5 |
 | `upstream.py` | registrable-domain logic, aggregator list, independence test (domain, content hash, near-duplicate text, upstream terminus), greedy independent-upstream count, `find_upstream_candidates` (outbound links + attribution patterns, ranked), `trace_upstream` (max 2 hops, terminus must be non-aggregator T1-T3), `trace_to_original` (declared `upstream_of` first, crawl second) | C6 |
 | `tier.py` | T1-T5 assignment from `tiers.yaml` (overridable by path or dict), AI-generated / content-farm heuristic scorer | C7, C8 |

@@ -24,6 +24,7 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from .models import Citation, CitationStatus, Claim, ClaimDecision, ClaimKind, Source, SourceState, VerificationReport
+from .policy import present_outcome
 
 SAMPLE_MIN = 30
 MIN_PER_MODULE = 2
@@ -164,7 +165,10 @@ def render_markdown(report: VerificationReport, seed: Optional[int] = None, samp
     out.append("")
     out.append(f"- Spec: {report.spec_version}")
     out.append(f"- Generated: {report.generated_at.isoformat()}")
-    out.append(f"- Build gate: **{'PASS' if report.build_pass else 'FAIL'}** "
+    # red-team review 2026-10-25 §5.4: lead with released/withheld counts; the PASS/FAIL gate state is reviewer-internal
+    out.append(f"- Outcome: {present_outcome(m.get('claims', len(report.claims)), m.get('blocked_claims', 0), m.get('withheld_awaiting_reconciliation', 0))}")
+    out.append(f"- Build profile: {report.build_profile} (C2a: client builds withhold claims resting on unreconciled attachments)")
+    out.append(f"- Build gate (internal): **{'PASS' if report.build_pass else 'FAIL'}** "
                f"({m.get('blocked_claims', 0)} of {m.get('claims', len(report.claims))} claims BLOCKED)")
     out.append(f"- Citation resolution rate: {_pct(m.get('citation_resolution_rate'))} (G1 target 100%)")
     out.append(f"- Quotation exact-match: {_pct(m.get('quotation_pass_rate'))} (G1 target 100%)")

@@ -22,7 +22,10 @@ def _build() -> argparse.ArgumentParser:
 
     s = sub.add_parser("score", help="score a response CSV and render a scorecard")
     s.add_argument("responses", help="CSV: respondent_id, role_group, item_id, score, evidence_class, evidence_ref[, role]")
-    s.add_argument("--benchmark", help="benchmark CSV: org_id, sector, size_band[, region], D1..D8, total[, evidence_gated, as_of]")
+    s.add_argument("--benchmark", help="benchmark CSV: org_id, sector, size_band[, region], D1..D8, total[, evidence_gated, as_of, population]")
+    s.add_argument("--population", choices=["self", "evidenced"], default="evidenced",
+                   help="benchmark population to rank against (default: evidenced, i.e. engagement scores). The Tier-0 self-scored pool "
+                        "is a different population and is never pooled with it (review 2026-10-25 Blocker 3)")
     s.add_argument("--sector", help="peer-set filter")
     s.add_argument("--size-band", dest="size_band", help="peer-set filter")
     s.add_argument("--region", help="peer-set filter (APAC sub-region)")
@@ -58,6 +61,7 @@ def main(argv: list[str] | None = None) -> int:
                 size_band=args.size_band,
                 region=args.region,
                 peer_set_date=args.peer_set_date,
+                population=args.population,
             )
         md = render_scorecard(inst, res)
         if args.out:

@@ -1,6 +1,6 @@
 """Command-line entry points.
 
-  plumbverify verify claims.json --out report.json [--store DIR] [--log FILE] [--tiers tiers.yaml]
+  plumbverify verify claims.json --out report.json [--store DIR] [--log FILE] [--tiers tiers.yaml] [--profile client|internal]
   plumbverify check-url <url> [--archive]
   plumbverify verify-log <log.jsonl>
   plumbverify report report.json --format md [--out report.md] [--seed N]
@@ -19,6 +19,7 @@ from .ingest import ingest_local, reconcile_all
 from .log import HashChainLog
 from .models import Reconciliation, VerificationReport
 from .pipeline import Verifier, load_claims
+from .policy import BUILD_PROFILES, DEFAULT_BUILD_PROFILE, present_outcome
 from .report import render_markdown
 from .tier import assign_tier, load_tier_rules
 
@@ -34,12 +35,14 @@ def _cmd_verify(args: argparse.Namespace) -> int:
     log = HashChainLog(args.log)
     rules = load_tier_rules(args.tiers) if args.tiers else None
     fetcher = Fetcher(store=store, archive=_archive(args), reconcile_on_fetch=bool(getattr(args, "reconcile", False)))
-    verifier = Verifier(fetcher=fetcher, store=store, log=log, tier_rules=rules)
+    verifier = Verifier(fetcher=fetcher, store=store, log=log, tier_rules=rules, build_profile=args.profile)
     claims = load_claims(args.claims)
     report = verifier.run(claims)
     Path(args.out).write_text(report.model_dump_json(indent=2), encoding="utf-8")
-    print(f"run {report.run_id}: {report.metrics['claims']} claims, {report.metrics['blocked_claims']} BLOCKED, "
-          f"build {'PASS' if report.build_pass else 'FAIL'} -> {args.out}")
+    print(f"run {report.run_id} [{report.build_profile} build]: "
+          + present_outcome(report.metrics["claims"], report.metrics["blocked_claims"],
+                            report.metrics.get("withheld_awaiting_reconciliation", 0))
+          + f" build {'PASS' if report.build_pass else 'FAIL'} -> {args.out}")
     for g in report.gap_register:
         print(f"  BLOCKED {g.claim_id}: {g.text[:80]}")
         for r in g.reasons:
@@ -147,6 +150,9 @@ def build_parser() -> argparse.ArgumentParser:
     v.add_argument("--archive-save", action="store_true", help="also save missing pages via Wayback Save Page Now (implies --archive)")
     v.add_argument("--reconcile", action="store_true", help="re-fetch attached documents' declared URLs during this run and reconcile hashes (network); "
                                                            "default: use attachments as stored, labelled")
+    v.add_argument("--profile", choices=list(BUILD_PROFILES), default=DEFAULT_BUILD_PROFILE,
+                   help="build profile (spec C2a): 'client' (default) BLOCKS every claim whose only support is an attached document "
+                        "with reconciliation != MATCH; 'internal' releases them with the attached label (drafts and sandbox runs only)")
     v.set_defaults(func=_cmd_verify)
 
     c = sub.add_parser("check-url", help="health-check and tier a single URL")

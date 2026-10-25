@@ -1,6 +1,14 @@
 # Founder checklist — things only Deepak can do
 
+Change log: 2026-10-25 — F4 moved to the top and marked BLOCKER; F25 (D7 clearance basis) and F26 (GE re-run with egress + reconcile) added (red-team review 2026-10-25, Blocker §1(c), §1(d), §2.8, rank 1, 2, 10).
+
 Status: living document. Everything product-side (methodology, pipeline, catalogue, compliance library) is Claude's; this file is the list of actions that need the founder's identity, signature, money, network or judgement. Tick items here; the GA plan references this file.
+
+## BLOCKER — before any charter, proposal or client-facing material
+
+| # | Action | Why now | Where | Cost / time |
+|---|---|---|---|---|
+| F4 | **BLOCKER.** Name the **G1 independent reviewer** (D3): a real person, CV on file, per-deck fee agreed | Every trust claim depends on it; no charter can be signed truthfully until it closes (review §1(c), §2.8, rank 1); must be someone who did not run the agents | Record in `docs/decisions.md` D3 and the charter §0 | S$2–4K/deck if paid |
 
 ## This week (by Fri 31 Oct 2026)
 
@@ -9,9 +17,10 @@ Status: living document. Everything product-side (methodology, pipeline, catalog
 | F1 | Backorder **plumb.ai** with a drop-catch service | Domain expires 31 Oct 2026 | Registrar backorder (DropCatch / SnapNames / NameJet) | ~US$60–100 |
 | F2 | Decide on **plumbadvisory.com** (parked on Afternic, buyable) and register **plumb.sg / plumbadvisory.sg** | Brand lock before incorporation | Afternic; SGNIC-accredited registrar | [VERIFY] prices |
 | F3 | **BizFile+ "Plumb" name search**, then file the name application for *PLUMB ADVISORY PTE. LTD.* | Catches reserved names the mirrors don't show; 120-day reservation | bizfile.gov.sg (Singpass) | S$15, 10 min |
-| F4 | Name the **G1 independent reviewer** (D3) | Blocks G1 close; must be someone who did not run the agents | Record in `docs/decisions.md` | S$2–4K/deck if paid |
 | F5 | **Conflict declaration** for Maybank, Great Eastern and OCBC (GEH parent) under C6 of the conflict-check procedure | Alpha subjects cannot be scored until declared clear | `commercial/conflict-check-procedure.md` → engagement file | 15 min |
 | F6 | Download **Maybank FY2025** and **Great Eastern FY2025** annual reports and attach them | SGX/Maybank links return 403 from the sandbox; needed for the AI rubric and peer seed | maybank.com IR; greateasternlife.com IR | 10 min |
+| F25 | Record the **D7 clearance basis** in `docs/decisions.md`: written employer clearance, or the documented reason none is needed; file it with the GE/OCBC conflict declaration (F5) | "Already cleared" with no paper is a self-attestation by the person with the conflict; procurement will ask (review §1(d), rank 10) | `docs/decisions.md` D7; engagement file | 30 min + employer response |
+| F26 | **Re-run Great Eastern from a machine with egress** (`data-packs/great-eastern/fetch-datapack.sh`, then `plumbresearch run` with the default client profile) **and run `plumbverify reconcile`** on the evidence store | Turns the one real output from a liability into the first sales asset: reconciles the attachment, unblocks peer sizes, removes the sandbox artefacts (review §2.6, §5.3, rank 2) | Laptop with egress | ~1 hour |
 
 ## Before incorporation (next 2–3 weeks)
 
@@ -57,7 +66,8 @@ Status: living document. Everything product-side (methodology, pipeline, catalog
 
 ## Decisions still open
 
-- D3 reviewer name (F4)
+- D3 reviewer name (F4) — BLOCKER
+- D7 clearance basis (F25)
 - SS 680 route (F19)
 - Startup SG Founder (F8)
 - Public announcement timing (F24)

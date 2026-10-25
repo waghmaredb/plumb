@@ -43,8 +43,8 @@ def test_document_key_resolution():
 
 
 def test_end_to_end_with_attached_annual_report_offline(tmp_path, capsys):
-    """No local file, no egress: the attached PDF is the evidence. The rubric scores,
-    claims are released with the attached label, outputs disclose the status."""
+    """No local file, no egress, INTERNAL build profile: the attached PDF is the evidence.
+    The rubric scores, claims are released with the attached label, outputs disclose the status."""
     subj_yaml = _subject_yaml(tmp_path)  # local_file declared but absent in data/
     pdf = tmp_path / "GEH-style annual report.pdf"
     pdf.write_bytes(minimal_pdf(LINES))
@@ -56,8 +56,10 @@ def test_end_to_end_with_attached_annual_report_offline(tmp_path, capsys):
     assert main(["ingest", str(subj_yaml), "--file", str(pdf), "--doc", "annual_report-2031", "--out", str(out_root)]) == 2
 
     subject = load_subject(subj_yaml)
-    out = run_subject(subject, out_root / subject.slug, tmp_path / "data", offline=True, modules=["annual-report"], as_of=AS_OF)
+    out = run_subject(subject, out_root / subject.slug, tmp_path / "data", offline=True, modules=["annual-report"], as_of=AS_OF,
+                      build_profile="internal")
     assert out.report.build_pass, [(g.claim_id, g.reasons) for g in out.report.gap_register]
+    assert out.report.build_profile == "internal"
     rub = next(s for s in out.signals if s.id.endswith(".rubric"))
     assert rub.value == 4 and rub.status == "released" and rub.tier.value == "T2"  # same score as the served-local-PDF path
     assert out.claims and all(d.labels == [ATTACHED_LABEL] for d in out.report.decisions)
@@ -75,6 +77,45 @@ def test_end_to_end_with_attached_annual_report_offline(tmp_path, capsys):
     rep = json.loads((out.out_dir / "report.json").read_text())
     assert rep["attached_documents"][0]["sha256"] == src.sha256 and rep["attached_documents"][0]["state"] == "ATTACHED"
     assert rep["verification"]["metrics"]["claims_on_unreconciled_attachments"] == len(out.claims)
+    assert rep["build_profile"] == "internal" and "internal build; not for client use" in gap_md
+    assert "## Run outcome" in sig_md and f"Released: {len(out.claims)} claims. Withheld: 0 claims." in sig_md and "build FAIL" not in sig_md
+
+
+def test_client_profile_withholds_unreconciled_attachment_offline(tmp_path, capsys):
+    """Spec C2a (red-team review Blocker 2): the default CLIENT build treats an attached
+    document with reconciliation != MATCH as BLOCKED. Nothing from it is released; the gap
+    register lists the claims as awaiting publisher reconciliation; signals go to `blocked`."""
+    subj_yaml = _subject_yaml(tmp_path)
+    pdf = tmp_path / "ar.pdf"
+    pdf.write_bytes(minimal_pdf(LINES))
+    out_root = tmp_path / "out"
+    ingest_document(subj_yaml, pdf, "annual_report-2025", out_root, supplied_by="deepak")
+    subject = load_subject(subj_yaml)
+    out = run_subject(subject, out_root / subject.slug, tmp_path / "data", offline=True, modules=["annual-report"], as_of=AS_OF)
+    assert out.report.build_profile == "client" and out.claims and not out.report.build_pass
+    assert not out.released_claims and {g.claim_id for g in out.report.gap_register} == {c.id for c in out.claims}
+    assert all(any(r.startswith("awaiting publisher reconciliation") for r in g.reasons) for g in out.report.gap_register)
+    assert all(d.withheld_awaiting_reconciliation and not d.labels for d in out.report.decisions)
+    rub = next(s for s in out.signals if s.id.endswith(".rubric"))
+    assert rub.status == "blocked"  # the signal is computed but its evidence is withheld
+    row = out.attached_documents[0]
+    assert row["claims_released"] == 0 and row["claims_blocked"] == len(out.claims) and row["reconciliation"] is None
+    sig_md = (out.out_dir / "signals.md").read_text()
+    gap_md = (out.out_dir / "gap-register.md").read_text()
+    assert f"Released: 0 claims. Withheld: {len(out.claims)} claims (listed in the gap register; {len(out.claims)} awaiting publisher reconciliation)." in sig_md
+    assert "Removed, not footnoted:" in sig_md and "run `plumbverify reconcile` with egress" in sig_md and "build FAIL" not in sig_md
+    assert "withheld, awaiting publisher reconciliation (C2a)" in gap_md
+    rep = json.loads((out.out_dir / "report.json").read_text())
+    assert rep["build_profile"] == "client" and rep["outcome"].startswith("Released: 0 claims.")
+    assert rep["verification"]["metrics"]["withheld_awaiting_reconciliation"] == len(out.claims)
+    # CLI pass-through: default is client (exit 1, withheld); --profile internal releases (exit 0)
+    rc = main(["run", str(subj_yaml), "--out", str(out_root), "--offline", "--modules", "annual-report", "--as-of", AS_OF.isoformat()])
+    text = capsys.readouterr().out
+    assert rc == 1 and "[client build]" in text and "awaiting publisher reconciliation" in text
+    rc = main(["run", str(subj_yaml), "--out", str(out_root), "--offline", "--modules", "annual-report", "--as-of", AS_OF.isoformat(),
+               "--profile", "internal"])
+    text = capsys.readouterr().out
+    assert rc == 0 and "[internal build]" in text and "Withheld: 0 claims." in text
 
 
 def test_online_run_reconciles_attachment_against_publisher_match(tmp_path):

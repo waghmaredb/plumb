@@ -15,11 +15,13 @@ EX = ROOT / "examples"
 
 
 # ------------------------------------------------------------- percentile
-def _rows(n, sector="banking", size="large", start=10.0, step=2.0):
+def _rows(n, sector="banking", size="large", start=10.0, step=2.0, population="evidenced", evidence_gated=None):
     out = []
     for i in range(n):
         t = start + i * step
-        out.append(BenchmarkRow(org_id=f"O{i}", sector=sector, size_band=size, dims={f"D{d}": t for d in range(1, 9)}, total=t, evidence_gated=(i % 2 == 0)))
+        eg = evidence_gated(i) if evidence_gated else (population == "evidenced")
+        out.append(BenchmarkRow(org_id=f"{sector[0].upper()}{i}", sector=sector, size_band=size, dims={f"D{d}": t for d in range(1, 9)}, total=t,
+                                evidence_gated=eg, population=population))
     return out
 
 
@@ -30,29 +32,59 @@ def test_percentile_rank_midrank():
     assert percentile_rank(1, []) is None
 
 
-def test_peer_n_insufficient_falls_back_to_global(inst):
+def test_peer_n_insufficient_falls_back_to_global_and_ranks_named_peers(inst):
     rows = _rows(14) + _rows(30, sector="telco", size="mid", start=50)
     p = peer_percentile(inst, rows, total=40, dim_scores={f"D{d}": 40 for d in range(1, 9)}, sector="banking", size_band="large")
     assert p["scope"] == "global" and not p["peer_n_sufficient"]
     assert p["n"] == 44 and p["n_peer_candidates"] == 14
-    assert p["label"].startswith("global, peer n insufficient")
+    assert p["label"].startswith("global, peer n insufficient") and "population: evidenced" in p["label"]
     assert p["total_percentile"] == pytest.approx(100 * 14 / 44)
+    # review Blocker 3: with peer n < 15 the deck shows a rank within the named peers, each peer's value visible
+    pr = p["peer_rank"]
+    assert pr["n"] == 14 and pr["rank"] == 1 and len(pr["peers"]) == 14  # totals 10..36 are all below 40
+    assert pr["peers"][0]["total"] == 36.0 and pr["peers"][-1]["total"] == 10.0 and "n=14" in pr["label"]
+    p2 = peer_percentile(inst, rows, total=20, dim_scores={}, sector="banking", size_band="large")
+    assert p2["peer_rank"]["rank"] == 9  # 8 peers strictly above 20 (22..36)
 
 
 def test_peer_n_sufficient_uses_peer_set(inst):
     rows = _rows(15) + _rows(30, sector="telco", size="mid", start=50)
     p = peer_percentile(inst, rows, total=20, dim_scores={f"D{d}": 20 for d in range(1, 9)}, sector="banking", size_band="large", peer_set_date="2026-10-01")
-    assert p["scope"] == "peer" and p["peer_n_sufficient"] and p["n"] == 15
+    assert p["scope"] == "peer" and p["peer_n_sufficient"] and p["n"] == 15 and p["peer_rank"] is None
     # totals 10,12,...,38: five below 20, one equal → (5 + 0.5)/15
     assert p["total_percentile"] == pytest.approx(100 * 5.5 / 15)
     assert p["dimension_percentiles"]["D1"] == pytest.approx(100 * 5.5 / 15)
-    assert p["evidence_gated_share"] == pytest.approx(8 / 15)
+    assert p["evidence_gated_share"] == pytest.approx(1.0)
     assert p["peer_set_date"] == "2026-10-01"
 
 
 def test_no_filters_is_global(inst):
     p = peer_percentile(inst, _rows(20), total=100, dim_scores={})
     assert p["scope"] == "global" and p["total_percentile"] == 100 and "no peer filters" in p["label"]
+
+
+def test_populations_are_never_pooled(inst):
+    """Tier-0 self-scored entries (capped ≤ 3 per item) and evidence-gated engagement entries are
+    different populations (review 2026-10-25 Blocker 3)."""
+    evidenced = _rows(15)
+    selfpool = _rows(20, start=5, step=1, population="self")
+    mixed = evidenced + selfpool
+    with pytest.raises(ValueError, match="never pooled"):
+        peer_percentile(inst, mixed, total=20, dim_scores={}, sector="banking", size_band="large")
+    pe = peer_percentile(inst, mixed, total=20, dim_scores={}, sector="banking", size_band="large", population="evidenced")
+    assert pe["n"] == 15 and pe["peer_n_sufficient"] and pe["population"]["population"] == "evidenced"
+    assert pe["population"]["n_excluded_other_population"] == 20
+    ps = peer_percentile(inst, mixed, total=20, dim_scores={}, sector="banking", size_band="large", population="self")
+    assert ps["n"] == 20 and ps["population"]["n_excluded_other_population"] == 15 and ps["total_percentile"] != pe["total_percentile"]
+    # a homogeneous set needs no population argument; an unknown population is refused
+    assert peer_percentile(inst, evidenced, total=20, dim_scores={}, sector="banking", size_band="large")["n"] == 15
+    with pytest.raises(ValueError):
+        peer_percentile(inst, mixed, total=20, dim_scores={}, population="pooled")
+    # population derives from evidence_gated when the column is absent
+    legacy = BenchmarkRow(org_id="L", dims={}, total=1.0, evidence_gated=False)
+    assert legacy.population == "self" and BenchmarkRow(org_id="L", dims={}, total=1.0).population is None
+    with pytest.raises(ValueError):
+        BenchmarkRow(org_id="L", dims={}, total=1.0, population="mixed")
 
 
 def test_example_benchmark_calibration(inst):
@@ -144,6 +176,19 @@ def test_cli_score_and_kappa(tmp_path):
     assert any(i["sigma_flag"] for i in data["items"])
     assert any(d["exco_gap_flag"] for d in data["dimensions"])
     assert data["value_axis"][0]["recorded"] == "A" and data["value_axis"][1]["capped"]
+    assert data["percentile"]["population"]["population"] == "evidenced" and "population: evidenced" in text
+
+    # peer n < 15: the scorecard shows the rank-within-named-peers exhibit, no percentile sentence (review Blocker 3)
+    r = subprocess.run(
+        [sys.executable, "-m", "plumbscore", "score", str(EX / "responses_harbourline_fictional.csv"), "--benchmark", str(EX / "benchmark_synthetic_40.csv"),
+         "--sector", "insurance", "--size-band", "mid", "--org", "Fictional FI", "--out", str(md), "--json", str(js)],
+        cwd=ROOT, capture_output=True, text=True,
+    )
+    assert r.returncode == 0, r.stderr
+    text = md.read_text(encoding="utf-8")
+    assert "within the named peer set" in text and "| Rank | Organisation |" in text and "percentile overall" not in text
+    data = json.loads(js.read_text(encoding="utf-8"))
+    assert data["percentile"]["peer_rank"] and not data["percentile"]["peer_n_sufficient"]
 
     r = subprocess.run([sys.executable, "-m", "plumbscore", "kappa", str(EX / "rater_a.csv"), str(EX / "rater_b.csv")], cwd=ROOT, capture_output=True, text=True)
     assert r.returncode == 0, r.stderr

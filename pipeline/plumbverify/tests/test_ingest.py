@@ -1,7 +1,12 @@
 """0.3 attached-document ingest path: a person-supplied PDF enters the store
 under its declared publisher URL with the same hash/extract guarantees as a
 fetch, is citable with a visible label, and reconciliation against the
-publisher either lifts the label (MATCH) or blocks every claim (MISMATCH)."""
+publisher either lifts the label (MATCH) or blocks every claim (MISMATCH).
+
+0.4 (spec C2a, red-team review 2026-10-25 Blocker 2): the labelled path is
+the INTERNAL build profile. The default CLIENT profile withholds every claim
+whose only support is an unreconciled attachment ("awaiting publisher
+reconciliation" in the gap register)."""
 import hashlib
 import json
 
@@ -40,9 +45,9 @@ def pdf_file(tmp_path):
     return f
 
 
-def _verifier(store, mock_client, **kw):
+def _verifier(store, mock_client, build_profile="internal", **kw):
     f = Fetcher(store=store, client=mock_client, sleep=lambda s: None, **kw)
-    return Verifier(fetcher=f, store=store, tier_rules=RULES)
+    return Verifier(fetcher=f, store=store, tier_rules=RULES, build_profile=build_profile)
 
 
 # ---- ingest ---------------------------------------------------------------
@@ -73,12 +78,12 @@ def test_ingest_rejects_missing_file_and_relative_url(tmp_path, store):
         ingest_local(f, "data/geh.pdf", store)
 
 
-# ---- citable with the label, no network -------------------------------------
+# ---- citable with the label, no network (INTERNAL profile) -------------------
 def test_attached_source_cites_with_label_without_touching_network(pdf_file, store, mock_client, net_state):
     ingest_local(pdf_file, PDF_URL, store, supplied_by="deepak", tier_rules=RULES)
-    rep = _verifier(store, mock_client).run(CLAIMS)
-    assert net_state.calls == []  # default: the attachment is used as is; reconcile is an explicit step
-    assert rep.build_pass
+    rep = _verifier(store, mock_client, build_profile="internal").run(CLAIMS)
+    assert net_state.calls == []  # the attachment is used as is; reconcile is an explicit step
+    assert rep.build_pass and rep.build_profile == "internal"
     d = {x.claim_id: x for x in rep.decisions}
     assert d["n1"].status == CitationStatus.verified and d["q1"].status == CitationStatus.verified
     assert d["n1"].labels == [ATTACHED_LABEL] and d["q1"].labels == [ATTACHED_LABEL]
@@ -93,6 +98,59 @@ def test_attached_source_cites_with_label_without_touching_network(pdf_file, sto
     assert src.sha256 in md and "deepak" in md and "pending (not yet attempted)" in md
     assert f"VERIFIED ({ATTACHED_LABEL})" in md
     assert "(f) attached-source claims sampled separately" in md
+
+
+# ---- C2a: CLIENT profile (the default) withholds unreconciled attachments ----
+def test_client_profile_blocks_claims_resting_on_unreconciled_attachment(pdf_file, store, mock_client, net_state):
+    ingest_local(pdf_file, PDF_URL, store, supplied_by="deepak", tier_rules=RULES)
+    f = Fetcher(store=store, client=mock_client, sleep=lambda s: None)
+    rep = Verifier(fetcher=f, store=store, tier_rules=RULES).run(CLAIMS)  # default profile is "client"
+    assert rep.build_profile == "client" and net_state.calls == []
+    assert not rep.build_pass and {g.claim_id for g in rep.gap_register} == {"n1", "q1"}
+    d = {x.claim_id: x for x in rep.decisions}
+    assert all(d[k].blocked and d[k].withheld_awaiting_reconciliation and not d[k].labels for k in ("n1", "q1"))
+    assert all(any(r.startswith("awaiting publisher reconciliation") and "C2a" in r for r in g.reasons) for g in rep.gap_register)
+    # the citations themselves still matched (the evidence is sound; only its provenance is unreconciled)
+    assert all(c.status == CitationStatus.verified and ATTACHED_LABEL in c.labels for c in rep.citations)
+    assert rep.metrics["withheld_awaiting_reconciliation"] == 2 and rep.metrics["blocked_claims"] == 2
+    assert rep.metrics["released_claims"] == 0 and rep.metrics["claims_on_unreconciled_attachments"] == 2
+    md = render_markdown(rep, seed=3)
+    assert "Released: 0 claims. Withheld: 2 claims (listed in the gap register; 2 awaiting publisher reconciliation)." in md
+    assert "Build profile: client" in md
+    # a second, fetched source keeps a claim released in a client build even while the attachment is unreconciled
+    two = Claim(id="n2", text="The department commissioned the report for A$440,000", kind=ClaimKind.number,
+                confidence_label=ConfidenceLabel.filed, sources=[PDF_URL, HTML_URL])
+    rep2 = Verifier(fetcher=Fetcher(store=store, client=mock_client, sleep=lambda s: None), store=store, tier_rules=RULES).run([two])
+    assert rep2.build_pass and not rep2.decisions[0].blocked and rep2.decisions[0].labels == []  # label does not travel
+    # MATCH lifts the withholding in the client profile
+    assert reconcile(store, PDF_URL, REPORT_PDF) == Reconciliation.MATCH
+    rep3 = Verifier(fetcher=Fetcher(store=store, client=mock_client, sleep=lambda s: None), store=store, tier_rules=RULES).run(CLAIMS)
+    assert rep3.build_pass and rep3.metrics["withheld_awaiting_reconciliation"] == 0
+    with pytest.raises(ValueError):
+        Verifier(fetcher=f, store=store, tier_rules=RULES, build_profile="board")
+
+
+def test_cli_profile_flag_switches_c2a(pdf_file, tmp_path, capsys, monkeypatch, mock_client):
+    import plumbverify.cli as cli
+    store_dir = tmp_path / "store"
+    assert main(["ingest", str(pdf_file), "--url", PDF_URL, "--store", str(store_dir)]) == 0
+    capsys.readouterr()
+    claims_path = tmp_path / "claims.json"
+    claims_path.write_text(json.dumps({"claims": [c.model_dump(mode="json") for c in CLAIMS]}), encoding="utf-8")
+    tiers = tmp_path / "tiers.yaml"
+    tiers.write_text("default: T5\ntiers:\n  T1:\n    domains: [example-gov.sg]\n")
+    monkeypatch.setattr(cli, "Fetcher", lambda **kw: Fetcher(store=kw["store"], client=mock_client, sleep=lambda s: None))
+    common = [str(claims_path), "--store", str(store_dir), "--tiers", str(tiers)]
+    rc = main(["verify", *common, "--out", str(tmp_path / "client.json"), "--log", str(tmp_path / "c.jsonl")])
+    out = capsys.readouterr().out
+    assert rc == 1 and "[client build]" in out and "Withheld: 2 claims" in out and "awaiting publisher reconciliation" in out
+    assert json.loads((tmp_path / "client.json").read_text())["build_profile"] == "client"
+    rc = main(["verify", *common, "--profile", "internal", "--out", str(tmp_path / "internal.json"), "--log", str(tmp_path / "i.jsonl")])
+    out = capsys.readouterr().out
+    assert rc == 0 and "[internal build]" in out and "Released: 2 claims. Withheld: 0 claims." in out
+    rep = json.loads((tmp_path / "internal.json").read_text())
+    assert rep["build_profile"] == "internal" and rep["build_pass"] is True
+    assert all(d["labels"] == [ATTACHED_LABEL] for d in rep["decisions"])
 
 
 # ---- reconcile ---------------------------------------------------------------
