@@ -34,7 +34,7 @@
   {% for s in m.sections %}
     <li class="toc-row {{ 'toc-appendix' if s.kind == 'appendix' else '' }}{% if s.kind == 'appendix' and loop.previtem and loop.previtem.kind != 'appendix' %} toc-first-appendix{% endif %}">
       <span class="toc-num">{% if s.kind == 'appendix' %}{{ s.label }}{% else %}{{ s.label }}{% endif %}</span>
-      <span class="toc-title">{% if s.kind == 'appendix' %}Appendix {{ s.label }}: {% endif %}{{ s.title | typo }}</span>
+      <a class="toc-title" href="#{{ s.id }}">{% if s.kind == 'appendix' %}Appendix {{ s.label }}: {% endif %}{{ s.title | typo }}</a>
       <span class="toc-dots"></span>
       <span class="toc-page">{{ toc_pages.get(s.id, '') }}</span>
     </li>
@@ -45,7 +45,7 @@
 
 {# --------------------------------------------------------------- sections #}
 {% for s in m.sections %}
-<section class="sec sec-{{ s.kind }}" id="{{ s.id }}">
+<section class="sec sec-{{ s.kind }}{% if not s.page_break %} no-break{% endif %}" id="{{ s.id }}">
   <header class="sec-head">
     <p class="kicker">{% if s.kind == 'appendix' %}Appendix {{ s.label }}{% else %}Section {{ s.label }}{% endif %}{% if s.kicker %} · {{ s.kicker }}{% endif %}</p>
     <h1>{{ s.title | typo }}</h1>
@@ -95,7 +95,7 @@
 
     {% elif b.type == 'figures' %}
       <div class="figures">
-      {% for f in b.items %}
+      {% for f in b['items'] %}
         <div class="figure figure-{{ f.tone or 'result' }}">
           <p class="fig-tag">{{ f.tag }}</p>
           <p class="fig-value">{{ f.value }}</p>
@@ -127,9 +127,9 @@
       </div>
 
     {% elif b.type == 'callout' %}
-      <aside class="callout">
+      <aside class="callout callout-{{ b.tone }}">
         {% if b.head %}<p class="callout-head">{{ b.head | typo }}</p>{% endif %}
-        <p>{{ b.text | md }}</p>
+        <p>{{ b.text | md }}{% if b.cite and b.cite.note %}<sup class="fn">{{ b.cite.note }}</sup>{% elif b.cite %} <span class="ref">({{ b.cite.inline }})</span>{% endif %}</p>
       </aside>
 
     {% elif b.type == 'search_method' %}
@@ -156,7 +156,7 @@
     {% elif b.type == 'questions' %}
       {% if b.head %}<h2>{{ b.head | typo }}</h2>{% endif %}
       <ol class="questions">
-      {% for q in b['items'] %}<li><p>{{ q.text | typo }}</p><p class="basis">Starting evidence: {{ q.basis }}</p></li>{% endfor %}
+      {% for q in b['items'] %}<li><p>{{ q.text | typo }} <span class="qbasis">({{ q.basis }})</span></p></li>{% endfor %}
       </ol>
 
     {% elif b.type == 'phases' %}
@@ -167,10 +167,12 @@
         <div class="phase"><p class="phase-when">{{ p.when }}</p><p class="phase-what">{{ p.what | typo }}</p></div>
       {% endfor %}
       </div>
+      {% if b.show_outputs %}
       <table class="data generic outputs">
         <thead><tr><th>Area</th><th>What the assessment would deliver</th></tr></thead>
         <tbody>{% for c in b.columns %}<tr><td class="rowhead">{{ c.head }}</td><td>{{ c.body | typo }}</td></tr>{% endfor %}</tbody>
       </table>
+      {% endif %}
 
     {% elif b.type == 'awaiting' %}
       {% if b.head %}<h2>{{ b.head | typo }}</h2>{% endif %}
@@ -202,14 +204,14 @@
       </table>
       <p class="table-note">{{ b.page_note | md }}</p>
       {% if m.sources_awaiting %}
-      <h2>{{ b.head_awaiting or 'Documents referred to in section 5 (awaiting source check)' }}</h2>
+      <h2>{{ b.head_awaiting or 'Documents referred to as awaiting source check' }}</h2>
       <p class="para">{{ b.awaiting_note | md }}</p>
-      <table class="data sources">
+      <table class="data sources compact">
         <colgroup><col class="s-doc"><col class="s-pages"></colgroup>
         <thead><tr><th>Document</th><th>Date</th></tr></thead>
         <tbody>
         {% for d in m.sources_awaiting %}
-          <tr><td><p class="src-title">{{ d.label | typo }}</p><p class="src-url">{{ d.url | url }}</p></td><td class="pages">{{ d.date }}</td></tr>
+          <tr><td>{{ d.label | typo }}</td><td class="pages">{{ d.date }}</td></tr>
         {% endfor %}
         </tbody>
       </table>

@@ -167,6 +167,12 @@ def _message(ctx, b, where):
 
 
 def _quote(ctx, b, where):
+    """A pull quote: one statement, or several sentences from one page.
+
+    join: 'adjacent' (default) - consecutive sentences, re-checked as one passage;
+          'ellipsis'           - non-consecutive sentences shown with an ellipsis.
+    excerpt: fragments of the passage, in order, shown with ellipses.
+    """
     cids = b["claims"] if "claims" in b else [b["claim"]]
     claims = [use_claim(ctx, cid, where) for cid in cids]
     docs = {doc_for(ctx, c).key for c in claims}
@@ -178,21 +184,34 @@ def _quote(ctx, b, where):
         raise BindingError(f"[{ctx.section_id}] {where}: joined sentences must be on one page")
     page = pages.pop()
     doc.used_pdf_pages.add(page)
+    join = b.get("join", "adjacent")
+    if join not in ("adjacent", "ellipsis"):
+        raise InputError(f"[{ctx.section_id}] {where}: join must be 'adjacent' or 'ellipsis'")
+    for c in claims:
+        ctx.quotes.append({"doc": doc.key, "pdf_page": page, "text": c.text, "where": where})
     full = " ".join(c.text for c in claims)
-    shown = full
+    if join == "adjacent" and len(claims) > 1:
+        ctx.quotes.append({"doc": doc.key, "pdf_page": page, "text": full, "where": where + " (joined)"})
+    shown = full if join == "adjacent" else " \u2026 ".join(c.text for c in claims)
     if b.get("excerpt"):
-        frags = b["excerpt"]
+        if join == "ellipsis":
+            raise InputError(f"[{ctx.section_id}] {where}: use excerpt or join: ellipsis, not both")
         pos = 0
-        for f in frags:
+        for f in b["excerpt"]:
             i = _norm(full).find(_norm(f), pos)
             if i < 0:
                 raise BindingError(f"[{ctx.section_id}] {where}: excerpt fragment not in the quotation, "
                                    f"or out of order: {f[:60]!r}")
             pos = i + len(_norm(f))
-        shown = " … ".join(f.strip() for f in frags)
-    ctx.quotes.append({"doc": doc.key, "pdf_page": page, "text": full, "where": where})
+        shown = " \u2026 ".join(f.strip() for f in b["excerpt"])
     return {"type": "quote", "label": b.get("label", ""), "text": shown,
             "source": f"{doc.short}, {doc.folio.label(page)}"}
+
+
+def _callout(ctx, b, where):
+    out = _text_block(ctx, b, where)
+    out.update({"type": "callout", "head": b.get("head", ""), "tone": b.get("tone", "teal")})
+    return out
 
 
 def _uses_table(ctx, b, where):
@@ -276,7 +295,8 @@ def _questions(ctx, b, where):
 def _phases(ctx, b, where):
     node = ctx.storyline.get(b["storyline"])
     return {"type": "phases", "head": b.get("head", ""), "intro": b.get("intro", ""),
-            "columns": node.get("columns", []), "phases": node.get("phases", [])}
+            "columns": node.get("columns", []), "phases": node.get("phases", []),
+            "show_outputs": bool(b.get("show_outputs", False))}
 
 
 def _awaiting(ctx, b, where):
@@ -295,9 +315,7 @@ def _awaiting(ctx, b, where):
                 raise BindingError(f"[{ctx.section_id}] {w}: research row {rid} bound but no --research given")
             urls += ctx.research.row(rid).urls
         url = it.get("url") or (urls[0] if urls else "")
-        if it.get("url"):
-            known = (ctx.research.text if ctx.research else "") + " ".join(urls)
-            if it["url"] not in known:
+        if it.get("url") and not _traceable(it["url"], ctx, urls):
                 raise BindingError(f"[{ctx.section_id}] {w}: url is not traceable to the research notes "
                                    f"or the statement's sources: {it['url']}")
         if not url:
@@ -309,6 +327,16 @@ def _awaiting(ctx, b, where):
         items.append({"text": it["text"], "source_type": it["source_type"], "date": it.get("date", ""),
                       "url": url, "status": it.get("status", "To be confirmed")})
     return {"type": "awaiting", "head": b.get("head", ""), "intro": b.get("intro", ""), "items": items}
+
+
+def _traceable(url: str, ctx: Context, urls: list[str]) -> bool:
+    """A source address given in the spec must come from the research notes or the statement:
+    verbatim, or as a folder prefix plus a file name both written there."""
+    known = (ctx.research.text if ctx.research else "") + " " + " ".join(urls)
+    if url in known:
+        return True
+    head, _, name = url.rpartition("/")
+    return bool(name) and name in known and head + "/" in known
 
 
 def _open_items(ctx, b, where):
@@ -333,12 +361,43 @@ BLOCKS = {
     "uses_table": _uses_table, "figures": _figures, "table": _table,
     "search_method": _search_method, "hypotheses": _hypotheses, "questions": _questions,
     "phases": _phases, "awaiting": _awaiting, "open_items": _open_items,
-    "subhead": _plain, "note": _plain, "observations": _plain, "callout": _plain,
+    "subhead": _plain, "note": _text_block, "observations": _plain, "callout": _callout,
     "method": _plain, "sources": _plain,
 }
 
 
 # -------------------------------------------------------------------------- bind
+
+def _prune(node: Any, mode: str) -> Any:
+    """Drop any mapping whose `when` (full | strict) does not match the build mode.
+    Sections of kind 'awaiting' are dropped in strict mode by bind() itself."""
+    if isinstance(node, list):
+        return [_prune(x, mode) for x in node
+                if not (isinstance(x, dict) and x.get("when") not in (None, mode))
+                and not (mode == "strict" and isinstance(x, dict) and x.get("kind") == "awaiting")]
+    if isinstance(node, dict):
+        return {k: _prune(v, mode) for k, v in node.items() if k != "when"}
+    return node
+
+
+_SEC = re.compile(r"\{sec:([\w-]+)\}")
+
+
+def _sub_labels(node: Any, labels: dict[str, str], sid: str) -> Any:
+    """Replace {sec:<id>} with the section's printed number or letter."""
+    if isinstance(node, str):
+        def rep(m):
+            if m.group(1) not in labels:
+                raise BindingError(f"[{sid}] text refers to section {m.group(1)!r}, which is not in this "
+                                   f"build; mark the sentence `when: full`")
+            return labels[m.group(1)]
+        return _SEC.sub(rep, node)
+    if isinstance(node, list):
+        return [_sub_labels(x, labels, sid) for x in node]
+    if isinstance(node, dict):
+        return {k: _sub_labels(v, labels, sid) for k, v in node.items()}
+    return node
+
 
 def bind(spec: dict, run: Run, storyline: Storyline, research: Research | None, *, strict: bool) -> dict:
     documents = {}
@@ -353,9 +412,20 @@ def bind(spec: dict, run: Run, storyline: Storyline, research: Research | None, 
         )
     ctx = Context(run=run, storyline=storyline, research=research, documents=documents, strict=strict)
 
+    mode = "strict" if strict else "full"
+    spec_sections = _prune(spec["sections"], mode)
+    labels, number = {}, 0
+    for s in spec_sections:
+        kind = s.get("kind", "body")
+        if kind in ("body", "awaiting"):
+            number += 1
+            labels[s["id"]] = str(number)
+        else:
+            labels[s["id"]] = s.get("letter", "")
+
     sections = []
     number = 0
-    for s in spec["sections"]:
+    for s in spec_sections:
         kind = s.get("kind", "body")
         if kind == "awaiting" and strict:
             continue
@@ -375,6 +445,7 @@ def bind(spec: dict, run: Run, storyline: Storyline, research: Research | None, 
             blocks.append(fn(ctx, b, f"block {i + 1} ({b['type']})"))
         for n, mb in enumerate((x for x in blocks if x["type"] == "message"), 1):
             mb["n"] = n
+        blocks = _sub_labels(blocks, labels, s["id"])
         sections.append({"id": s["id"], "kind": kind, "label": label, "title": s["title"],
                          "kicker": s.get("kicker", ""), "blocks": blocks, "notes": ctx.notes or [],
                          "page_break": s.get("page_break", True)})
@@ -398,7 +469,9 @@ def bind(spec: dict, run: Run, storyline: Storyline, research: Research | None, 
     status = storyline.marker
     r = spec["report"]
     return {
-        "report": {**r, "status": status, "final": storyline.final, "strict": strict},
+        "report": {**_sub_labels(_prune(r, mode), labels, "report"), "status": status,
+                   "final": storyline.final, "strict": strict},
+        "labels": labels,
         "sections": sections,
         "sources_main": sources_main,
         "sources_awaiting": sources_awaiting,

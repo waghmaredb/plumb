@@ -86,17 +86,33 @@ def pdf_pages_text(pdf: Path) -> list[str]:
     return [(pg.extract_text() or "") for pg in PdfReader(str(pdf)).pages]
 
 
-def find_section_pages(pages: list[str], sections: list[dict], start: int = 2) -> dict[str, int]:
-    """1-based page on which each section heading appears (searched from page `start`)."""
-    found = {}
+def find_section_pages(pdf: Path, sections: list[dict], start: int = 2) -> dict[str, int]:
+    """1-based page of each section: from the PDF's named destinations (Chromium writes one
+    per linked id), falling back to a whitespace-insensitive search for the heading."""
+    from pypdf import PdfReader
+    reader = PdfReader(str(pdf))
+    found: dict[str, int] = {}
+    try:
+        for name, dest in reader.named_destinations.items():
+            key = str(name).lstrip("/")
+            page = reader.get_destination_page_number(dest)
+            if page is not None and page >= 0:
+                found[key] = page + 1
+    except Exception:  # pragma: no cover - destinations are a convenience
+        found = {}
+    out = {s["id"]: found[s["id"]] for s in sections if s["id"] in found}
+    if len(out) == len(sections):
+        return out
+    texts = [re.sub(r"\s+", " ", (pg.extract_text() or "")) for pg in reader.pages]
     for s in sections:
+        if s["id"] in out:
+            continue
         title = re.sub(r"\s+", " ", s["title"]).strip()
-        for i in range(start, len(pages)):
-            lines = [re.sub(r"\s+", " ", l).strip() for l in pages[i].splitlines()]
-            if any(l == title or l.endswith(" " + title) or l == f"{s['label']} {title}" for l in lines):
-                found[s["id"]] = i + 1
+        for i in range(start, len(texts)):
+            if title in texts[i]:
+                out[s["id"]] = i + 1
                 break
-    return found
+    return out
 
 
 def check_quotes(quotes: list[dict], source_pdf: Path) -> list[str]:

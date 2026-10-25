@@ -1,0 +1,472 @@
+# Great Eastern Holdings - deep-dive evidence report, v1
+#
+# Binding rules (enforced by plumbreport.spec.bind):
+#   * claim / claims / support / storyline refs outside a section of kind "awaiting" must
+#     resolve to statements whose verification decision is "verified"; anything else
+#     stops the build.
+#   * research rows (RESEARCH.md) and blocked statements may be bound only in the
+#     section of kind "awaiting"; --strict drops that section.
+#   * `when: full` / `when: strict` keeps a block or item in one build mode only.
+#   * {sec:<id>} prints the number or letter a section gets in this build.
+# Statement ids live only in this file; the lint fails the build if one reaches the page.
+
+report:
+  id: geh-deep-dive-v1
+  client: Great Eastern Holdings
+  title: "AI at Great Eastern: deep-dive evidence report"
+  subtitle: "The evidence behind the executive pre-read: where AI is in use, what it has delivered, and how it is governed"
+  date: October 2026
+  prepared_by: PLUMB Advisory
+  prepared_for: "The leadership team, Great Eastern Holdings Limited"
+  basis: "Prepared from Great Eastern Holdings' Annual Report 2025, as at its publication in March 2026. It has not been reviewed by Great Eastern. Quotations are reproduced word for word; page references are to the page numbers printed in the annual report."
+  reading_note: "Sections 1 to 4 rest only on statements checked against Great Eastern's Annual Report 2025. Our own summary sentences are marked by their page references; the company's words appear as quotations."
+
+documents:
+  ar2025:
+    title: "Great Eastern Holdings Limited, Annual Report 2025"
+    short: Annual Report 2025
+    publisher: Great Eastern Holdings Limited
+    published: March 2026
+    url: https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf
+    note: "244 pages; page numbers printed on PDF pages 6 to 239."
+    folio: {offset: -2, first_pdf: 6, last_pdf: 239}
+    pages:                          # PDF page for statements stored without one
+      great-eastern.ar.annual_report.2025.q6: 8
+
+sections:
+
+# --------------------------------------------------------------------------- 1
+- id: summary
+  title: Summary
+  citations: notes
+  blocks:
+  - type: lead
+    storyline: exec-summary.title
+  - type: message
+    storyline: exec-summary.points[0]
+  - type: message
+    storyline: exec-summary.points[1]
+  - type: message
+    storyline: exec-summary.points[2]
+  - type: para
+    text: "This report sets out the evidence behind each message. Section {sec:uses} lists every use of AI the annual report names, in the company's own words. Section {sec:outcomes} examines the two reported figures. Section {sec:governance} sets out what the report says about the governance of AI, and how we searched for what it does not say. Section {sec:hypotheses} turns the evidence into three hypotheses that an assessment with the leadership team would test."
+  - type: para
+    when: full
+    text: "Section {sec:developments} records developments since the annual report was published, including the Monetary Authority of Singapore's guidelines on AI risk management, results for the first half of 2026 and peers' disclosures. We have located these but not yet checked them against stored copies, so nothing in sections 1 to 4 relies on them."
+
+# --------------------------------------------------------------------------- 2
+- id: uses
+  title: Where AI is in use
+  blocks:
+  - type: lead
+    storyline: value-chain.title
+  - type: para
+    text: "The annual report names seven distinct uses of AI, from advice to claims and compliance. Three are described in the Letter to Shareholders, two in the review of the Singapore business and two in the review of the Malaysia business."
+    support:
+    - great-eastern.findings.deploy.1
+    - great-eastern.findings.deploy.2
+    - great-eastern.findings.deploy.3
+    - great-eastern.findings.deploy.5
+    - great-eastern.findings.governance.2
+    - great-eastern.findings.deploy.6
+    - great-eastern.findings.deploy.7
+  - type: uses_table
+    caption: "Table 1. Uses of AI named in the Annual Report 2025"
+    head: [Stage, Use, Status, Market, Page]
+    rows:
+    - {stage: "Advice and distribution", use: "AI-enabled advisory platform for financial advisers", status: "Deployed", market: "Group", claim: great-eastern.findings.deploy.1}
+    - {stage: "Underwriting", use: "AI solution for complex underwriting cases", status: "Testing", market: "Group", claim: great-eastern.findings.deploy.3}
+    - {stage: "Onboarding", use: "AI in customer segmentation, enabling instant approvals for existing lower-risk Great CareShield customers", status: "Leveraged", market: "Singapore", claim: great-eastern.findings.deploy.5}
+    - {stage: "Claims", use: "Proprietary platform that automates medical claims", status: "Rolled out", market: "Group", claim: great-eastern.findings.deploy.2}
+    - {stage: "Claims", use: "Optical character recognition of medical bills to identify potential wastage and abuse", status: "Developed", market: "Malaysia", claim: great-eastern.findings.deploy.6}
+    - {stage: "Risk and conduct", use: "Monitoring of transactions and sales patterns for compliance risks, including anti-money laundering", status: "Continuously monitoring", match: "continuously monitoring", market: "Singapore", claim: great-eastern.findings.governance.2}
+    - {stage: "Risk and conduct", use: "AI-driven model to help identify potential misconduct cases", status: "Developed", market: "Malaysia", claim: great-eastern.findings.deploy.7}
+    note: "Status is the company's own verb for each use. \"Group\" marks a use described in the Letter to Shareholders without a market being named. Page numbers are those printed in the annual report."
+  - type: subhead
+    text: "In the company's words"
+  - type: quote
+    label: "Advice and distribution"
+    claim: great-eastern.findings.deploy.1
+  - type: quote
+    label: "Underwriting"
+    claim: great-eastern.findings.deploy.3
+  - type: quote
+    label: "Underwriting and medical claims (key figures page)"
+    claim: great-eastern.ar.annual_report.2025.q6
+  - type: quote
+    label: "Onboarding"
+    claim: great-eastern.findings.deploy.5
+  - type: quote
+    label: "Claims"
+    claim: great-eastern.findings.deploy.2
+  - type: quote
+    label: "Claims, Malaysia"
+    claim: great-eastern.findings.deploy.6
+  - type: quote
+    label: "Risk and conduct"
+    claim: great-eastern.findings.governance.2
+  - type: quote
+    label: "Risk and conduct, Malaysia"
+    claim: great-eastern.findings.deploy.7
+
+# --------------------------------------------------------------------------- 3
+- id: outcomes
+  title: Reported outcomes
+  blocks:
+  - type: lead
+    storyline: outcomes.title
+  - type: figures
+    items:
+    - value: "75%"
+      figure: "75%"
+      tone: result
+      tag: "Result, 2025"
+      label: "of medical claims turned around the same day"
+      detail: "Described as one of the fastest among Singapore's health insurers, based on Ministry of Health service indicators."
+      claim: great-eastern.findings.deploy.4
+    - value: "~75%"
+      figure: "approximately 75%"
+      tone: target
+      tag: "Stated aim"
+      label: "reduction in financial advisers' preparation time that the advisory platform aims to deliver"
+      detail: "No achieved figure is reported."
+      claim: great-eastern.findings.deploy.1
+  - type: para
+    text: "The two figures are the same number but not the same kind of evidence. The claims figure is a result the company reports for 2025. The adviser figure is what a platform deployed in 2025 \"aims to\" achieve; the report gives no achieved value."
+    support: [great-eastern.findings.deploy.4, great-eastern.findings.deploy.1]
+  - type: table
+    caption: "Table 2. What is reported, and what is not"
+    head: ["", "Medical claims turnaround", "Adviser preparation time"]
+    widths: ["24%", "38%", "38%"]
+    rows:
+    - ["Kind of figure", "Achieved result", "Stated aim"]
+    - ["Period", "2025", "Platform deployed in 2025; period of measurement not stated"]
+    - ["Comparison offered", "Among the fastest of Singapore's health insurers, on Ministry of Health service indicators", "None"]
+    - ["Baseline", "Not stated", "Not stated"]
+    - ["Population measured", "Medical claims; claim types and volumes not stated", "Financial advisers; number of advisers not stated"]
+    - ["Financial value", "Not stated", "Not stated"]
+    support: [great-eastern.findings.deploy.4, great-eastern.findings.deploy.1]
+  - type: quote
+    label: "Medical claims"
+    claim: great-eastern.findings.deploy.4
+  - type: quote
+    label: "Adviser preparation time"
+    claim: great-eastern.findings.deploy.1
+  - type: subhead
+    text: "Outcomes described without figures"
+  - type: para
+    text: "The two Malaysia uses are reported with qualitative outcomes, and the medical-bill solution with an industry award. Neither carries a figure."
+    support: [great-eastern.findings.deploy.7, great-eastern.findings.deploy.6.context1, great-eastern.findings.deploy.6.context2]
+  - type: quote
+    label: "Medical-bill recognition, Malaysia"
+    claims: [great-eastern.findings.deploy.6.context1, great-eastern.findings.deploy.6.context2]
+  - type: quote
+    label: "Misconduct detection, Malaysia"
+    claim: great-eastern.findings.deploy.7
+  - type: callout
+    head: "Why it matters"
+    storyline: outcomes.so_what
+
+# --------------------------------------------------------------------------- 4
+- id: governance
+  title: AI governance
+  blocks:
+  - type: lead
+    storyline: governance.title
+  - type: subhead
+    text: "What the annual report shows"
+  - type: para
+    text: "AI reaches the board in two places: two named directors are to receive fees for their contributions to IT infrastructure, data and AI initiatives, and the board's collective competencies include artificial intelligence."
+    support: [great-eastern.findings.governance.4, great-eastern.findings.governance.3]
+  - type: quote
+    label: "Directors' fees, note 4 to the remuneration table"
+    claim: great-eastern.findings.governance.4
+  - type: quote
+    label: "Board competencies"
+    claim: great-eastern.findings.governance.3
+    excerpt:
+    - "Collectively, they provide the necessary business acumen, knowledge, capabilities and core competencies to the Company and the Group, including"
+    - "regulatory requirements, risk management, law, cyber risk, ESG and sustainability, taxation and artificial intelligence."
+  - type: para
+    text: "Where the report pairs AI with governance, the mechanisms it cites are a Quality Assurance Scorecard, introduced to strengthen accountability and service quality, and the Cyber Trust Mark. Both concern service quality and cyber governance; the report does not describe either as applying to AI models."
+    support: [great-eastern.findings.governance.1, great-eastern.findings.governance.1.context1, great-eastern.findings.governance.2.context1]
+  - type: quote
+    label: "Letter to Shareholders"
+    claims: [great-eastern.findings.governance.1, great-eastern.findings.governance.1.context1]
+  - type: quote
+    label: "Singapore business review (the sentence after the compliance-monitoring passage quoted in section {sec:uses})"
+    claim: great-eastern.findings.governance.2.context1
+  - type: subhead
+    text: "Who owns data and AI"
+  - type: para
+    text: "The report states that the Data & AI operating model was restructured in 2025. It also records that the Managing Director, Group Data and Artificial Intelligence, was expected to move to OCBC in March 2026, with a successor to be named."
+    support: [great-eastern.findings.opmodel.1, great-eastern.findings.leadership.1, great-eastern.findings.leadership.successor]
+  - type: quote
+    label: "Data and AI operating model"
+    claim: great-eastern.findings.opmodel.1
+  - type: quote
+    label: "Leadership changes"
+    claims: [great-eastern.findings.leadership.1, great-eastern.findings.leadership.successor]
+    join: ellipsis
+  - type: observations
+    head: "Not yet described in the annual report"
+    intro: "We did not find the following in the annual report. This is an observation about public disclosure, not an assessment of Great Eastern's practice."
+    items:
+    - "A policy or set of principles for the responsible use of AI"
+    - "An inventory of AI systems, with a rating of each system's risk"
+    - "Model risk management extended to AI models"
+  - type: note
+    storyline: governance.footnote
+  - type: search_method
+    head: "How we searched"
+    observation: great-eastern.findings.obs.governance
+    document: ar2025
+    scope: "We searched the full text of all {pages} pages of the {document} (counted as pages of the PDF file) for {n} terms that usually accompany a description of how AI itself is governed. Matching ignored capitalisation, except for the acronyms."
+    result: "None of the {n} terms appears anywhere in the report."
+    limitations:
+    - "Only the annual report was searched. The sustainability report, the company website, results materials and regulatory filings were not."
+    - "The search looks for exact terms. A framework described in other words would not be found."
+    - "Frameworks set by OCBC at group level may apply to Great Eastern; they were not reviewed."
+    - "Text taken from a PDF can split a phrase across columns, so a term could be missed. The governance and risk sections have not yet been read in full by a second reviewer."
+
+# --------------------------------------------------------------------------- 5
+- id: developments
+  kind: awaiting
+  title: "Developments since the annual report — awaiting source check"
+  kicker: "To be confirmed"
+  blocks:
+  - type: callout
+    tone: amber
+    head: "How to read this section"
+    text: "Everything in this section was published after the annual report, or by other organisations. We have located each item at its publisher's website and read it once, but have not yet checked it against a stored copy. Each item is reported as its source states it and is to be confirmed before it is relied on. Nothing in sections 1 to 4 depends on this section."
+  - type: awaiting
+    head: "Leadership and board"
+    items:
+    - text: "The Group Chief Executive told the annual general meeting on 14 April 2026 that the Group had \"re-organised how it managed across Data and AI\" and \"hired in new skill sets\"."
+      source_type: "Great Eastern, minutes of the 27th annual general meeting"
+      date: "13 May 2026"
+      research: "1.3"
+    - text: "No announcement naming a successor to the Managing Director, Group Data and Artificial Intelligence, has been located as at 26 October 2026. The company's management-team page, the most likely place for the name, could not be read."
+      source_type: "Great Eastern, index of regulatory announcements"
+      status: "Not yet located"
+      date: "checked 26 October 2026"
+      url: https://www.greateasternlife.com/sg/en/about-us/investor-relations/regulatory-announcement.html
+      research: "1.2"
+    - text: "Hicham Raissi, formerly chief executive of Allianz Insurance Singapore, became managing director and group head of General and Group Insurance from 1 October 2026, succeeding Jimmy Tong. No company release has been located."
+      source_type: "the trade press (Reinsurance Asia)"
+      date: "October 2026"
+      research: "1.5"
+    - text: "Dr Andrew Khoo succeeded Mr Soon Tit Koon as Chairman on 15 April 2026."
+      source_type: "a Great Eastern announcement"
+      date: "9 March 2026"
+      research: "1.7"
+    - text: "Mrs Teoh Lian Ee ceased to be a director on 1 July 2026, and Ms Adeline Sum Wai Fun was appointed a non-executive independent director on 28 September 2026."
+      source_type: "Great Eastern announcements"
+      date: "July and September 2026"
+      url: https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20260928-appointment-of-ms-adeline-sum-as-non-exe-and-independent-director.pdf
+      research: "1.8"
+  - type: awaiting
+    head: "Results and strategy in 2026"
+    items:
+    - text: "For the first half of 2026: profit attributable to shareholders of S$849.5 million, up 43%; total weighted new sales of S$813.2 million, up 15%; new business embedded value of S$405.3 million, up 28%."
+      source_type: "Great Eastern's results media release"
+      date: "31 July 2026"
+      research: "2.1"
+    - text: "On a first reading, the half-year media release, financial summary and results statement contain no statement about AI, technology or automation. This absence is to be re-checked on stored copies."
+      source_type: "Great Eastern's half-year results materials"
+      date: "31 July 2026"
+      research: "2.2"
+    - text: "The strategy page presented to shareholders lists \"End-to-end AI and technology embedding\" under Organisation and Culture, and \"Data Analytics & Artificial Intelligence\" among the key enablers."
+      source_type: "Great Eastern's annual general meeting presentation"
+      date: "14 April 2026"
+      research: "2.5"
+    - text: "The Group Chief Executive described a customer-segmentation large language model (completed in Singapore and being completed in Malaysia) and the use of analytics and AI to reduce claims fraud, wastage and abuse."
+      source_type: "Great Eastern, minutes of the 27th annual general meeting"
+      date: "13 May 2026"
+      research: "2.6"
+    - text: "Great Eastern has given notice of its results for the nine months to September 2026; the release date could not be read and should be checked before any meeting."
+      source_type: "a Great Eastern notification"
+      date: "9 October 2026"
+      research: "2.9"
+  - type: awaiting
+    head: "MAS Guidelines on Artificial Intelligence Risk Management"
+    items:
+    - text: "The Monetary Authority of Singapore issued the Guidelines on Artificial Intelligence Risk Management for Financial Institutions on 7 October 2026."
+      source_type: "the Monetary Authority of Singapore"
+      date: "7 October 2026"
+      claim: great-eastern.findings.reg.sg-mas-airm.issued
+      research: "3.1"
+      url: https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions
+    - text: "The guidelines take effect on 7 October 2027, when the sections on board and senior management oversight and on key AI risk management systems apply."
+      source_type: "the Monetary Authority of Singapore (guidelines, paragraph 1.8)"
+      date: "7 October 2026"
+      claim: great-eastern.findings.reg.sg-mas-airm.effective
+      url: https://www.mas.gov.sg/-/media/mas-media-library/regulation/guidelines/bd/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions/guidelines-on-artificial-intelligence-risk-management.pdf
+    - text: "Financial institutions have until 7 October 2028 to meet the sections on AI life-cycle controls and on AI capability and capacity."
+      source_type: "the Monetary Authority of Singapore (guidelines, paragraph 1.8)"
+      date: "7 October 2026"
+      claim: great-eastern.findings.reg.sg-mas-airm.lifecycle
+      url: https://www.mas.gov.sg/-/media/mas-media-library/regulation/guidelines/bd/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions/guidelines-on-artificial-intelligence-risk-management.pdf
+    - text: "Expectations include: the board approves the AI governance approach and risk appetite, and senior management reports to it (a dedicated AI committee is not required); AI use is identified consistently and kept in an inventory; and each use is assessed for risk materiality on impact, complexity and reliance, with residual risk within appetite before deployment."
+      source_type: "the Monetary Authority of Singapore (guidelines, sections 3 and 4)"
+      date: "7 October 2026"
+      research: ["3.2", "3.3", "3.4"]
+    - text: "Life-cycle controls cover data governance, explainability (with stronger expectations for underwriting and advisory uses), fairness, human oversight, independent validation for high-materiality uses and monitoring. Institutions remain accountable for AI supplied by third parties."
+      source_type: "the Monetary Authority of Singapore (guidelines, section 5)"
+      date: "7 October 2026"
+      research: ["3.5", "3.6"]
+    - text: "MAS intends to consult the financial sector in 2027 on further guidance on agentic AI."
+      source_type: "the Monetary Authority of Singapore (media release)"
+      date: "7 October 2026"
+      research: "3.7"
+      url: https://www.mas.gov.sg/news/media-releases/2026/mas-sets-out-supervisory-expectations-on-responsible-ai-adoption-by-financial-institutions
+  - type: para
+    text: "Once these dates are confirmed, a natural question for management is whether an AI inventory with risk-materiality ratings will be in place ahead of the first compliance date."
+  - type: awaiting
+    head: "Peers' disclosed AI outcomes"
+    intro: "Each figure is the company's own, on its own definitions; they are not directly comparable with each other or with Great Eastern's."
+    items:
+    - text: "AIA Group: \"83 per cent of underwriting decisions and 75 per cent of claims auto-adjudicated\"; an in-house copilot supporting more than 14,000 employees in 15 markets."
+      source_type: "AIA Group Annual Report 2025, p. 17"
+      date: "March 2026"
+      research: ["4.1", "4.2"]
+    - text: "AIA Group: about $200 million of claims savings in the first half of 2026, more than 5% of gross claims paid, \"enabled by advanced data and analytics\"."
+      source_type: "AIA Group interim results presentation"
+      date: "20 August 2026"
+      research: "4.5"
+    - text: "AIA Group: AI \"deployed within a rigorous governance framework encompassing model risk management, data privacy and regulatory compliance\", and a new Technology, Operations and Data Committee of the Board."
+      source_type: "AIA Group Annual Report 2025, pp. 10 and 17"
+      date: "March 2026"
+      research: "4.4"
+    - text: "Prudential plc: more than $100 million of fraud, waste and abuse savings through platforms powered by data analytics and AI, and a 50% cut in underwriting time on medical reports in Hong Kong."
+      source_type: "Prudential plc full-year 2025 results presentation"
+      date: "18 March 2026"
+      research: "4.7"
+    - text: "Prudential plc: AI Ethics Principles, overseen by an AI Governance Working Group and applied to third-party tools as well as its own."
+      source_type: "Prudential plc AI statement"
+      date: "January 2026"
+      research: "4.9"
+    - text: "Manulife: a target of $1 billion in cumulative enterprise AI value by 2027, with $300 million achieved by the end of 2025; a Singapore sales agent is among the first solutions on its enterprise AI platform."
+      source_type: "a Manulife press release"
+      date: "13 October 2026"
+      research: "4.13"
+    - text: "Singlife: a 30% reduction in average handling time for customer-service staff using an AI agent. The figures were supplied by Singlife and its technology vendor and are not audited."
+      source_type: "the technology press (TNGlobal)"
+      date: "18 September 2026"
+      research: "4.12"
+  - type: para
+    text: "As reported, AIA, Prudential and Manulife each publish a named mechanism for governing AI: a board committee, a working group or a set of principles. Great Eastern's annual report does not, beyond the board-level references in section {sec:governance}."
+
+# --------------------------------------------------------------------------- 6
+- id: hypotheses
+  title: Hypotheses and how an assessment would test them
+  blocks:
+  - type: lead
+    storyline: hypotheses.title
+  - type: para
+    text: "The public record shows where AI is in use, but not what it is worth or how it is governed. Each hypothesis below starts from a statement in the annual report and names the evidence an assessment would gather to confirm or reject it."
+  - type: hypotheses
+    storyline: hypotheses
+    head: ["Hypothesis to test", "How the assessment would answer it"]
+  - type: questions
+    head: "Questions we would put to management"
+    items:
+    - great-eastern.findings.q.measurement
+    - great-eastern.findings.q.testing.3
+    - great-eastern.findings.q.governance
+    - great-eastern.findings.q.group
+    - great-eastern.findings.q.opmodel
+    - great-eastern.findings.q.successor
+  - type: phases
+    head: "How the assessment would run"
+    intro: "A 12-day assessment would test the three hypotheses with the leadership team. No confidential data is needed for the first phase."
+    storyline: proposal
+
+# --------------------------------------------------------------------------- appendices
+- id: sources
+  kind: appendix
+  letter: A
+  title: Sources
+  blocks:
+  - type: sources
+    head_main: "Documents relied on in this report"
+    page_note: "Page numbers are those printed on the pages of the annual report. A page without a printed number would be cited by its position in the PDF file."
+    head_awaiting: "Documents referred to as awaiting source check"
+    awaiting_note: "Located at each publisher's website and read once; not yet checked against a stored copy. The web address of each is printed beside the item in section {sec:developments}. Nothing in sections 1 to 4 relies on them."
+
+- id: method
+  kind: appendix
+  letter: B
+  title: Method
+  blocks:
+  - type: para
+    text: "This report is built so that every statement can be traced to the page it comes from. The steps below apply to every quotation and every summary sentence in it."
+  - type: method
+    items:
+    - head: "Statements start from a stored copy of the source"
+      text: "Each statement is drawn from a document we hold a stored copy of. For this report that is Great Eastern's Annual Report 2025, as published in March 2026. We record the page on which each statement appears."
+    - head: "Quotations are matched word for word"
+      text: "Every quotation is compared with the text of the stored copy, on the page cited, and is printed only if it matches word for word. Where a quotation is shortened, an ellipsis marks the gap and each remaining part is matched in order."
+    - head: "Status uses the company's own wording"
+      text: "Where we say how far a use of AI has progressed, we use the company's verb, such as \"deployed\", \"testing\" or \"developed\". A stated aim is never presented as a result."
+    - head: "Our sentences are kept apart from the company's"
+      text: "Summary sentences, observations and hypotheses are ours. Each cites the pages it rests on and is checked against those pages for dropped qualifiers, such as \"aims to\", before release."
+    - head: "Absence is reported as a search, not a finding"
+      text: "Where we say the report does not describe something, we state what we searched for, where, and what the search cannot show (section {sec:governance})."
+    - head: "Later material is kept separate"
+      when: full
+      text: "Material we have located but not yet checked against a stored copy appears only in section {sec:developments}, phrased as reported by its source and marked to be confirmed."
+    - head: "Independent review before release"
+      text: "Before a report is final, its findings are reviewed by an advisor who did not produce them. This discussion draft has not yet completed that review."
+
+- id: open-items
+  kind: appendix
+  letter: C
+  title: Open items
+  blocks:
+  - type: para
+    text: "The items below could not be confirmed for this draft. None of them is relied on in the body of the report."
+  - type: open_items
+    items:
+    - head: "Peer size comparison"
+      text: "Total-asset figures for four peers (AIA Group, Prudential Assurance Company Singapore, Income Insurance and Singlife) could not be checked, because the published files could not be retrieved when we checked."
+      next: "Retrieve the regulator's insurer returns and the peers' annual reports, then check each figure."
+      accounts_for:
+      - great-eastern.peer.size.prudential-assurance-co-singapore-i527l
+      - great-eastern.peer.size.income-insurance-ltd-i585c
+      - great-eastern.peer.size.singapore-life-ltd-singlife-i518c
+      - great-eastern.peer.size.aia-group-whole
+    - head: "MAS guidelines on AI risk management"
+      when: full
+      text: "The regulator's guidelines could not be retrieved into a stored copy, so their dates and expectations appear only in section {sec:developments}, to be confirmed."
+      next: "Store the guidelines and media release, and check the dates and paragraphs cited."
+      accounts_for: &mas
+      - great-eastern.findings.reg.sg-mas-airm.issued
+      - great-eastern.findings.reg.sg-mas-airm.effective
+      - great-eastern.findings.reg.sg-mas-airm.lifecycle
+    - head: "Regulatory developments"
+      when: strict
+      text: "Regulatory guidance on AI risk management issued after March 2026 has not yet been checked against a stored copy and is not covered in this edition."
+      next: "Store the regulator's documents and check them before discussion."
+      accounts_for: *mas
+    - head: "Current data and AI leadership"
+      text: "The annual report says a successor to the Managing Director, Group Data and Artificial Intelligence, will be named in due course. We have not located an announcement since."
+      next: "Confirm with management, or from the company's management-team page."
+    - head: "Developments since March 2026"
+      text: "Half-year results, annual general meeting materials and board announcements published since the annual report have not yet been checked against stored copies."
+      next: "Store each document and re-read the passages concerned."
+    - head: "Copy of the annual report"
+      text: "The copy of the annual report used was supplied as a file. It has not yet been matched against the copy on Great Eastern's website. Every quotation in this report has been matched against the supplied copy."
+      next: "Compare the supplied file with the publisher's copy; any difference will be reported."
+    - head: "Baselines and value of outcomes"
+      text: "The annual report gives no baseline or financial value for either reported 75% figure."
+      next: "Request from management (section {sec:hypotheses})."
+    - head: "Earlier-year comparison"
+      text: "The FY2024 annual report and the FY2025 results release are not yet in the evidence base, so the report makes no year-on-year statement about AI."
+      next: "Store both documents and extend the review."
+    - head: "Hiring, patents and spend"
+      text: "Job-posting history, patent filings and a structured extract of the financial statements have not yet been collected. The report therefore makes no statement about AI hiring, patents or technology spend."
+      next: "Collect in the first phase of the assessment."
+    - head: "Independent review"
+      text: "The summary sentences and observations have not yet completed independent review."
+      next: "Complete before the report is issued as final."
