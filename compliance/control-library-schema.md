@@ -4,14 +4,14 @@
 **Owner:** Compliance lead (schema); Methodology lead (mappings); Pipeline lead (tool-side rows)
 **Applies to:** Every control the firm (a) applies to its own research tool and (b) recommends to clients through the tier gate and agent gate. One library serves both.
 **Companion file:** `control-library.csv` (header + 40 populated example rows). This document is the data dictionary and operating procedure for that file.
-**Source basis:** CSA AI Controls Matrix v1.1 (247 objectives, 18 domains, June 2026); ISO/IEC 42001:2023 Annex A (38 controls, A.2–A.10); NIST AI RMF 1.0 (4 functions, 19 categories, 72 subcategories) and NIST AI 600-1 (12 GenAI risks); EN 18286:2026 Article 17 QMS elements (a)–(m); AICPA 2017 TSC with 2022 points of focus and TQA 9561; OWASP LLM Top 10 2026 and Top 10 for Agentic Applications (ASI01–ASI10); MITRE ATLAS v2026.09; AI Verify (11 principles, 106 process checks); MAS Guidelines on AI Risk Management (7 Oct 2026); IMDA Model AI Governance Framework for Agentic AI (Jan 2026, updated May 2026); HITRUST AI Security Assessment and AI Risk Management Assessment.
+**Source basis:** CSA AI Controls Matrix v1.1 (247 control objectives, 18 domains, released 22 Jun 2026; v1.0 10 Jul 2025, 243 objectives) — https://cloudsecurityalliance.org/artifacts/ai-controls-matrix-v1-1 ; ISO/IEC 42001:2023 Annex A (38 controls, A.2–A.10); NIST AI RMF 1.0 (4 functions, 19 categories, 72 subcategories) and NIST AI 600-1 (12 GenAI risks); EN 18286:2026 Article 17 QMS elements (a)–(m); AICPA 2017 TSC with 2022 points of focus and TQA 9561; OWASP LLM Top 10 2026 and Top 10 for Agentic Applications (ASI01–ASI10); MITRE ATLAS v2026.09; AI Verify (11 principles, 106 process checks); MAS Guidelines on Artificial Intelligence Risk Management (issued 7 Oct 2026; https://www.mas.gov.sg/-/media/mas-media-library/regulation/guidelines/bd/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions/guidelines-on-artificial-intelligence-risk-management.pdf); IMDA Model AI Governance Framework for Agentic AI (Jan 2026, updated May 2026); HITRUST AI Security Assessment and AI Risk Management Assessment.
 
 ## Change log
 
 | Version | Date | Author | Change |
 |---|---|---|---|
 | v0.1 | 2026-10-25 | Compliance lead | Initial schema, column dictionary, status-inheritance rule, resync procedure, vocabulary-layer design; 40 example rows in CSV |
-| | | | |
+| v0.1.1 | 2026-10-25 | Compliance lead | Verification pass. AICM: all 18 domain names and ID prefixes entered (section 2a); "Supply Chain Management, Transparency, and Accountability" confirmed from the CSA launch page as ONE domain (STA), so the CSV's two pseudo-domains were retired and every row re-homed; ID convention `PREFIX-nn` confirmed (MDS-01…MDS-13 on a CSA research note); objective IDs filled in the CSV from the public v1.0.3 control listing (AICM Atlas) and flagged for confirmation against the v1.1 spreadsheet, which is behind a CSA login and was not loaded. MAS: `mas_airm_section` vocabulary replaced with the headings and paragraph numbers read from the MAS PDF; dates confirmed from para 1.8 and the MAS media release; [VERIFY] on section numbering removed. |
 
 ---
 
@@ -34,8 +34,8 @@ Every column in `control-library.csv`, in order. "Vocabulary" columns hold ident
 | # | Column | Type | Allowed values / format | Meaning | Populated by |
 |---|---|---|---|---|---|
 | 1 | `control_id` | Firm | `CL-nnn`, stable for life | Firm-internal primary key. Never reused, never renumbered. | Compliance lead |
-| 2 | `aicm_domain` | Vocabulary | One of AICM v1.1's 18 domain names, or `TBD` with a candidate in brackets | AICM security domain the control sits in. Only domain names confirmed from a CSA source are entered without `TBD`. Confirmed in the research notes: Identity & Access Management; Data Security & Privacy Lifecycle Management; Model Security; and "Supply Chain Management, Transparency & Accountability" (the CSA launch page lists this as one string; the CSV treats it as two domains, `Supply Chain Management` and `Transparency & Accountability`, flagged `[VERIFY]` until the AICM spreadsheet confirms whether it is one domain or two). The remaining domain names were not retrieved from a CSA page and are marked `TBD` pending resync. | Compliance lead |
-| 3 | `aicm_objective_id` | Vocabulary | AICM v1.1 objective identifier, or `TBD` | The AICM objective this row is keyed to. All example rows carry `TBD` because objective identifiers were not present in the notes; they are filled at the first resync from the AICM v1.1 spreadsheet. A row may map to more than one objective; split into multiple rows rather than list several IDs. | Compliance lead |
+| 2 | `aicm_domain` | Vocabulary | One of the 18 AICM domain names in section 2a, verbatim, or `TBD` with candidate(s) in brackets | AICM security domain the control sits in. "Supply Chain Management, Transparency, and Accountability" is a single domain (prefix STA), confirmed on the CSA launch page and the AICM Atlas listing; the earlier split into `Supply Chain Management` and `Transparency & Accountability` was wrong and has been retired. Rows whose best-fit domain is a judgement call carry `TBD [candidate]`. | Compliance lead |
+| 3 | `aicm_objective_id` | Vocabulary | `PREFIX-nn` (e.g. `MDS-06`, `IAM-19`, `STA-16`), or `TBD`, or `TBD [candidate IDs]` | The AICM control objective this row is keyed to. Convention: domain prefix, hyphen, two-digit sequence (MDS-01…MDS-13 confirmed on a CSA research note). IDs in the CSV were taken from the public control listing of AICM v1.0.3 (243 controls; AICM Atlas, a third-party rendering) because the v1.1 spreadsheet sits behind a CSA account login; v1.1 added four objectives "synchronised to CCM v4.1" and CSA states the 18-domain structure and MDS set are unchanged, so v1.0 IDs are expected to be stable, but each ID must be confirmed against the v1.1 spreadsheet at first resync (R5). A row may map to more than one objective; split into multiple rows rather than list several IDs. | Compliance lead |
 | 4 | `control_title` | Firm | Short imperative phrase | Firm-authored name. | Owner of the row |
 | 5 | `control_statement` | Firm | One testable sentence | What must be true. Written so a reviewer can answer pass/fail. | Owner of the row |
 | 6 | `iso42001_annexA` | Vocabulary | Annex A control IDs, `;`-separated (see section 3) | ISO/IEC 42001:2023 Annex A reference controls satisfied, wholly or partly. | Methodology lead |
@@ -48,7 +48,7 @@ Every column in `control-library.csv`, in order. "Vocabulary" columns hold ident
 | 13 | `owasp_asi` | Vocabulary | `ASI01`–`ASI10` | OWASP Top 10 for Agentic Applications (Dec 2025) ([Modulos](https://docs.modulos.ai/frameworks/owasp-top-10-agentic)). | Security lead |
 | 14 | `mitre_atlas` | Vocabulary | Technique family in words plus technique ID where known (`AML.Tnnnn`) | MITRE ATLAS technique or family the control counters. Agentic IDs confirmed in notes: AML.T0053, T0080 (.000/.001), T0081, T0082, T0083, T0086, T0101, T0109, T0110, T0010.005 ([Speakeasy](https://www.speakeasy.com/blog/mitre-atlas-explained)). ATLAS releases monthly, so this column is pinned to a release tag in `last_synced`. | Security lead |
 | 15 | `aiverify_principle` | Vocabulary | One of 11 principles, optionally with process-check group | AI Verify principle (Transparency 15 checks, Explainability 1, Reproducibility 10, Safety 17, Security 14, Robustness 10, Fairness 6, Data Governance 4, Accountability 14, Human Agency & Oversight 9, Inclusive Growth/Societal/Environmental Well-being 6) ([AI Verify Foundation](https://aiverifyfoundation.sg/what-is-ai-verify/)). Individual check IDs are `TBD` until the toolkit's process-check list is loaded. | Methodology lead |
-| 16 | `mas_airm_section` | Vocabulary | `s.3 Oversight`, `s.4 Key systems, policies, procedures (incl. inventory, materiality)`, `s.5 Lifecycle controls`, `s.6 Capability and capacity`, or `n/a` | MAS Guidelines on AI Risk Management area. s.3–4 bind FIs from 7 Oct 2027, s.5–6 from 7 Oct 2028 ([Baker McKenzie](https://www.bakermckenzie.com/en/insight/publications/2026/10/singapore-mas-issues-guidelines-on-artificial-intelligence-risk-management)). Section numbering rests on practitioner commentary; verify against the MAS PDF at first resync. | Compliance lead |
+| 16 | `mas_airm_section` | Vocabulary | `s.2 Application of the Guidelines`, `s.3 AI Oversight`, `s.4 Key AI Risk Management Systems, Policies and Procedures`, `s.5 AI Life Cycle Controls`, `s.6 AI Capability & Capacity`, each optionally followed by paragraph references in parentheses, e.g. `s.5 AI Life Cycle Controls (5.23(d))`; `;`-separated; or `n/a` | Section of the MAS Guidelines on Artificial Intelligence Risk Management (issued 7 Oct 2026; headings and paragraph numbers read from the [MAS PDF](https://www.mas.gov.sg/-/media/mas-media-library/regulation/guidelines/bd/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions/guidelines-on-artificial-intelligence-risk-management.pdf)). Para 1.8: the Guidelines take effect 7 Oct 2027; FIs may meet s.3–4 from 7 Oct 2027 and s.5–6 by 7 Oct 2028. Sub-headings in s.4: AI Identification (4.2–4.4), AI Inventory (4.5–4.9), AI Risk Materiality Assessment (4.10–4.13). Sub-headings in s.5: Data Management (5.4), Transparency and Explainability (5.5–5.6), Fairness (5.7–5.8), Human Oversight (5.9), Third-Party AI Management (5.10–5.11), Selection (5.12–5.13), Evaluation and Testing (5.14–5.15), Technology and Cybersecurity Risks (5.16), Reproducibility and Auditability (5.17), Pre-Deployment Reviews (5.18–5.22), Post-Deployment Monitoring and Review (5.23–5.24), Change Management (5.25–5.26, decommissioning at 5.26). | Compliance lead |
 | 17 | `imda_agentic_dim` | Vocabulary | `D1 Assess and bound risks`, `D2 Meaningful human accountability`, `D3 Technical controls and processes`, `D4 End-user responsibility`, or `n/a` | IMDA agentic framework dimension ([Mayer Brown](https://www.mayerbrown.com/en/insights/publications/2026/04/singapores-agentic-ai-framework-practical-guidance-for-market-entry)). | Methodology lead |
 | 18 | `hitrust_ai` | Vocabulary | `AI Sec (ID TBD)`, `AI RM (ID TBD)`, or `n/a` | Whether the control appears in the HITRUST AI Security Assessment (up to 44 requirements, certifiable) or AI Risk Management Assessment (51 controls, non-certifiable) ([HITRUST](https://hitrustalliance.net/assessments-and-certifications/airiskmanagementassessment); [Accorian](https://www.accorian.com/hitrust-and-ai-security/)). Requirement IDs were not in the notes. | Compliance lead |
 | 19 | `status_flag` | Derived | `binding` / `voluntary` / `draft` | Inherited from the status map by the rule in section 4. Never hand-edited. | Computed at resync |
@@ -60,6 +60,35 @@ Every column in `control-library.csv`, in order. "Vocabulary" columns hold ident
 | 25 | `last_synced` | Derived | `YYYY-MM-DD` plus release tags, e.g. `ATLAS v2026.09; OWASP LLM 2026; AICM v1.1` | Date and vocabulary versions the row was last checked against. | Computed at resync |
 
 Conventions used in the CSV: `TBD` means the identifier exists in the external framework but was not available in the research notes and must not be guessed; `[VERIFY]` means a value is entered from secondary commentary and must be checked against the primary text; `n/a` means the framework has no applicable element.
+
+---
+
+## 2a. AICM v1.1 domains and ID prefixes
+
+Source for names and prefixes: CSA launch blog (10 Jul 2025, names only, four examples), CSA research note on v1.1 (MDS prefix and MDS-01…MDS-13 format; I&S rename), and the AICM Atlas public listing of v1.0.3 (all 18 names, prefixes and per-domain counts summing to 243). CSA pages confirm v1.1 keeps 18 domains and 247 objectives; the four objectives added in v1.1 are not identified in any public page, so the per-domain counts below are v1.0.3 and will shift by four in total at the first resync against the spreadsheet. Download page: https://cloudsecurityalliance.org/artifacts/ai-controls-matrix-v1-1 (free; requires a CSA account login, which this verification pass could not complete). Machine-readable bundle (JSON/YAML/OSCAL): https://cloudsecurityalliance.org/artifacts/aicm-machine-readable-bundle-json-yaml-oscal .
+
+| Prefix | Domain name (verbatim) | Controls (v1.0.3) | Notes |
+|---|---|---|---|
+| A&A | Audit & Assurance | 6 | CCM lineage |
+| AIS | Application & Interface Security | 15 | Includes AIS-11 Agents Security Boundaries, AIS-13 AI Sandboxing, AIS-14 AI Cache Protection, AIS-15 Prompt Differentiation |
+| BCR | Business Continuity Management and Operational Resilience | 11 | CCM lineage |
+| CCC | Change Control and Configuration Management | 9 | CCC-09 Change Restoration |
+| CEK | Cryptography, Encryption & Key Management | 21 | CCM lineage |
+| DCS | Datacenter Security | 15 | CCM lineage |
+| DSP | Data Security and Privacy Lifecycle Management | 24 | DSP-19 Data Location, DSP-20 Data Provenance and Transparency, DSP-21 Data Poisoning Prevention & Detection |
+| GRC | Governance, Risk and Compliance | 15 | GRC-09 Acceptable Use of the AI Service, GRC-10 AI Impact Assessment, GRC-11 Bias and Fairness Assessment, GRC-13/14 Explainability, GRC-15 Human supervision |
+| HRS | Human Resources | 15 | CCM lineage |
+| IAM | Identity & Access Management | 19 | IAM-05 Least Privilege, IAM-15 Passwords and Secrets Management, IAM-18 Output Modification and Special Authorization, IAM-19 Agent Access Restriction |
+| IPY | Interoperability & Portability | 4 | CCM lineage |
+| I&S | Infrastructure Security | 9 | Renamed from CCM IVS |
+| LOG | Logging and Monitoring | 15 | LOG-11 Transaction/Activity Logging, LOG-14 Input Monitoring, LOG-15 Output Monitoring |
+| MDS | Model Security | 13 | AI-specific domain (present since v1.0); MDS-06 Adversarial Attack Analysis, MDS-09 Model Signing, MDS-11 Model Failure, MDS-12 Open Model Risk Assessment |
+| SEF | Security Incident Management, E-Discovery, & Cloud Forensics | 9 | SEF-07 Security Breach Notification |
+| STA | Supply Chain Management, Transparency, and Accountability | 16 | ONE domain; STA-08 Supply Chain Inventory, STA-16 Service Bill of Material (BOM) |
+| TVM | Threat & Vulnerability Management | 13 | TVM-02 Malware and Malicious Instructions Protection, TVM-06 Penetration Testing, TVM-11 Guardrails, TVM-12 Threat Analysis and Modelling |
+| UEM | Universal Endpoint Management | 14 | CCM lineage |
+
+Related CSA artefacts: AI-CAIQ (320 questions in v1.1); mappings shipped with v1.1 to ISO/IEC 42001:2023, BSI AIC4, EU AI Act, NIST AI RMF / AI 600-1 and AIUC-1; role-specific implementation and auditing guidelines (model provider, orchestrated service provider, application provider, AI customer, cloud service provider) linked from the download page.
 
 ---
 
@@ -193,8 +222,8 @@ Rules that keep the layers clean:
 
 | # | Item | Blocking? |
 |---|---|---|
-| 1 | Load AICM v1.1 spreadsheet; fill all 18 domain names and objective IDs; split rows mapping to multiple objectives | Yes, before G0 |
-| 2 | Verify MAS AIRM section numbering and EN 18286 Article 17 element labels against primary texts | Yes, before first FI engagement |
+| 1 | Load AICM v1.1 spreadsheet (CSA login) and confirm every objective ID entered from the v1.0.3 public listing; identify the four objectives added in v1.1; clear the remaining `TBD [candidate]` cells; split rows mapping to multiple objectives. Domain names and prefixes are done (section 2a). | Yes, before G0 |
+| 2 | MAS AIRM section numbering verified against the MAS PDF on 2026-10-25 (done). EN 18286 Article 17 element labels still to verify against the standard text | Yes, before first FI engagement (EN 18286 part only) |
 | 3 | Load AI Verify process-check IDs; HITRUST requirement IDs | No |
 | 4 | Confirm NIST subcategory IDs against NIST AI 100-1 Tables 1–4 and re-check once the revised RMF is published | No |
 | 5 | Expand from 40 example rows to full coverage (target: every AICM objective relevant to a web-research agent and to T2–T4 client agentic use cases) | Yes, before G1 |

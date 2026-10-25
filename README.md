@@ -21,7 +21,8 @@ compliance/    Risk tiers & gates, evidence-pack templates, regulatory status ma
                control-library schema + CSV (CSA AICM v1.1-keyed crosswalk)
 pipeline/      Verification pipeline spec (Processing Integrity control + engineering spec)
 catalogue/     Use-case catalogue schema + 25 seed rows (APAC-weighted, with outcome metrics)
-commercial/    (empty) pricing ladder, engagement letter, AI-use disclosure — next
+commercial/    Pricing ladder, engagement charter, engagement-letter clauses, DPA outline,
+               conflict-check procedure
 ```
 
 ## Read in this order
@@ -40,6 +41,8 @@ commercial/    (empty) pricing ladder, engagement letter, AI-use disclosure — 
 | 10 | `compliance/control-library-schema.md` + `.csv` | Single AICM-keyed library with mapping columns; 40 seed controls (24 for the research agent, 16 for client agentic use cases) |
 | 11 | `pipeline/verification-pipeline-spec.md` | Control objective PI-CV, 16 components, G1/GA thresholds, vendor rules, 30-claim reviewer sampling protocol |
 | 12 | `catalogue/use-case-catalogue-seed.csv` | Schema + 25 seed rows |
+| 13 | `methodology/ghost-deck-template.md` | Storyline rules, 34-slide ghost deck, QA gate 3 reviewer checklist, titles-only example |
+| 14 | `commercial/` | Pricing ladder, charter, letter clauses, DPA outline, conflict check (see its README) |
 
 ## Evidence discipline (applies to every file)
 
@@ -59,9 +62,9 @@ commercial/    (empty) pricing ladder, engagement letter, AI-use disclosure — 
 - [x] Control library schema + seed CSV v0.1 written
 - [x] Verification pipeline spec v0.1 written
 - [x] Use-case catalogue schema + seed written
-- [ ] Storyline ghost-deck template (action titles, horizontal-flow test)
-- [ ] Engagement charter, AI-use disclosure and engagement-letter clauses (`commercial/`)
-- [ ] Pricing ladder one-pager (`commercial/`)
+- [x] Storyline ghost-deck template (action titles, horizontal-flow test)
+- [x] Engagement charter, AI-use disclosure and engagement-letter clauses (`commercial/`)
+- [x] Pricing ladder one-pager (`commercial/`)
 - [ ] Decisions: wedge segment, build-vs-licence verification layer, G1 independent reviewer, attestation budget, entity
 - [ ] Verifications: MAS AIRM primary text; SS 680 / EDGE with Enterprise Singapore; AI TAP application requirements; AICM v1.1 objective IDs; LLM vendor Singapore routes + ZDR in writing
 
