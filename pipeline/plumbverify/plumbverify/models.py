@@ -67,6 +67,10 @@ class Source(BaseModel):
     sha256: Optional[str] = None
     tier: Tier = Tier.T5
     content_type: Optional[str] = None
+    detected_content_type: Optional[str] = Field(default=None, description="media type sniffed from magic bytes (may differ from the declared header)")
+    page_count: Optional[int] = Field(default=None, description="pages in a paginated source (PDF)")
+    needs_ocr: bool = Field(default=False, description="PDF with no usable text layer (scanned); OCR required before matching")
+    recheck_after: Optional[datetime] = Field(default=None, description="spec C2: LIVE URLs must be re-checked within 24 h of release; the health result is stale after this instant")
     archived_url: Optional[str] = None
     http_status: Optional[int] = None
     health_class: HealthClass = HealthClass.DEAD
@@ -75,6 +79,7 @@ class Source(BaseModel):
     aigen_score: float = 0.0
     farm_score: float = 0.0
     upstream_of: list[str] = Field(default_factory=list, description="URLs of the original study/filing this source summarises (traced upstream)")
+    upstream_candidates: list[str] = Field(default_factory=list, description="ranked candidate originals found by trace_upstream on an aggregator page; untraced until fetched and hashed")
     error: Optional[str] = None
 
     @property
@@ -103,9 +108,15 @@ class Citation(BaseModel):
     claim_id: str
     source_url: str
     passage: Optional[str] = None
+    page: Optional[int] = Field(default=None, description="1-based page of the matched passage for paginated sources (renders as 'p. N')")
     match_score: float = 0.0
     status: CitationStatus = CitationStatus.unverified
     reasons: list[str] = Field(default_factory=list)
+
+    @property
+    def locator(self) -> str:
+        """Citation locator for reviewer output: the URL plus 'p. N' when known."""
+        return f"{self.source_url} (p. {self.page})" if self.page else self.source_url
 
 
 class UpstreamPair(BaseModel):

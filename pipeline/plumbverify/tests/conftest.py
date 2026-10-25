@@ -13,6 +13,9 @@ from plumbverify.fetch import EvidenceStore, Fetcher
 
 FIXTURES = Path(__file__).parent / "fixtures"
 REPORT_HTML = (FIXTURES / "report.html").read_text(encoding="utf-8")
+REPORT_PDF = (FIXTURES / "report.pdf").read_bytes()
+SCANNED_PDF = (FIXTURES / "scanned.pdf").read_bytes()
+AGGREGATOR_HTML = (FIXTURES / "aggregator.html").read_text(encoding="utf-8")
 
 SECOND_HTML = """<!doctype html><html><head><title>Senate estimates note</title></head><body><main>
 <p>At Senate estimates the department confirmed the A$440,000 Deloitte report contained fabricated references
@@ -58,6 +61,13 @@ def make_handler(state: _State):
                 if request.method == "HEAD":
                     return httpx.Response(405)
                 return httpx.Response(200, headers={"content-type": "text/html"}, content=b"<html><body><p>ok page</p></body></html>")
+        if host == "docs.example-gov.sg":
+            if path == "/review.pdf":
+                return httpx.Response(200, headers={"content-type": "application/pdf"}, content=REPORT_PDF)
+            if path == "/mislabelled":  # PDF bytes served with an HTML content-type header
+                return httpx.Response(200, headers={"content-type": "text/html; charset=utf-8"}, content=REPORT_PDF)
+            if path == "/scan.pdf":
+                return httpx.Response(200, headers={"content-type": "application/pdf"}, content=SCANNED_PDF)
         if host == "news.example-wire.com" and path == "/senate":
             return httpx.Response(200, headers={"content-type": "text/html"}, content=SECOND_HTML.encode())
         if host == "www.statista.com":

@@ -11,19 +11,30 @@ import re
 import sqlite3
 import time
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable, Optional, Protocol
 
 import httpx
 
-from .extract import extract_main_text
+from .extract import extract_document
 from .models import HealthClass, Source, SourceState
 
-USER_AGENT = "plumbverify/0.1 (+PLUMB verification pipeline; citation verification)"
+USER_AGENT = "plumbverify/0.2 (+PLUMB verification pipeline; citation verification)"
 DEFAULT_TIMEOUT = 20.0
 DEFAULT_MAX_BODY = 25 * 1024 * 1024
 DEFAULT_BACKOFF = (2.0, 8.0, 32.0)  # spec C2: retry 3x with exponential backoff
+#: spec C2: "Re-check all LIVE URLs within 24 h of deck release". Every health
+#: result carries ``recheck_after`` = checked_at + RECHECK_WINDOW; a release
+#: must not rely on a LIVE classification older than that.
+RECHECK_WINDOW = timedelta(hours=24)
+#: spec C2: Wayback snapshot must be within 24 months
+ARCHIVE_MAX_AGE_DAYS = 730
+
+
+def recheck_deadline(checked_at: Optional[datetime] = None) -> datetime:
+    """Instant after which a LIVE/ARCHIVED classification is stale (spec C2, S6)."""
+    return (checked_at or datetime.now(timezone.utc)) + RECHECK_WINDOW
 
 
 # --------------------------------------------------------------------------
@@ -33,6 +44,9 @@ DEFAULT_BACKOFF = (2.0, 8.0, 32.0)  # spec C2: retry 3x with exponential backoff
 class ArchiveSnapshot:
     archive_url: str
     timestamp: Optional[datetime] = None
+    #: spec C2 24 h rule: re-verify the snapshot (and the live URL) after this instant
+    recheck_after: datetime = field(default_factory=recheck_deadline)
+    saved_now: bool = False  # True when produced by the save endpoint in this run
 
 
 class ArchiveProvider(Protocol):
@@ -48,36 +62,87 @@ class NullArchive:
         return None
 
 
-class WaybackArchive:
-    """STUB: minimal Wayback availability-API client. Not exercised by tests.
+_WAYBACK_TS = re.compile(r"/web/(\d{14})(?:id_|if_|js_|cs_|im_)?/")
 
-    Spec C2 asks for a snapshot within 24 months; the window check is applied
-    on the returned timestamp when present.
+
+class WaybackArchive:
+    """Wayback Machine client for the C2 archive fallback. Off by default: the
+    CLI enables it with ``--archive``; saving is a second opt-in
+    (``save_missing=True`` / ``--archive-save``) because it writes to a third
+    party and is rate-limited.
+
+    * ``lookup(url)`` queries the availability API and accepts the closest
+      snapshot only if it is within ``max_age_days`` (spec: 24 months).
+    * ``save(url)`` calls the Save Page Now endpoint and returns the new
+      snapshot (parsed from the ``Content-Location`` / ``Location`` header).
+    * every snapshot carries ``recheck_after`` (spec C2 24 h re-check rule).
+
+    The ``client`` is injectable so tests run against ``httpx.MockTransport``.
     """
 
     ENDPOINT = "https://archive.org/wayback/available"
+    SAVE_ENDPOINT = "https://web.archive.org/save/"
 
-    def __init__(self, client: Optional[httpx.Client] = None, max_age_days: int = 730):
-        self.client = client or httpx.Client(timeout=DEFAULT_TIMEOUT, headers={"User-Agent": USER_AGENT})
+    def __init__(self, client: Optional[httpx.Client] = None, max_age_days: int = ARCHIVE_MAX_AGE_DAYS,
+                 save_missing: bool = False, now: Callable[[], datetime] = lambda: datetime.now(timezone.utc)):
+        self.client = client or httpx.Client(timeout=DEFAULT_TIMEOUT, follow_redirects=True,
+                                             headers={"User-Agent": USER_AGENT})
         self.max_age_days = max_age_days
+        self.save_missing = save_missing
+        self.now = now
+        self.last_error: Optional[str] = None
+
+    @staticmethod
+    def _parse_ts(ts: Optional[str]) -> Optional[datetime]:
+        if not ts:
+            return None
+        try:
+            return datetime.strptime(ts[:14], "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
+        except ValueError:
+            return None
 
     def lookup(self, url: str) -> Optional[ArchiveSnapshot]:
+        self.last_error = None
         try:
             r = self.client.get(self.ENDPOINT, params={"url": url})
             r.raise_for_status()
             snap = (r.json().get("archived_snapshots") or {}).get("closest")
-        except Exception:
+        except Exception as e:
+            self.last_error = f"availability: {type(e).__name__}: {e}"
             return None
-        if not snap or not snap.get("available"):
-            return None
-        ts = None
+        if snap and snap.get("available") and snap.get("url"):
+            ts = self._parse_ts(snap.get("timestamp"))
+            if ts is None or (self.now() - ts).days <= self.max_age_days:
+                return ArchiveSnapshot(archive_url=snap["url"], timestamp=ts, recheck_after=recheck_deadline(self.now()))
+            self.last_error = f"snapshot {snap.get('timestamp')} older than {self.max_age_days} days (C2: 24 months)"
+        else:
+            self.last_error = "no snapshot available"
+        if self.save_missing:
+            return self.save(url)
+        return None
+
+    def save(self, url: str) -> Optional[ArchiveSnapshot]:
+        """Opt-in Save Page Now. Returns the new snapshot or None (error in ``last_error``)."""
         try:
-            ts = datetime.strptime(snap["timestamp"], "%Y%m%d%H%M%S").replace(tzinfo=timezone.utc)
-            if (datetime.now(timezone.utc) - ts).days > self.max_age_days:
-                return None
-        except Exception:
-            pass
-        return ArchiveSnapshot(archive_url=snap["url"], timestamp=ts)
+            r = self.client.get(self.SAVE_ENDPOINT + url)
+        except Exception as e:
+            self.last_error = f"save: {type(e).__name__}: {e}"
+            return None
+        if r.status_code >= 400:
+            self.last_error = f"save: HTTP {r.status_code}"
+            return None
+        loc = r.headers.get("content-location") or r.headers.get("location") or ""
+        if loc and not loc.startswith("http"):
+            loc = "https://web.archive.org" + (loc if loc.startswith("/") else "/" + loc)
+        if not loc:
+            final = str(r.url)
+            loc = final if "/web/" in final else ""
+        if not loc:
+            self.last_error = "save: no snapshot location in response"
+            return None
+        m = _WAYBACK_TS.search(loc)
+        return ArchiveSnapshot(archive_url=loc, timestamp=self._parse_ts(m.group(1)) if m else self.now(),
+                               recheck_after=recheck_deadline(self.now()), saved_now=True)
 
 
 # --------------------------------------------------------------------------
@@ -160,6 +225,7 @@ class HealthResult:
     archived_url: Optional[str] = None
     error: Optional[str] = None
     attempts: int = 0
+    recheck_after: Optional[datetime] = None  # spec C2 24 h rule; set for LIVE / ARCHIVED
 
 
 _PLAUSIBLE_PATH = re.compile(r"/(?:[a-z0-9]+(?:-[a-z0-9]+){1,}|\d{4}/\d{1,2})(?:/|\.html?|\.pdf|$)", re.I)
@@ -236,12 +302,14 @@ class Fetcher:
             result.redirects = [str(h.url) for h in resp.history]
             if 200 <= resp.status_code < 300:
                 result.health_class = HealthClass.LIVE
+                result.recheck_after = recheck_deadline()
                 return result
         # persistent failure: archive fallback
         snap = self.archive.lookup(url)
         if snap is not None:
             result.health_class = HealthClass.ARCHIVED
             result.archived_url = snap.archive_url
+            result.recheck_after = snap.recheck_after
             return result
         dns_or_connect_failure = resp is None and err is not None and (
             "ConnectError" in err or "ConnectTimeout" in err
@@ -251,6 +319,25 @@ class Fetcher:
         else:
             result.health_class = HealthClass.DEAD
         return result
+
+    # -- extraction helper -------------------------------------------------
+    @staticmethod
+    def _extract_into(src: Source, raw: bytes) -> None:
+        """Extract text; on parse failure keep the bytes and set text_extract=None (spec C1)."""
+        try:
+            ex = extract_document(raw, src.content_type)
+        except Exception as e:
+            src.text_extract = None
+            src.error = f"extract: {e}"
+            return
+        src.detected_content_type = ex.content_type
+        src.page_count = ex.page_count
+        src.needs_ocr = ex.needs_ocr
+        src.text_extract = ex.text
+        if ex.needs_ocr:
+            src.error = "PDF has no usable text layer (scanned); needs OCR before claims can match"
+        elif ex.error and not ex.text:
+            src.error = f"extract: {ex.error}"
 
     # -- fetch + hash ------------------------------------------------------
     def fetch(self, url: str) -> Source:
@@ -266,11 +353,8 @@ class Fetcher:
             src.sha256 = hashlib.sha256(raw).hexdigest()
             src.health_class = HealthClass.LIVE
             src.state = SourceState.FETCHED
-            try:
-                src.text_extract = extract_main_text(raw, src.content_type)
-            except Exception as e:  # parse failure: keep bytes, text_extract=None (spec C1)
-                src.text_extract = None
-                src.error = f"extract: {e}"
+            src.recheck_after = recheck_deadline(src.fetched_at)
+            self._extract_into(src, raw)
             if self.store is not None:
                 self.store.put(src, raw)
             return src
@@ -288,10 +372,8 @@ class Fetcher:
                 src.sha256 = hashlib.sha256(raw).hexdigest()
                 src.content_type = arch_resp.headers.get("content-type")
                 src.state = SourceState.ARCHIVED
-                try:
-                    src.text_extract = extract_main_text(raw, src.content_type)
-                except Exception:
-                    src.text_extract = None
+                src.recheck_after = health.recheck_after
+                self._extract_into(src, raw)
                 if self.store is not None:
                     self.store.put(src, raw)
             else:

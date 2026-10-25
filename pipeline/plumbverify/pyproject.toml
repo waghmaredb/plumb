@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "plumbverify"
-version = "0.1.0"
+version = "0.2.0"
 description = "PLUMB verification layer: citation, claim and quotation verification with block-not-flag enforcement and hash-chained logging (spec PI-CV v0.1)."
 readme = "README.md"
 requires-python = ">=3.11"
@@ -15,10 +15,12 @@ dependencies = [
     "rapidfuzz>=3.0",
     "beautifulsoup4>=4.12",
     "pyyaml>=6.0",
+    "pypdf>=4.0",
 ]
 
 [project.optional-dependencies]
 extract = ["trafilatura>=1.8"]
+pdf-fallback = ["pdfminer.six>=20231228"]
 test = ["pytest>=7.4"]
 
 [project.scripts]

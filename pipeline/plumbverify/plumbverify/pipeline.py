@@ -15,18 +15,18 @@ from typing import Optional
 
 from . import match as m
 from .fetch import EvidenceStore, Fetcher
-from .extract import split_passages
+from .extract import page_of, split_passages_paged
 from .log import HashChainLog
 from .models import (
-    Citation, CitationStatus, Claim, ClaimKind, HealthClass, Source, SourceState,
+    Citation, CitationStatus, Claim, ClaimKind, HealthClass, Source, SourceState, Tier,
     VerificationReport,
 )
 from .policy import build_gate, decide
 from .tier import TierRules, aigen_score, assign_tier, load_tier_rules
-from .upstream import count_independent_upstreams
+from .upstream import count_independent_upstreams, is_aggregator, trace_upstream
 
 MODEL_ID = "plumbverify-rules"
-MODEL_VERSION = "0.1.0"
+MODEL_VERSION = "0.2.0"
 
 
 class Verifier:
@@ -77,6 +77,10 @@ class Verifier:
             if ag.rejected:
                 src.state = SourceState.REJECTED_FARM if ag.signals.get("known_farm") or ag.farm_score >= ag.aigen_score else SourceState.REJECTED_AIGEN
                 src.error = f"rejected (C7): {ag.reason}"
+            elif not src.upstream_of and (is_aggregator(src.url_final or url) or src.tier == Tier.T5):
+                # C6: surface ranked originals for the reviewer; they do not count until fetched+hashed
+                tr = trace_upstream(src, html=html, rules=self.rules)
+                src.upstream_candidates = [c.url for c in tr.candidates[:5]]
         self._log(run_id, "pipeline.resolve_source", url,
                   [{"tool": "fetch", "url": url, "status": src.http_status, "sha256": src.sha256,
                     "health": src.health_class.value, "tier": src.tier.value, "state": src.state.value}],
@@ -91,6 +95,9 @@ class Verifier:
             return Citation(claim_id=claim.id, source_url=url, status=CitationStatus.blocked,
                             reasons=[f"source not citable: state={src.state.value} health={src.health_class.value}"
                                      + (f" ({src.error})" if src.error else "")])
+        if src.needs_ocr:
+            return Citation(claim_id=claim.id, source_url=url, status=CitationStatus.unverified,
+                            reasons=[f"PDF ({src.page_count or '?'} pages) has no text layer; needs OCR before the claim can match (C1/C4)"])
         if not src.text_extract:
             return Citation(claim_id=claim.id, source_url=url, status=CitationStatus.unverified,
                             reasons=["source has no text extract (parse failure); claim cannot match (C1/C3)"])
@@ -100,9 +107,12 @@ class Verifier:
             reasons = [] if q.passed else [f"quotation match {q.score:.3f} < {self.quote_threshold} (C5)"]
             if q.omitted_spans:
                 reasons.append(f"ellipsis omitted spans logged: {q.omitted_spans}")
-            return Citation(claim_id=claim.id, source_url=url, passage=q.matched_text, match_score=q.score,
+            page = page_of(src.text_extract, q.matched_text, m.normalize) if q.passed and q.matched_text else None
+            return Citation(claim_id=claim.id, source_url=url, passage=q.matched_text, page=page, match_score=q.score,
                             status=status, reasons=reasons)
-        passages = split_passages(src.text_extract)
+        paged = split_passages_paged(src.text_extract)
+        passages = [p.text for p in paged]
+        page_index = {p.text: p.page for p in paged}
         reasons: list[str] = []
         if claim.kind == ClaimKind.number:
             nm = m.number_claim_match(claim.text, passages, self.semantic, self.supported_threshold)
@@ -119,15 +129,15 @@ class Verifier:
                                f"{m.NUMBER_CONTEXT_THRESHOLD} and no semantic support")
             else:
                 status = CitationStatus.verified
-            return Citation(claim_id=claim.id, source_url=url, passage=nm.passage, match_score=round(nm.score, 4),
-                            status=status, reasons=reasons)
+            return Citation(claim_id=claim.id, source_url=url, passage=nm.passage, page=page_index.get(nm.passage),
+                            match_score=round(nm.score, 4), status=status, reasons=reasons)
         pm = m.claim_match(claim.text, passages, self.semantic, self.supported_threshold, self.partial_threshold)
         status = {"supported": CitationStatus.verified, "partial": CitationStatus.partial,
                   "unsupported": CitationStatus.unverified}[pm.label]
         if status != CitationStatus.verified:
             reasons.append(f"passage match {pm.score:.2f} (supported >= {self.supported_threshold}, partial >= {self.partial_threshold})")
-        return Citation(claim_id=claim.id, source_url=url, passage=pm.passage, match_score=round(pm.score, 4),
-                        status=status, reasons=reasons)
+        return Citation(claim_id=claim.id, source_url=url, passage=pm.passage, page=page_index.get(pm.passage),
+                        match_score=round(pm.score, 4), status=status, reasons=reasons)
 
     # -- run -----------------------------------------------------------------
     def run(self, claims: list[Claim], run_id: Optional[str] = None) -> VerificationReport:
