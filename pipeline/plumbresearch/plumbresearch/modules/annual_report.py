@@ -45,7 +45,8 @@ from plumbverify.models import ClaimKind, ConfidenceLabel
 from ..context import RunContext, default_context
 from ..models import Gap, ModuleResult, ResearchClaim, Signal, confidence_for_tier
 from ..subject import Subject
-from ..textutil import ai_sentences, has_any, is_competitor_context, mentions_per_1000, org_names, sentences, sentences_paged
+from ..textutil import (ai_mentions, has_any, is_bio_sentence, is_competitor_context, mentions_per_1000, org_names, rubric_sentences,
+                        sentences, sentences_paged)
 
 MODULE = "annual-report"
 
@@ -61,7 +62,9 @@ SPECIFICITY = [
 PRODUCTION = [
     r"\bin production\b", r"\brolled out\b", r"\broll-?out\b", r"\bdeployed\b", r"\bdeployment\b", r"\blaunched\b",
     r"\bwent live\b", r"\bis live\b", r"\bnow live\b", r"\bscaled\b", r"\bat scale\b", r"\bin use across\b",
-    r"\boperational\b", r"\bimplemented\b", r"\bembedded in\b", r"\bprocess(?:es|ed|ing) (?:over|more than|\d)",
+    # "operational" means deployment ("the platform is operational"), not "operational efficiency / risk" (run-3 issue 4)
+    r"\boperational\b(?!\s+(?:efficienc\w*|excellence|risks?|resilience|costs?|performance|expenses?|effectiveness)\b)",
+    r"\bimplemented\b", r"\bembedded in\b", r"\bprocess(?:es|ed|ing) (?:over|more than|\d)",
 ]
 PILOT_ONLY = [r"\bpilot", r"\bproof of concept\b", r"\bexploring\b", r"\bunder test\b", r"\bbeing tested\b", r"\btrial"]
 OUTCOME = [
@@ -233,10 +236,13 @@ def _trim_scope(scope: str) -> str:
     return out
 
 
-def has_leadership_title(sentence: str) -> bool:
+def has_leadership_title(sentence: str, org_aliases: Optional[dict] = None) -> bool:
     """True when the sentence carries a D1.2 proxy title (AI / data / analytics /
-    digital scope) in either title form; used by the rubric's ownership component."""
-    return any(l["ai_scope"] for l in extract_leadership(sentence, require_scope=True))
+    digital scope) held at the subject or a subject subsidiary; used by the
+    rubric's ownership component. A title the sentence attributes to another
+    organisation (parent or other) does not count."""
+    return any(l["ai_scope"] and l["org_role"] in SUBJECT_SIDE
+               for l in extract_leadership(sentence, require_scope=True, org_aliases=org_aliases))
 
 
 def classify_title(title: str) -> str:
@@ -273,6 +279,8 @@ class RubricScore:
     investment_disclosed: bool
     rule: str
     evidence: dict[str, list[str]] = field(default_factory=dict)  # component -> sentences
+    fragments_dropped: int = 0  # AI sentence candidates dropped as layout fragments / duplicates (run-3 issue 1)
+    bio_sentences: int = 0  # AI sentences in biography context: ownership only (run-3 issue 4)
 
     def as_dict(self) -> dict:
         d = self.__dict__.copy()
@@ -280,20 +288,37 @@ class RubricScore:
         return d
 
 
-def score_rubric(text: str) -> RubricScore:
-    """Apply the documented rules to extracted text. Deterministic."""
+def score_rubric(text: str, org_aliases: Optional[dict] = None) -> RubricScore:
+    """Apply the documented rules to extracted text. Deterministic.
+
+    Candidate sentences are the AI sentences minus layout fragments and
+    duplicates (``textutil.rubric_sentences``: a pull quote cut at "AI-" is
+    not a second production statement). Biography sentences ("Responsible
+    for ...", "Over 20 years of experience ...", "With Great Eastern since
+    ...") describe a remit, not a system: they count toward ownership only.
+    ``org_aliases`` lets the ownership check ignore titles held at another
+    organisation (the parent's "Head of the Group Data Office")."""
     n, w, dens = mentions_per_1000(text)
-    ai_s = ai_sentences(text)
-    ev: dict[str, list[str]] = {k: [] for k in ("specificity", "production", "quantified", "governance", "ownership", "investment")}
+    all_ai = [s for s in sentences(text) if ai_mentions(s)]
+    ai_s = rubric_sentences(text)
+    ev: dict[str, list[str]] = {k: [] for k in ("specificity", "production", "quantified", "governance", "ownership", "investment",
+                                               "bio_ownership_only")}
     pilot_only = 0
+    bio_n = 0
     for s in ai_s:
+        own = has_any(s, OWNERSHIP) or has_leadership_title(s, org_aliases)
+        if is_bio_sentence(s):
+            bio_n += 1
+            ev["bio_ownership_only"].append(s)
+            if own:
+                ev["ownership"].append(s)
+            continue
         spec = has_any(s, SPECIFICITY)
         prod = has_any(s, PRODUCTION)
         pil = has_any(s, PILOT_ONLY)
         nums = [t for t in parse_numbers(s) if t.unit or t.value >= 10 or "." in t.raw]
         quant = bool(nums) and has_any(s, OUTCOME)
         gov = has_any(s, GOVERNANCE)
-        own = has_any(s, OWNERSHIP) or has_leadership_title(s)
         inv = bool([t for t in parse_numbers(s) if t.unit and t.unit != "%"]) and has_any(s, INVESTMENT)
         strong_prod = has_any(s, [r"\brolled out\b", r"\bdeployed\b", r"\bin production\b", r"\blive\b", r"\bscaled\b"])
         if spec:
@@ -324,7 +349,8 @@ def score_rubric(text: str) -> RubricScore:
         level, rule = 1, "L1: absent or passing mention (<=2 mentions)"
     return RubricScore(level=level, mentions=n, words=w, density_per_1000=round(dens, 2), specificity=spec_n,
                        production=prod_n, pilot_only=pilot_only, quantified=q_n, governance=g_n, ownership=o_n,
-                       investment_disclosed=inv_b, rule=rule, evidence=ev)
+                       investment_disclosed=inv_b, rule=rule, evidence=ev, fragments_dropped=len(all_ai) - len(ai_s),
+                       bio_sentences=bio_n)
 
 
 # --------------------------------------------------------------------------
@@ -364,28 +390,194 @@ def peer_aliases(subject: Subject) -> list[str]:
 # --------------------------------------------------------------------------
 # Leadership-structure extraction
 # --------------------------------------------------------------------------
-def extract_leadership(text: str, require_scope: bool = False) -> list[dict]:
+# Organisation attribution (run-3 issue 2). Every title occurrence is attributed to an
+# organisation and an org role:
+#   subject              the reporting group itself (Great Eastern Holdings, "the Group")
+#   subject-subsidiary   an entity of the subject group (GE Life, GE General, Great Eastern Takaful, GELM)
+#   parent               the controlling shareholder's group (OCBC)
+#   other                any other organisation (a director's former employer)
+# Only subject-side titles count toward the D1.2 signal; parent titles are parent-group context.
+SUBJECT_SIDE = ("subject", "subject-subsidiary")
+_ROLE_RANK = {"subject": 0, "subject-subsidiary": 1, "parent": 2, "other": 3}
+# how the org was decided, strongest first (the strongest basis wins when occurrences merge)
+_BASIS_RANK = {"clause": 0, "section": 1, "biography": 2, "holder-moving": 3, "sentence": 4, "document-default": 5}
+_SELF_REF = re.compile(r"\b(?:the|our)\s+(?:Group|Company)\b")
+_LEGAL_TAIL = re.compile(
+    r"(?:\s+(?:(?!The\b|Limited\b|Berhad\b|Ltd\b)[A-Z][\w&’'.-]*|\((?:Malaysia|Singapore|Indonesia|Brunei|Labuan|Hong Kong|China)\)|of|and|&)){0,6}?"
+    r"\s+(?:Berhad|Bhd\.?|Limited|Ltd\.?|Pte\.?\s+Ltd\.?|Tbk|PLC|plc|Inc\.?)\b"
+)
+_LEGAL_END = re.compile(r"\b(?:Berhad|Bhd\.?|Limited|Ltd\.?|Tbk|PLC|plc|Inc\.?)$")
+# management-listing pages: titles there belong to the entity / region header above them
+MGMT_HEADING = re.compile(r"^(?:Management\s+Team|Senior\s+Management|Key\s+Executives|Key\s+Management(?:\s+Personnel)?|"
+                          r"Group\s+Management\s+Committee|Executive\s+Committee|Leadership\s+Team)\b", re.I)
+REGION_HEADER = re.compile(r"^(?P<h>GROUP(?:\s+AND\s+[A-Z ]+)?|SINGAPORE|MALAYSIA|INDONESIA|BRUNEI|THAILAND|VIETNAM|CHINA|HONG KONG|"
+                           r"PHILIPPINES|REGIONAL|INTERNATIONAL)$")
+
+# Transition status (run-3 issue 3)
+_MONTH = r"(?:Jan(?:uary)?|Feb(?:ruary)?|Mar(?:ch)?|Apr(?:il)?|May|June?|July?|Aug(?:ust)?|Sep(?:t(?:ember)?)?|Oct(?:ober)?|Nov(?:ember)?|Dec(?:ember)?)"
+EFFECTIVE = re.compile(rf"\b(?:with effect from|effective(?:\s+from)?|in|on|from|by)\s+(?P<d>(?:\d{{1,2}}\s+)?{_MONTH}\s+\d{{4}}|\d{{4}})\b")
+DEPARTED = re.compile(r"\b(?:left\s+(?:the\s+)?(?:Group|Company|Bank|organisation|organization|[A-Z][\w-]+)|has\s+left|(?:has\s+|had\s+)?retired|"
+                      r"stepped\s+down|ceased(?!\s+(?:granting|to\s+exist|operations))|resigned|relinquished)\b")
+LEAVING = re.compile(r"\b(?:will\s+be\s+leaving|(?:is|are)\s+(?:expected|due|set)\s+to\s+(?:join|leave|retire|step\s+down)|"
+                     r"will\s+(?:join|leave|retire|step\s+down|relinquish)|to\s+(?:retire|step\s+down)\s+(?:on|in|with\s+effect|effective))\b")
+SUCCESSOR = re.compile(r"\bsuccessors?\b.{0,160}?\b(?:named|announced|appointed|identified)\b.{0,40}?\b(?:in\s+due\s+course|later|shortly|"
+                       r"at\s+a\s+later\s+date)\b|\bsuccessors?\b.{0,80}?\b(?:to\s+be|will\s+be|yet\s+to\s+be)\s+(?:named|announced|appointed)\b",
+                       re.I | re.S)
+JOIN_AS = re.compile(r"\bjoin(?:s|ed|ing)?\s+(?P<org>[^.;]{2,160}?)\s+as\s+(?:the\s+|a\s+|an\s+|its\s+|their\s+)?$")
+JOIN_VERB = re.compile(r"\b(?:is|are)\s+(?:expected|due|set)\s+to\s+join\s+(?P<org>[^.;]{2,160}?)(?:\s+as\b|[.;]|$)|\bwill\s+join\s+(?P<org2>[^.;]{2,160}?)(?:\s+as\b|[.;]|$)")
+APPOINTED_BEFORE = re.compile(r"\b(?:appointed|promoted|named|redesignated)\s+(?:as\s+)?(?:the\s+|a\s+|an\s+|our\s+|its\s+)?$", re.I)
+FORMER = re.compile(r"\b(?:was|had\s+been|previously|formerly|served\s+as|former)\b", re.I)
+YEAR_RANGE = re.compile(r"\bfrom\s+(?:\w+\s+)?\d{4}\s+(?:to|until)\s+(?:\w+\s+)?\d{4}\b|\buntil\s+(?:\w+\s+)?\d{4}\b|\buntil\s+(?:his|her)\s+retirement\b")
+HON_NAME = re.compile(r"\b(?:Mr|Ms|Mrs|Mdm|Madam|Dr|Dato'?|Datuk|Datin|Puan|Encik)\.?\s+(?P<n>[A-Z][\w’'-]+(?:\s+(?:[A-Z][\w’'-]+|bin|binti|a/l|a/p)){0,4})")
+_STATUS_RANK = {"present": 0, "leaving": 1, "incoming": 2, "former": 3, "departed": 4}
+
+
+class OrgResolver:
+    """Org-alias matcher built from the subject YAML ``org_aliases`` (role ->
+    aliases). Longest alias first, whole-word, case-sensitive (GEH, OCBC)."""
+
+    def __init__(self, aliases: Optional[dict] = None):
+        pairs: list[tuple[str, str]] = []
+        for role, lst in (aliases or {}).items():
+            role = role.replace("_", "-")
+            if role not in _ROLE_RANK:
+                continue
+            for a in lst or []:
+                a = (a or "").strip()
+                if a and a not in [p[0] for p in pairs]:
+                    pairs.append((a, role))
+        pairs.sort(key=lambda p: -len(p[0]))
+        self.role_of = dict(pairs)
+        self.rx = re.compile("|".join(rf"(?<![\w-]){re.escape(a)}(?![\w-])" for a, _ in pairs)) if pairs else None
+
+    def find(self, text: str) -> list[tuple[int, int, str, str]]:
+        """(start, end, display name, role) for every alias hit; the display name is
+        expanded to the full legal name when one follows ('Great Eastern General' ->
+        'Great Eastern General Insurance (Malaysia) Berhad')."""
+        if not self.rx:
+            return []
+        out = []
+        for m in self.rx.finditer(text):
+            name = m.group(0)
+            tail = None if _LEGAL_END.search(name) else _LEGAL_TAIL.match(text, m.end())
+            end = m.end()
+            if tail:
+                name = re.sub(r"\s+", " ", text[m.start():tail.end()])
+                end = tail.end()
+            out.append((m.start(), end, name, self.role_of[m.group(0)]))
+        return out
+
+    def resolve(self, phrase: str, at_start: bool = False) -> Optional[tuple[str, str]]:
+        """(org, role) for an organisation phrase: an alias hit (at the start of the
+        phrase when ``at_start``), else a suffix-terminated organisation name ('other')."""
+        hits = self.find(phrase)
+        if at_start:
+            hits = [h for h in hits if h[0] == 0]
+        if hits:
+            h = min(hits, key=lambda h: (h[0], _ROLE_RANK[h[3]]))
+            return h[2], h[3]
+        if at_start:
+            m = re.match(r"(?:[A-Z][\w&’'.-]*\s+){0,5}?(?:Bank|Banking\s+Corporation|Group|Holdings|Insurance|Assurance|Berhad|Limited|Ltd|"
+                         r"Corporation|Company|Capital|Securities|Takaful|Bhd|plc|PLC|Inc)\b(?:\s+(?:Limited|Ltd|Berhad|Bhd|Pte\.?\s+Ltd))?", phrase)
+            if m and len(m.group(0).split()) >= 2:
+                return m.group(0), "other"
+            return None
+        names = org_names(phrase)
+        if names:
+            return names[0], "other"
+        acr = re.search(r"\b[A-Z]{3,6}\b", phrase)
+        return (acr.group(0), "other") if acr else None
+
+
+def _effective(sent: str, start: int = 0) -> Optional[str]:
+    m = EFFECTIVE.search(sent, start)
+    return m.group("d") if m else None
+
+
+def _occurrence_status(sent: str, a: int, joined_org: Optional[tuple[str, str]]) -> tuple[str, Optional[str], Optional[str]]:
+    """(status, detail, effective) for one title occurrence at offset ``a``."""
+    if joined_org:
+        return "incoming", f"joining {joined_org[0]}", _effective(sent, a)
+    if APPOINTED_BEFORE.search(sent[:a]):
+        return "present", "appointed", _effective(sent, a)
+    lv = LEAVING.search(sent)
+    if lv:
+        jm = JOIN_VERB.search(sent)
+        detail = re.sub(r"\s+", " ", lv.group(0))
+        if jm:
+            detail = f"expected to join {(jm.group('org') or jm.group('org2')).strip()}"
+        return "leaving", detail, _effective(sent, lv.end())
+    dp = DEPARTED.search(sent)
+    if dp:
+        return "departed", re.sub(r"\s+", " ", dp.group(0)), _effective(sent, dp.end())
+    if FORMER.search(sent[:a]) and YEAR_RANGE.search(sent):
+        return "former", "former role (biography)", None
+    return "present", None, None
+
+
+def _names_in(sent: str) -> list[str]:
+    out = []
+    for m in HON_NAME.finditer(sent):
+        toks = m.group("n").split()
+        while toks and toks[-1].lower() in NAME_STOP:
+            toks.pop()
+        if len(toks) >= 2:
+            out.append(" ".join(toks))
+    return out
+
+
+def _same_person(a: str, b: str) -> bool:
+    ta, tb = set(a.lower().split()), set(b.lower().split())
+    return bool(ta) and bool(tb) and (ta <= tb or tb <= ta)
+
+
+def extract_leadership(text: str, require_scope: bool = False, org_aliases: Optional[dict] = None) -> list[dict]:
     """Senior titles with Data / Analytics / AI / Digital / Machine Learning scope
     (D1.2 proxies), plus C-level technology titles (class 'other') for context.
 
-    Returns one entry per distinct title: ``title``, ``names`` (name-above-title
-    and name-before-title layouts, and name-after-title when a separator
-    introduces it), ``role_class`` (CAIO-equivalent / CDO-equivalent / CDigO /
-    other), ``ai_scope`` (True for the three proxy classes), ``context`` (the
-    first sentence), ``page``, ``reports_to`` and up to three passages with
-    their pages. ``require_scope=True`` drops the 'other' class."""
-    out: dict[str, dict] = {}
+    Returns one entry per distinct (title, organisation side): ``title``,
+    ``names`` (name-above-title and name-before-title layouts, and
+    name-after-title when a separator introduces it), ``role_class``
+    (CAIO-equivalent / CDO-equivalent / CDigO / other), ``ai_scope``,
+    ``context`` (the first sentence), ``page``, ``reports_to``, up to three
+    passages with their pages, and
 
-    def add(title: str, name: Optional[str], sent: str, page: Optional[int]) -> None:
+    - ``org`` / ``org_role`` / ``org_basis``: who the title belongs to
+      (subject | subject-subsidiary | parent | other) and why (clause "join X
+      as" / "of X", management-listing section header, biography "With X
+      since", holder moving to another org, sentence naming the subject, or the
+      document default: the subject's own report);
+    - ``status`` (present | leaving | incoming | former | departed),
+      ``status_detail``, ``effective``: "left the Group", "will be leaving",
+      "expected to join <org>", "successor to be named in due course" ...,
+      propagated by holder name across the document;
+    - ``seat_in_transition`` (a subject seat whose holder is leaving) and
+      ``counts_d12`` (subject-side proxy whose holder is not departed/former).
+
+    ``require_scope=True`` drops the 'other' class. ``org_aliases`` is the subject
+    YAML ``org_aliases`` map (subject / subject_subsidiary / parent -> aliases)."""
+    resolver = OrgResolver(org_aliases)
+    out: dict[tuple[str, str], dict] = {}
+    occurrences: list[tuple[dict, dict]] = []  # (entry, occurrence)
+
+    def add(title: str, name: Optional[str], sent: str, page: Optional[int], org: tuple[str, str, str],
+            status: tuple[str, Optional[str], Optional[str]]) -> None:
         title = re.sub(r"\s+", " ", title).strip(" ,;:")
         if not title:
             return
         role_class = classify_title(title)
         if require_scope and role_class == "other":
             return
-        key = _title_key(title)
-        e = out.setdefault(key, {"title": title, "names": [], "role_class": role_class, "ai_scope": role_class != "other",
-                                 "reports_to": None, "context": sent, "page": page, "passages": [], "pages": []})
+        org_name, org_role, basis = org
+        side = "subject" if org_role in SUBJECT_SIDE else f"{org_role}:{org_name.lower()}"
+        key = (_title_key(title), side)
+        e = out.get(key)
+        if e is None:
+            e = out[key] = {"title": title, "names": [], "role_class": role_class, "ai_scope": role_class != "other",
+                            "reports_to": None, "context": sent, "page": page, "passages": [], "pages": [],
+                            "org": org_name, "org_role": org_role, "org_basis": basis}
+        elif _BASIS_RANK[basis] < _BASIS_RANK[e["org_basis"]]:
+            e.update(org=org_name, org_role=org_role, org_basis=basis)
         if name and name not in e["names"]:
             e["names"].append(name)
         rt = REPORTS_TO.search(sent)
@@ -394,57 +586,230 @@ def extract_leadership(text: str, require_scope: bool = False) -> list[dict]:
         if len(e["passages"]) < 3 and sent not in e["passages"]:
             e["passages"].append(sent)
             e["pages"].append(page)
+        occurrences.append((e, {"name": name, "status": status[0], "detail": status[1], "effective": status[2], "page": page}))
 
+    subj_default = next((a for a, r in resolver.role_of.items() if r == "subject"), "subject")
+
+    def attribute(sent: str, a: int, b: int, listing: bool, state: Optional[tuple[str, str]], nxt: str
+                  ) -> tuple[tuple[str, str, str], Optional[tuple[str, str]]]:
+        """((org, role, basis), joined_org) for a title spanning sent[a:b]."""
+        jm = JOIN_AS.search(sent[:a])
+        if jm:
+            r = resolver.resolve(jm.group("org")) or (re.sub(r"\s*\(.*$", "", jm.group("org")).strip(), "other")
+            return (r[0], r[1], "clause"), r
+        post = re.match(r"\s*,?\s*(?P<prep>of|at|with|in|for)\s+(?:the\s+)?", sent[b:])
+        if post:
+            r = resolver.resolve(sent[b + post.end():], at_start=True)
+            if r:
+                return (r[0], r[1], "clause"), None
+        elif not listing:
+            adj = re.match(r"\s*,?\s*", sent[b:])
+            hits = [h for h in resolver.find(sent[b + adj.end():]) if h[0] == 0]
+            if hits:
+                return (hits[0][2], hits[0][3], "clause"), None
+        if listing:
+            before = [h for h in resolver.find(sent[:a])]
+            if before:
+                h = before[-1]
+                return (h[2], h[3], "section"), None
+            if state:
+                return (state[0], state[1], "section"), None
+        bio = re.match(r"\s*With\s+(?P<org>.{2,80}?)\s+since\b", nxt or "")
+        if bio:
+            r = resolver.resolve(bio.group("org"))
+            if r:
+                return (r[0], r[1], "biography"), None
+        jv = JOIN_VERB.search(sent)
+        if jv and jv.start() >= b:
+            r = resolver.resolve((jv.group("org") or jv.group("org2")))
+            if r and r[1] not in SUBJECT_SIDE:
+                return (subj_default, "subject", "holder-moving"), None
+        hits = resolver.find(sent)
+        if any(h[3] in SUBJECT_SIDE for h in hits) or _SELF_REF.search(sent):
+            h = next((h for h in hits if h[3] in SUBJECT_SIDE), None)
+            return ((h[2], h[3]) if h else (subj_default, "subject")) + ("sentence",), None
+        if FORMER.search(sent[:a]):
+            r = resolver.resolve(sent)
+            if r and r[1] not in SUBJECT_SIDE:
+                return (r[0], r[1], "sentence"), None
+        return (subj_default, "subject", "document-default"), None
+
+    # page by page, so management-listing section headers carry to the titles below them
+    pages: dict[Optional[int], list[str]] = {}
     for sent, page in sentences_paged(text):
-        spans: list[tuple[int, int]] = []
-        # form A: Chief <scope> Officer
-        for m in LEADERSHIP_FORM_A.finditer(sent):
-            scope = m.group("scope")
-            if len(scope.split()) > 6:
-                continue
-            tech = re.search(r"\b(?:Technology|Information|Transformation|Innovation|Operating\s+and\s+Technology)\b", scope, re.I)
-            if not SCOPE_KEYWORDS.search(scope) and not tech:
-                continue
-            name = _name_before(sent[: m.start()]) or _name_after(sent[m.end():])
-            add(m.group("title"), name, sent, page)
-            spans.append(m.span())
-        # form B: <rank>[, | of | for] <scope>; ranks are located first so one long listing line
-        # ("... Managing Director, Group Information Technology Zhao Jingyuan Managing Director, Group Data and AI ...")
-        # yields every title, each with the name that precedes it
-        for rm in LEADERSHIP_RANK.finditer(sent):
-            if any(a <= rm.start() < b for a, b in spans):
-                continue
-            if rm.start() > 0 and re.match(r"[\w-]", sent[rm.start() - 1]):
-                continue
-            sm = LEADERSHIP_SCOPE.match(sent, rm.end())
-            if not sm:
-                continue
-            scope = _trim_scope(sm.group("scope"))
-            if not scope or not SCOPE_KEYWORDS.search(scope):
-                continue
-            rank = re.sub(r"\s+", " ", rm.group("rank"))
-            sep = sm.group("sep")
-            sep = "," if "," in sep else (" of" if re.search(r"\bof\b", sep) else (" for" if re.search(r"\bfor\b", sep) else ""))
-            title = f"{rank}{sep} {scope}".replace(" ,", ",")
-            end_m = re.compile(r"\s+".join(re.escape(w) for w in scope.split())).match(sent, sm.start("scope"))
-            end = end_m.end() if end_m else sm.end()
-            name = _name_before(sent[: rm.start()]) or _name_after(sent[end:])
-            add(title, name, sent, page)
-        # acronyms with a role word in the sentence
-        for m in LEADERSHIP_ACRONYMS.finditer(sent):
-            if any(a <= m.start() < b for a, b in spans):
-                continue
-            if not re.search(r"\b(officer|chief|appointed|role|our|the|as)\b", sent, re.I):
-                continue
-            add(m.group("title"), None, sent, page)
+        pages.setdefault(page, []).append(sent)
+    name_status: list[tuple[str, str, str, Optional[str]]] = []  # (name, status, detail, effective)
+    for page, sents in pages.items():
+        listing = False
+        state: Optional[tuple[str, str]] = None
+        for idx, sent in enumerate(sents):
+            nxt = sents[idx + 1] if idx + 1 < len(sents) else ""
+            if MGMT_HEADING.match(sent) and len(sent.split()) <= 6:
+                listing = True
+            rh = REGION_HEADER.match(sent.strip())
+            if rh:
+                listing = True
+                h = rh.group("h")
+                state = (subj_default, "subject") if h.startswith("GROUP") else (f"{subj_default} ({h.title()})", "subject-subsidiary")
+            # names whose holders leave / left, for propagation to their titles elsewhere in the report
+            lv, dp, sc = LEAVING.search(sent), DEPARTED.search(sent), SUCCESSOR.search(sent)
+            if lv or dp or sc:
+                st = "leaving" if (lv or sc) else "departed"
+                if sc and not lv and not dp:
+                    det = "successor to be named in due course"
+                else:
+                    det = _occurrence_status(sent, len(sent), None)[1] or ""
+                    if sc:
+                        det += "; successor to be named in due course"
+                for nm in _names_in(sent):
+                    name_status.append((nm, st, det, _effective(sent)))
+            spans: list[tuple[int, int]] = []
+            # form A: Chief <scope> Officer
+            for m in LEADERSHIP_FORM_A.finditer(sent):
+                scope = m.group("scope")
+                if len(scope.split()) > 6:
+                    continue
+                tech = re.search(r"\b(?:Technology|Information|Transformation|Innovation|Operating\s+and\s+Technology)\b", scope, re.I)
+                if not SCOPE_KEYWORDS.search(scope) and not tech:
+                    continue
+                name = _name_before(sent[: m.start()]) or _name_after(sent[m.end():])
+                org, joined = attribute(sent, m.start(), m.end(), listing, state, nxt)
+                add(m.group("title"), name, sent, page, org, _occurrence_status(sent, m.start(), joined))
+                spans.append(m.span())
+            # form B: <rank>[, | of | for] <scope>; ranks are located first so one long listing line
+            # ("... Managing Director, Group Information Technology Zhao Jingyuan Managing Director, Group Data and AI ...")
+            # yields every title, each with the name that precedes it
+            for rm in LEADERSHIP_RANK.finditer(sent):
+                if any(a <= rm.start() < b for a, b in spans):
+                    continue
+                if rm.start() > 0 and re.match(r"[\w-]", sent[rm.start() - 1]):
+                    continue
+                sm = LEADERSHIP_SCOPE.match(sent, rm.end())
+                if not sm:
+                    continue
+                scope = _trim_scope(sm.group("scope"))
+                if not scope or not SCOPE_KEYWORDS.search(scope):
+                    continue
+                rank = re.sub(r"\s+", " ", rm.group("rank"))
+                sep = sm.group("sep")
+                sep = "," if "," in sep else (" of" if re.search(r"\bof\b", sep) else (" for" if re.search(r"\bfor\b", sep) else ""))
+                title = f"{rank}{sep} {scope}".replace(" ,", ",")
+                end_m = re.compile(r"\s+".join(re.escape(w) for w in scope.split())).match(sent, sm.start("scope"))
+                end = end_m.end() if end_m else sm.end()
+                name = _name_before(sent[: rm.start()]) or _name_after(sent[end:])
+                org, joined = attribute(sent, rm.start(), end, listing, state, nxt)
+                add(title, name, sent, page, org, _occurrence_status(sent, rm.start(), joined))
+            # acronyms with a role word in the sentence
+            for m in LEADERSHIP_ACRONYMS.finditer(sent):
+                if any(a <= m.start() < b for a, b in spans):
+                    continue
+                if not re.search(r"\b(officer|chief|appointed|role|our|the|as)\b", sent, re.I):
+                    continue
+                org, joined = attribute(sent, m.start(), m.end(), listing, state, nxt)
+                add(m.group("title"), None, sent, page, org, _occurrence_status(sent, m.start(), joined))
+            # an entity line on a listing page sets the section org for the titles that follow
+            if listing:
+                hits = resolver.find(sent)
+                if hits:
+                    header_line = len(sent.split()) <= 30 and not LEADERSHIP_RANK.search(sent) and not re.search(r"\b(?:Officer|Actuary|Secretary|Auditor)\b", sent)
+                    # an entity header naming several group companies ("GEH / GE Life / GE General") -> the holding company;
+                    # inside a listing line, the last entity named is the one the following people belong to
+                    h = min(hits, key=lambda h: _ROLE_RANK[h[3]]) if header_line else hits[-1]
+                    state = (h[2], h[3])
+
+    # propagate holder status by name, then roll occurrences up into entry status
+    for e, occ in occurrences:
+        if occ["name"] and occ["status"] == "present":
+            for nm, st, det, eff in name_status:
+                if _same_person(nm, occ["name"]):
+                    occ.update(status=st, detail=det, effective=eff)
+                    break
+        elif occ["name"] and occ["status"] in ("leaving", "departed"):
+            for nm, st, det, eff in name_status:
+                if _same_person(nm, occ["name"]) and det and "successor" in det and "successor" not in (occ["detail"] or ""):
+                    occ["detail"] = f"{occ['detail']}; successor to be named in due course" if occ["detail"] else det
+    by_entry: dict[int, list[dict]] = {}
+    for e, occ in occurrences:
+        by_entry.setdefault(id(e), []).append(occ)
+    for e in out.values():
+        occs = by_entry.get(id(e), [])
+        named = [o for o in occs if o["name"]] or occs
+        best = min(named, key=lambda o: (_STATUS_RANK[o["status"]], o["detail"] is None)) if named else \
+            {"status": "present", "detail": None, "effective": None}
+        # among occurrences with the winning status, prefer the one that says the most
+        same = [o for o in named if o["status"] == best["status"]]
+        rich = max(same, key=lambda o: len(o["detail"] or "")) if same else best
+        e["status"] = best["status"]
+        e["status_detail"] = rich["detail"]
+        e["effective"] = rich["effective"] or next((o["effective"] for o in same if o["effective"]), None)
+        e["seat_in_transition"] = e["org_role"] in SUBJECT_SIDE and e["status"] == "leaving"
+        e["counts_d12"] = bool(e["ai_scope"] and e["org_role"] in SUBJECT_SIDE and e["status"] in ("present", "leaving", "incoming"))
     return list(out.values())
 
 
 # --------------------------------------------------------------------------
 # Module entry point
 # --------------------------------------------------------------------------
+def subject_org_aliases(subject: Subject) -> dict[str, list[str]]:
+    """Organisation aliases for leadership attribution: the subject YAML
+    ``org_aliases`` (subject / subject_subsidiary / parent -> names). When the
+    Subject model does not carry the field, it is read from the built-in YAML
+    for the slug. The subject's own name patterns are added as ``subject``
+    aliases unless the YAML already assigns them a role."""
+    raw = getattr(subject, "org_aliases", None)
+    if not raw:
+        try:
+            import yaml
+            from ..subject import builtin_subject_path
+            path = builtin_subject_path(subject.slug)
+            if path.exists():
+                raw = (yaml.safe_load(path.read_text(encoding="utf-8")) or {}).get("org_aliases")
+        except Exception:  # pragma: no cover - a missing or unreadable YAML just means no aliases
+            raw = None
+    out: dict[str, list[str]] = {}
+    for role, lst in (raw or {}).items():
+        out.setdefault(str(role).replace("-", "_"), []).extend(str(a) for a in (lst or []) if a)
+    known = {a for lst in out.values() for a in lst}
+    subj = out.setdefault("subject", [])
+    for a in [subject.name, *subject.patterns()]:
+        if a and a not in known and a not in subj:
+            subj.append(a)
+    return out
+
+
+_STATUS_EVIDENCE = re.compile(LEAVING.pattern + "|" + DEPARTED.pattern + r"|\bjoin(?:s|ed|ing)?\b")
+
+
+def _leader_passage(l: dict) -> str:
+    """The passage that proves the entry: for a holder who is leaving or has left,
+    the sentence that says so; otherwise the first passage. A listing line that
+    runs past 600 characters (a whole management column joined) is cut to the
+    "<name> <title>" span, which is still an exact substring of the document."""
+    p = l["passages"][0]
+    if l["status"] != "present":
+        p = next((x for x in l["passages"] if _STATUS_EVIDENCE.search(x)), p)
+    if len(p) > 600:
+        words = [re.escape(w) for w in l["title"].split()]
+        rx = r"\s+".join(words)
+        for nm in l["names"]:
+            m = re.search(r"\s+".join(re.escape(w) for w in nm.split()) + r"\W{0,3}\s*" + rx, p, re.I)
+            if m:
+                return m.group(0)
+        m = re.search(rx, p)
+        if m:
+            return p[max(0, m.start() - 60):m.end()].split(" ", 1)[-1] if m.start() > 60 else p[:m.end()]
+    return p
+
+
+def _leader_label(l: dict) -> str:
+    who = f" ({', '.join(l['names'])})" if l["names"] else ""
+    st = l["status"] + (f": {l['status_detail']}" if l.get("status_detail") else "") + (f", {l['effective']}" if l.get("effective") else "")
+    return f"{l['title']} [{l['role_class']}]{who} @ {l['org']} ({l['org_role']}, {l['org_basis']}); {st}"
+
+
 def _analyse(subject: Subject, doc_url: str, doc_kind: str, fy: Optional[int], text: str, tier) -> dict:
-    rubric = score_rubric(text)
+    aliases = subject_org_aliases(subject)
+    rubric = score_rubric(text, aliases)
     claims: list[ResearchClaim] = []
     label = confidence_for_tier(tier)
     base = f"{subject.slug}.ar.{doc_kind}.{fy or 'na'}"
@@ -482,15 +847,44 @@ def _analyse(subject: Subject, doc_url: str, doc_kind: str, fy: Optional[int], t
                                         sources=[doc_url], passage=p, tier=tier, confidence_label=label,
                                         instrument_items=["peer-seed"], signal_ids=[f"{base}.competitors"],
                                         note=f"names competitor/peer: {c['name']}"))
-    leaders = extract_leadership(text)
+    leaders = extract_leadership(text, org_aliases=aliases)
     proxies = [l for l in leaders if l["ai_scope"]]
-    for i, l in enumerate((proxies + [l for l in leaders if not l["ai_scope"]])[:8], 1):
-        p = l["passages"][0]
+    counted = [l for l in proxies if l["counts_d12"]]
+    present = [l for l in counted if not l["seat_in_transition"]]
+    transition = [l for l in counted if l["seat_in_transition"]]
+    departed = [l for l in proxies if l["org_role"] in SUBJECT_SIDE and not l["counts_d12"]]
+    parent_ctx = [l for l in proxies if l["org_role"] == "parent"]
+    other_org = [l for l in proxies if l["org_role"] == "other"]
+    ordered = present + transition + departed + parent_ctx + other_org + [l for l in leaders if not l["ai_scope"]]
+    li = 0
+    for l in ordered[:8]:
+        p = _leader_passage(l)
         if 40 <= len(p) <= 600:
-            claims.append(ResearchClaim(id=f"{base}.l{i}", module=MODULE, text=p, kind=ClaimKind.quote, load_bearing=False,
+            sid = f"{base}.leadership_parent" if l["org_role"] == "parent" and l["ai_scope"] else f"{base}.leadership"
+            same = next((c for c in claims if c.passage == p and c.id.startswith(f"{base}.l")), None)
+            if same:  # one sentence proving two titles (the leaver's title and the parent role she moves to): one claim
+                if sid not in same.signal_ids:
+                    same.signal_ids.append(sid)
+                same.note = f"{same.note}; also {_leader_label(l)}"
+                continue
+            li += 1
+            claims.append(ResearchClaim(id=f"{base}.l{li}", module=MODULE, text=p, kind=ClaimKind.quote, load_bearing=False,
                                         sources=[doc_url], passage=p, tier=tier, confidence_label=label,
-                                        instrument_items=["D1.2", "D2.1", "D5.2"], signal_ids=[f"{base}.leadership"],
-                                        note=f"leadership title: {l['title']} [{l['role_class']}]" + (f" ({', '.join(l['names'])})" if l["names"] else "")))
+                                        instrument_items=["D1.2", "D2.1", "D5.2"], signal_ids=[sid],
+                                        note="leadership title: " + _leader_label(l)))
+
+    def brief(ls: list[dict]) -> str:
+        return "; ".join(f"{l['title']}" + (f" ({', '.join(l['names'])})" if l["names"] else "") +
+                         (f" [{l['status_detail']}{', ' + l['effective'] if l.get('effective') else ''}]" if l["status"] != "present" and l.get("status_detail") else "")
+                         for l in ls)
+
+    lead_note = (f"value counts D1.2 proxy titles (AI / data / analytics / digital scope) held at the subject or a subject subsidiary and "
+                 f"not vacated: {len(present)} present" + (f" ({brief(present)})" if present else "") +
+                 f", {len(transition)} seat(s) in transition" + (f" ({brief(transition)})" if transition else "") +
+                 f". Not counted: {len(departed)} departed/former" + (f" ({brief(departed)})" if departed else "") +
+                 f"; {len(parent_ctx)} parent-group title(s), reported as parent-group context" + (f" ({brief(parent_ctx)})" if parent_ctx else "") +
+                 (f"; {len(other_org)} at other organisations" if other_org else "") +
+                 "; CTO/CIO-type titles are listed as 'other'. CAIO/CDO presence is the D1.2 proxy (BCG: future-built 3x CAIO, 2x CDO)")
     signals = [
         Signal(id=f"{base}.rubric", module=MODULE, name=f"Annual-report AI rubric level ({doc_kind} FY{fy})",
                instrument_items=["D1.1", "D5.4", "D8.3"], value=rubric.level, unit="level 1-5", source=doc_url,
@@ -506,17 +900,30 @@ def _analyse(subject: Subject, doc_url: str, doc_kind: str, fy: Optional[int], t
                source=doc_url, source_urls=[doc_url], tier=tier, confidence_label=ConfidenceLabel.model_inferred,
                evidence_claim_ids=[c.id for c in claims if f"{base}.competitors" in c.signal_ids],
                detail={"names": [{"name": c["name"], "count": c["count"]} for c in competitors]}),
-        Signal(id=f"{base}.leadership", module=MODULE, name="AI / data leadership titles found",
-               instrument_items=["D1.2", "D2.1", "D5.2"], value=len(proxies), unit="titles", source=doc_url,
+        Signal(id=f"{base}.leadership", module=MODULE, name="AI / data leadership titles found (subject, present or in transition)",
+               instrument_items=["D1.2", "D2.1", "D5.2"], value=len(counted), unit="titles", source=doc_url,
                source_urls=[doc_url], tier=tier, confidence_label=ConfidenceLabel.model_inferred,
                evidence_claim_ids=[c.id for c in claims if f"{base}.leadership" in c.signal_ids],
                detail={"titles": [{"title": l["title"], "names": l["names"], "role_class": l["role_class"], "reports_to": l["reports_to"],
-                                   "ai_scope": l["ai_scope"], "context": l["context"], "page": l["page"]} for l in leaders],
-                       "classes": {k: sum(1 for l in proxies if l["role_class"] == k) for k in ("CAIO-equivalent", "CDO-equivalent", "CDigO")},
+                                   "ai_scope": l["ai_scope"], "context": l["context"], "page": l["page"], "pages": l["pages"],
+                                   "org": l["org"], "org_role": l["org_role"], "org_basis": l["org_basis"], "status": l["status"],
+                                   "status_detail": l["status_detail"], "effective": l["effective"],
+                                   "seat_in_transition": l["seat_in_transition"], "counts_d12": l["counts_d12"]} for l in leaders],
+                       "classes": {k: sum(1 for l in counted if l["role_class"] == k) for k in ("CAIO-equivalent", "CDO-equivalent", "CDigO")},
+                       "present": len(present), "in_transition": len(transition), "departed_or_former": len(departed),
+                       "parent_context": len(parent_ctx), "other_org": len(other_org),
                        "other_titles": len(leaders) - len(proxies)},
-               note="value counts D1.2 proxy titles (AI / data / analytics / digital scope); CTO/CIO-type titles are listed as 'other' "
-                    "and not counted. CAIO/CDO presence is the D1.2 proxy (BCG: future-built 3x CAIO, 2x CDO)"),
+               note=lead_note),
     ]
+    if parent_ctx:
+        signals.append(Signal(id=f"{base}.leadership_parent", module=MODULE, name="Parent-group AI / data titles (context, not counted for D1.2)",
+                   instrument_items=["D1.2-context"], value=len(parent_ctx), unit="titles", source=doc_url,
+                   source_urls=[doc_url], tier=tier, confidence_label=ConfidenceLabel.model_inferred,
+                   evidence_claim_ids=[c.id for c in claims if f"{base}.leadership_parent" in c.signal_ids],
+                   detail={"titles": [{"title": l["title"], "names": l["names"], "org": l["org"], "status": l["status"],
+                                       "status_detail": l["status_detail"], "effective": l["effective"], "page": l["page"]} for l in parent_ctx]},
+                   note="titles the report attributes to the parent group (e.g. a subject executive moving to the parent); parent-group "
+                        "context only, never subject D1.2 evidence"))
     if rubric.investment_disclosed:
         signals.append(Signal(id=f"{base}.spend", module=MODULE, name="Disclosed AI / technology investment",
                               instrument_items=["D1.4"], value=len(rubric.evidence["investment"]), unit="statements",

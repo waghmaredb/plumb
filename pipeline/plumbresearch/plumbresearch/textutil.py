@@ -86,6 +86,103 @@ def ai_sentences(text: str) -> list[str]:
     return [s for s in sentences(text) if ai_mentions(s)]
 
 
+# --------------------------------------------------------------------------
+# Pull-quote / layout fragments (run-3 issue 1)
+# --------------------------------------------------------------------------
+# Layout extraction sets pull quotes as short lines separated by blank lines, so a pull quote
+# that repeats a body sentence comes out as fragments ("“We rolled out a proprietary AI-",
+# "testing an AI solution for"). They are not evidence of anything the body sentence does not
+# already prove, and they double-count rubric components.
+FRAGMENT_MIN_WORDS = 6
+_OPEN_QUOTE = "“\"‘'«"
+_TERMINAL = re.compile(r"[.!?…][\"”’')\]]*$|[\"”’]$")
+
+
+def norm_for_dedupe(s: str) -> str:
+    """Lower-case, quote-free, whitespace-collapsed form used to compare a
+    candidate sentence with the rest of the document. A hyphen followed by a
+    space (a word broken across lines or blank lines) is closed up."""
+    s = (s or "").lower()
+    s = re.sub(r"[“”\"‘’'«»]", "", s)
+    s = re.sub(r"(\w)-\s+(\w)", r"\1-\2", s)
+    s = re.sub(r"\s+", " ", s)
+    return s.strip(" .,;:")
+
+
+def is_fragment(s: str, min_words: int = FRAGMENT_MIN_WORDS) -> bool:
+    """A sentence candidate that is a layout fragment rather than a sentence:
+    fewer than ``min_words`` words; ends in a hyphen (word broken mid-way);
+    or opens with a quote mark or a lower-case word and stops without
+    terminal punctuation (a pull-quote line cut mid-sentence)."""
+    t = (s or "").strip()
+    if not t:
+        return True
+    if word_count(t) < min_words:
+        return True
+    if re.search(r"[-‐‑]$", t):
+        return True
+    starts_open = t[0] in _OPEN_QUOTE or t[0].islower()
+    if starts_open and not _TERMINAL.search(t):
+        return True
+    return False
+
+
+def drop_fragments(candidates: list[str], universe: Optional[list[str]] = None,
+                   min_words: int = FRAGMENT_MIN_WORDS) -> list[str]:
+    """Filter sentence candidates for evidence use: drop layout fragments
+    (:func:`is_fragment`), exact duplicates after normalisation (a pull quote
+    that repeats a body sentence; the first occurrence is kept) and candidates
+    whose normalised text sits inside a longer sentence elsewhere in
+    ``universe`` (default: the candidates themselves)."""
+    universe = candidates if universe is None else universe
+    norms_u = [norm_for_dedupe(u) for u in universe]
+    big = "\n".join(norms_u)
+    out: list[str] = []
+    seen: set[str] = set()
+    for c in candidates:
+        n = norm_for_dedupe(c)
+        if not n or n in seen or is_fragment(c, min_words):
+            continue
+        # contained in a strictly longer sentence somewhere in the document
+        if n in big and any(len(u) > len(n) and n in u for u in norms_u):
+            continue
+        seen.add(n)
+        out.append(c)
+    return out
+
+
+def rubric_sentences(text: str) -> list[str]:
+    """AI sentences fit for rubric evidence: :func:`ai_sentences` minus
+    fragments and duplicates (:func:`drop_fragments`), checked against every
+    sentence in the document."""
+    alls = sentences(text)
+    cands = [s for s in alls if ai_mentions(s)]
+    return drop_fragments(cands, alls)
+
+
+# --------------------------------------------------------------------------
+# Biography sentences (run-3 issue 4)
+# --------------------------------------------------------------------------
+# Executive and director biographies describe a person's remit, not a deployed system:
+# "Responsible for improving customer experience, operational efficiency ... through Data,
+# Analytics & AI" is not production evidence. Such sentences may count toward ownership only.
+BIO_PATTERNS = [
+    r"^\s*(?:(?:Mr|Ms|Mrs|Mdm|Dr)\.?\s+[A-Z][\w’'-]+\s+(?:is|was)\s+)?responsible for\b",
+    r"\b(?:over|more than|nearly|almost|about|some)\s+\d+\s+years(?:’|')?\s+(?:of\s+)?experience\b",
+    r"^\s*\d+\s+years(?:’|')?\s+(?:of\s+)?experience\b",
+    r"\bhas held (?:various |several |senior |key )*(?:leadership|management|executive|senior) (?:roles|positions)\b",
+    r"^\s*with\s+[A-Z][\w&’' -]{1,60}?\s+since\b",
+    r"^\s*(?:joined|leads and oversees|oversees)\b",
+    r"\bprior to (?:joining|this)\b",
+]
+
+
+def is_bio_sentence(s: str) -> bool:
+    """True for biography-style sentences (remit and experience statements in
+    executive / director profiles)."""
+    return any(re.search(p, s or "", re.I) for p in BIO_PATTERNS)
+
+
 def has_any(text: str, patterns: Iterable[str]) -> bool:
     return any(re.search(p, text, re.I) for p in patterns)
 

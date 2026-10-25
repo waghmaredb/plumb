@@ -107,6 +107,7 @@ class Subject(BaseModel):
     seed_description: Optional[str] = None
     tier_overrides: dict[str, list[str]] = Field(default_factory=dict, description="Tier -> extra domains for plumbverify tier rules")
     verify_flags: list[str] = Field(default_factory=list, description="[VERIFY] items carried from the candidate screen")
+    org_aliases: dict[str, list[str]] = Field(default_factory=dict, description="Organisation aliases by role: subject, subject_subsidiary, parent; used to attribute leadership titles")
     notes: Optional[str] = None
 
     @field_validator("name_patterns", mode="before")

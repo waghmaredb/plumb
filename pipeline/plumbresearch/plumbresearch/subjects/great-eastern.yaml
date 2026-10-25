@@ -12,6 +12,12 @@ fiscal_year_end: "12-31"
 latest_fy: 2025
 home_market: Singapore
 name_patterns: ["Great Eastern", "Great Eastern Life", "Great Eastern General", "GEH"]
+# Organisation aliases for leadership attribution (annual-report module): a title is counted for D1.2 only when the report
+# attributes it to the subject or a subject subsidiary; parent titles (OCBC) are reported as parent-group context.
+org_aliases:
+  subject: ["Great Eastern Holdings", "Great Eastern", "GEH"]
+  subject_subsidiary: ["Great Eastern Life", "GE Life", "Great Eastern General", "GE General", "Great Eastern Takaful", "GELM"]
+  parent: ["OCBC", "Oversea-Chinese Banking Corporation", "OCBC Bank", "Bank of Singapore"]
 # Primary URLs scouted 2026-10-25 (data-packs/great-eastern/MANIFEST.yaml); fetch with data-packs/great-eastern/fetch-datapack.sh on a laptop.
 ir_urls:
   - {label: "Annual reports index", url: "https://www.greateasternlife.com/sg/en/about-us/investor-relations/annual-reports.html"}
