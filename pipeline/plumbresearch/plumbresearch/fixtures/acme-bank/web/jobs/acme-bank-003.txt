@@ -1,0 +1,4 @@
+Data Scientist, Credit Risk
+Acme Bank | Singapore | posted 2025-12-10
+
+Develop predictive models for SME credit scoring using scikit-learn and XGBoost.

@@ -19,7 +19,9 @@ docs/          Research reports that justify the design (3 files, ~350 sources)
 methodology/   The engagement IP: maturity instrument, right-to-win kit, value & use-case kit
 compliance/    Risk tiers & gates, evidence-pack templates, regulatory status map,
                control-library schema + CSV (CSA AICM v1.1-keyed crosswalk)
-pipeline/      Verification pipeline spec (Processing Integrity control + engineering spec)
+pipeline/      Verification pipeline spec + code: plumbverify (verification layer, 84 tests)
+               and plumbresearch (Phase 1 outside-in modules + orchestrator, 30 tests)
+instrument/    Maturity instrument as YAML + plumbscore scorer (45 tests)
 catalogue/     Use-case catalogue schema + 25 seed rows (APAC-weighted, with outcome metrics)
 commercial/    Pricing ladder, engagement charter, engagement-letter clauses, DPA outline,
                conflict-check procedure
@@ -70,6 +72,16 @@ commercial/    Pricing ladder, engagement charter, engagement-letter clauses, DP
 - [x] Verification: MAS AIRM primary text (7 Oct 2026 PDF) — section refs corrected across compliance/
 - [~] Verification: AICM v1.1 — 18 domains/prefixes confirmed; 28/40 objective IDs confirmed from v1.0.3 rendering, 12 candidate; spreadsheet needs CSA login
 - [ ] Verifications remaining: SS 680 / EDGE with Enterprise Singapore; AI TAP application requirements; LLM vendor Singapore routes + ZDR in writing
+
+## Code status (G1 build)
+
+| Package | What works | Fixture-only / stubbed |
+|---|---|---|
+| `pipeline/plumbverify` 0.2.0 | fetch+hash store, URL health, quote (exact) and claim matching, number normalisation, two-upstream independence, tiering, block-not-flag, hash-chained log, PDF extraction w/ OCR flag, Wayback, upstream tracing, reviewer report | semantic matcher, AI-gen classifier, OCR engine, 24h re-check job |
+| `pipeline/plumbresearch` | annual-report rubric + competitor/leadership extraction, peer funnel 0.3x–3x, postings share, call density, KPI percentiles, C10 cap/checkpoint, orchestrator → claims/report/peer-set/signals/gap register | posting/transcript/patent collection (CSV), economic profit until cost_of_equity set, funnel text-similarity step |
+| `instrument/plumbscore` | cap rule, σ flags, ExCo gap, value axis, peer percentile (n≥15), weighted κ, Markdown scorecard | Tier-0 web form |
+
+Run the alphas: place the annual-report PDFs under `pipeline/plumbresearch/data/<subject>/` (file names in the subject YAML), then `plumbresearch run plumbresearch/subjects/maybank.yaml --out out --data-dir data`.
 
 ## Top open items before G1 (alpha)
 

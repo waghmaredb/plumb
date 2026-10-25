@@ -1,0 +1,125 @@
+# Alpha subject 1 (docs/alpha-targets.md §1.1 B1, §2, §3.1, §4). Every figure or URL
+# alpha-targets marks [VERIFY] keeps `verify: true` here; nothing was added from memory.
+slug: maybank
+name: Malayan Banking Berhad (Maybank)
+short_name: Maybank
+sector: banks
+industry_codes: ["SSIC 64110", "GICS 4010"]
+listing: {exchange: Bursa Malaysia, ticker: MAYBANK, code: "1155"}
+tickers: ["MAYBANK:MK", "1155.KL"]
+regulator_status: "MAS foreign full bank + Qualifying Full Bank (QFB); community financial services locally incorporated as Maybank Singapore Limited since the 2018 MAS approval"
+regulated_entity: Maybank Singapore Limited
+fiscal_year_end: "12-31"
+latest_fy: 2025
+home_market: Malaysia
+name_patterns: ["Maybank", "Malayan Banking", "Maybank Singapore", "Etiqa"]
+ir_urls:
+  - {label: "FY2025 results (The Edge via Yahoo)", url: "https://sg.finance.yahoo.com/news/maybank-fy2025-net-profit-gains-005205385.html"}
+  - {label: "4Q FY2025 analyst presentation", url: "https://www.maybank.com/iwov-resources/documents/pdf/quarterly-report/2025/maybank-group-analyst-presentation-fy2025-4q.pdf"}
+  - {label: "Integrated Annual Report 2025 (BankTrack mirror)", url: "https://www.banktrack.org/download/annual_report_2025_28", note: "binary via fetch; primary copy on maybank.com / maybank.listedcompany.com", verify: true}
+  - {label: "FY2024 IAR Part 2", url: "https://maybank.listedcompany.com/newsroom/Maybank_Integrated_AR_2024_Part_2_20250326.pdf"}
+  - {label: "Maybank newsroom", url: "https://www.maybank.com/en/news/2025/02/26.page"}
+  - {label: "Maybank Singapore newsroom", url: "https://www.maybank2u.com.sg/en/personal/about_us/maybank-singapore/newsroom/2025/26-may-2025.page"}
+  - {label: "ROAR30 (Fintech News MY)", url: "https://fintechnews.my/56126/banking/maybank-roar30-strategy-rm10-billion-technology-investment/"}
+  - {label: "ROAR30 (The Asian Banker)", url: "https://www.theasianbanker.com/press-releases/maybank-launches-roar30-targets-roe-of-13-14-by-2030"}
+  - {label: "Microsoft RM1bn partnership (DCD)", url: "https://www.datacenterdynamics.com/en/news/microsoft-scores-2364m-deal-with-malaysian-financial-group-maybank/"}
+  - {label: "Kenanga 4Q25 note (coverage universe)", url: "https://www.kenanga.com.my/wp-content/uploads/2026/02/MAYBANK-260227-4Q25-RN-Kenanga.pdf"}
+documents:
+  # place the downloaded PDFs in data/maybank/ under these file names; they are served under the declared URL
+  - {kind: annual_report, fy: 2025, url: "https://www.banktrack.org/download/annual_report_2025_28", local_file: maybank-integrated-annual-report-2025.pdf, verify: true, note: "mirror; confirm the primary maybank.com URL and re-point before release (a mirror is T5)"}
+  - {kind: analyst_deck, fy: 2025, url: "https://www.maybank.com/iwov-resources/documents/pdf/quarterly-report/2025/maybank-group-analyst-presentation-fy2025-4q.pdf", local_file: maybank-4q-fy2025-analyst-presentation.pdf}
+  - {kind: annual_report, fy: 2024, url: "https://maybank.listedcompany.com/newsroom/Maybank_Integrated_AR_2024_Part_2_20250326.pdf", local_file: maybank-integrated-ar-2024-part-2.pdf}
+size:
+  metric: total_assets
+  value_usd_bn: 250
+  as_reported: "≈ RM1.1 trillion"
+  verify: true
+  note: "group total assets ≈ RM1.1tn ≈ US$250bn not in the sources fetched; take from the FY2025 audited balance sheet"
+seed_description: "SSIC 64110 → GICS 4010; sell-side coverage (Kenanga, RHB Research, CGS) groups Maybank with CIMB, Public Bank, RHB, Hong Leong Bank, AMMB; MAS licence list supplies Singapore-present ASEAN banks; long list 19. Competitors named in the 2025 IAR not yet extracted [VERIFY]."
+tier_overrides:
+  T2: ["maybank.com", "maybank.listedcompany.com", "maybank2u.com.sg", "cimb.com", "uobgroup.com", "ocbc.com", "dbs.com", "theasianbanker.com"]
+peers:
+  # ---- core (alpha-targets §3.1, n = 8) ----
+  - name: CIMB Group
+    role: core
+    listing: "Bursa (1023)"
+    size: {metric: total_assets, value_usd_bn: 164, as_reported: "MYR 778.7bn", source_url: "https://www.theasianbanker.com/press-releases/cimb-posts-fy2025-net-profit-of-1-7b-as-forward30-execution-progresses"}
+    why: "Closest analogue: Malaysian universal bank, Singapore foreign full bank, Forward30 ≈ ROAR30"
+    data_sources: "IAR, quarterly analyst decks, Bursa filings, AI press"
+    name_patterns: ["CIMB"]
+  - name: UOB
+    role: core
+    listing: "SGX (U11)"
+    size: {metric: total_assets, value_usd_bn: 425, as_reported: "S$572bn", verify: true, note: "S$572bn per AR2025; USD conversion ≈ 0.74 is ours [VERIFY]", source_url: "https://www.uobgroup.com/AR2025/index.html"}
+    why: "ASEAN-wide retail franchise; Citi consumer acquisition; same MAS regime"
+    data_sources: "AR, results-call transcripts, SGX filings"
+    name_patterns: ["UOB", "United Overseas Bank"]
+  - name: OCBC
+    role: core
+    listing: "SGX (O39)"
+    size: {metric: total_assets, value_usd_bn: null, verify: true, note: "total assets [VERIFY]; net profit S$7.42bn, PBT S$9.12bn per AR2025", source_url: "https://www.ocbc.com/group/investors/annual-reports/2025-annual-report/group-ceos-perspectives.page"}
+    why: "MAS regime; explicit 'ADD' AI strategy; also parent of the insurer subject (note the linkage)"
+    data_sources: "AR2025 PDF, results calls"
+    name_patterns: ["OCBC", "Oversea-Chinese Banking"]
+  - name: DBS
+    role: core
+    listing: "SGX (D05)"
+    size: {metric: total_assets, value_usd_bn: null, verify: true, note: "total assets [VERIFY]"}
+    why: "Leading-band anchor; >1,500 models / 370 use cases, ~S$750m economic value 2024, S$1bn target 2025; three-bucket control-group value method"
+    data_sources: "AR, calls, Forrester case"
+    name_patterns: ["DBS"]
+  - name: Public Bank
+    role: core
+    listing: "Bursa (1295)"
+    size: {metric: total_assets, value_usd_bn: 120, verify: true, note: "≈ US$120bn [VERIFY]"}
+    why: "Malaysian coverage universe; no Singapore bank licence → tests whether the 'Singapore licence' rule should be hard"
+    data_sources: "AR, Bursa filings"
+    name_patterns: ["Public Bank"]
+  - name: RHB Bank
+    role: core
+    listing: "Bursa (1066)"
+    size: {metric: total_assets, value_usd_bn: 80, verify: true, note: "≈ US$80bn, near the 0.3x floor [VERIFY]"}
+    why: "Malaysian universal bank with Singapore foreign full bank licence"
+    data_sources: "AR, Bursa filings"
+    name_patterns: ["RHB"]
+  - name: Bangkok Bank
+    role: core
+    listing: "SET (BBL)"
+    size: {metric: total_assets, value_usd_bn: 130, verify: true, note: "≈ US$130bn [VERIFY]"}
+    why: "Thai universal bank; Singapore foreign full bank; Indonesia via Permata — same multi-country ASEAN shape"
+    data_sources: "AR, SET filings, English analyst decks"
+    name_patterns: ["Bangkok Bank"]
+  - name: Bank Mandiri
+    role: core
+    listing: "IDX (BMRI)"
+    size: {metric: total_assets, value_usd_bn: 140, verify: true, note: "≈ US$140bn [VERIFY]"}
+    why: "Indonesian universal bank; Singapore foreign full bank; competes with Maybank Indonesia at home"
+    data_sources: "AR, IDX filings, English results decks"
+    name_patterns: ["Bank Mandiri", "Mandiri"]
+  # ---- secondary (labelled, n = 9) ----
+  - {name: "Standard Chartered (Singapore)", role: secondary, listing: "LSE/HKEX", reason_secondary: "Group >3x band; UK HQ", why: "Singapore QFB; Singapore H1-25 profit ≈ S$1bn", sources: ["https://fintechnews.sg/118482/fintech/stanchart-singapore-profit/", "https://www.sc.com/en/uploads/sites/66/content/docs/standard-chartered-investor-overview-february-2026.pdf"]}
+  - {name: "HSBC (Singapore)", role: secondary, listing: "LSE/HKEX", reason_secondary: "Group far above band; Singapore not separately reported", why: "QFB"}
+  - {name: "Citibank Singapore", role: secondary, listing: "NYSE (parent)", reason_secondary: "Group above band", why: "QFB; retained Singapore consumer when it sold ASEAN consumer to UOB"}
+  - {name: "Hong Leong Bank", role: secondary, listing: "Bursa", reason_secondary: "Below 0.3x floor [VERIFY]", why: "Malaysian; Singapore foreign full bank", size: {verify: true, note: "below floor [VERIFY]"}}
+  - {name: "Bank Negara Indonesia (BNI)", role: secondary, listing: "IDX", reason_secondary: "Near/below floor [VERIFY]", why: "Singapore foreign full bank", size: {verify: true, note: "near/below floor [VERIFY]"}}
+  - {name: "Kasikornbank", role: secondary, listing: "SET", reason_secondary: "No Singapore licence", why: "Regional AI/tech reference (KBTG)"}
+  - {name: "ANZ", role: secondary, listing: "ASX", reason_secondary: "Group above band; exited Asia retail", why: "QFB (institutional only)"}
+  - {name: "Hong Leong Finance / Sing Investments & Finance / Singapura Finance", role: secondary, listing: "SGX", reason_secondary: "SGX finance companies, far below floor", why: "Singapore-only mid-cap reference points for a future SME-bank peer set"}
+  - {name: "GXS Bank, MariBank, Trust Bank", role: secondary, listing: "unlisted", reason_secondary: "Unlisted digital full banks", why: "AI-native challengers; no financial comparability"}
+  # ---- exited / consolidated (survivorship control; dates and terms [VERIFY], none fetched) ----
+  - {name: "Citi ASEAN consumer → UOB", role: exited, event: "Citi's consumer businesses in Malaysia, Thailand, Indonesia and Vietnam sold to UOB", event_year: 2022, status: Consolidated, why: "Removes a direct ASEAN retail competitor; inflates UOB's digital metrics post-2022", verify: true}
+  - {name: "ANZ Asia retail → DBS", role: exited, event: "ANZ's Asia retail and wealth businesses (incl. Singapore) sold to DBS", event_year: 2016, status: Exit, why: "Exit of a QFB retail franchise", verify: true}
+  - {name: "Barclays / ING Asia wealth → OCBC", role: exited, event: "Barclays Asia wealth sold to OCBC / Bank of Singapore (2016); ING Asia Private Bank sold to OCBC (2009)", event_year: 2016, status: Consolidated, why: "Wealth consolidation into Singapore banks", verify: true}
+  - {name: "ABN AMRO / RBS Singapore retail", role: exited, event: "ABN AMRO / RBS Singapore retail wind-down", event_year: 2011, status: Exit, why: "Foreign retail exit", verify: true}
+  - {name: "Bancassurance partner changes", role: exited, event: "Allianz–Income (insurance, 2024) and HSBC Life Singapore → Allianz (2026)", event_year: 2026, status: Pending, why: "Bancassurance partner changes that affect bank fee lines", sources: ["https://atlas-mag.net/en/articles/allianz-acquire-hsbc-life-singapore"]}
+verify_flags:
+  - "Group total assets ≈ RM1.1 trillion — take from the FY2025 audited balance sheet"
+  - "Exact URL of the primary 2025 Integrated Annual Report on maybank.com / maybank.listedcompany.com"
+  - "Job-posting volume over 24 months (MyCareersFuture + LinkedIn) — not yet collected"
+  - "Availability of quarterly briefing Q&A transcripts (decks are published; transcripts not confirmed)"
+  - "Whether Maybank Singapore Limited's statutory financial statements are public"
+  - "IT opex line in the IAR"
+  - "Group Chief Technology / Data role titles and reporting lines"
+  - "AI Verify Foundation membership; BNM/MAS enforcement history"
+  - "Founder conflict declaration (C6) for Maybank and the Microsoft relationship"
+notes: "Assessed at group level with Maybank Singapore Limited as the MAS-regulated anchor (≈25.9% of group PBT, ≈18.3% of net operating income per the 4Q FY2025 deck). Fallback subject: UOB."

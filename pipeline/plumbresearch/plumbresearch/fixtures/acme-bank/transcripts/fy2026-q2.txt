@@ -1,0 +1,15 @@
+Acme Bank second quarter 2026 results briefing, 5 August 2026.
+
+Chief Executive Officer: Good morning. First-half net profit was S$640 million, up 8% year on year. Loan growth was 5% and fee income grew 7%. We continue to execute Horizon 2030. Our data platform migration is complete and more than 40 AI use cases are now in production under the oversight of our Group Chief Data and AI Officer.
+
+Chief Financial Officer: Net interest margin was stable at 2.05%. Expenses grew 2% and the cost-to-income ratio was 42.9%. Credit costs were 20 basis points.
+
+=== Question-and-Answer Session ===
+
+Analyst (Sample Capital): You mentioned 40 AI use cases in production. How do you measure the value and is any of it in the guidance?
+
+Chief Executive Officer: Every production AI use case has a baseline and an owner, and we track realised value quarterly in three buckets, revenue, cost and risk avoided. The aggregate is not yet material enough to guide on separately.
+
+Analyst (Example Securities): Any update on the transaction monitoring model?
+
+Chief Executive Officer: Validation is complete and the model goes live in the fourth quarter.

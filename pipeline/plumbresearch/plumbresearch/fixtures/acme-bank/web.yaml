@@ -1,0 +1,15 @@
+# fixture web: url -> file (relative to this directory); unknown URLs return 404 (-> DEAD)
+- {url: "https://ir.acme-bank.example/annual-report-2025.html", file: web/annual-report-2025.html, content_type: "text/html; charset=utf-8"}
+- {url: "https://ir.acme-bank.example/results-fy2025.html", file: web/results-fy2025.html, content_type: "text/html; charset=utf-8"}
+- {url: "https://filings.exchange.example/acme/fy2025-financial-statements.html", file: web/exchange-filing-fy2025.html, content_type: "text/html; charset=utf-8"}
+- {url: "https://ir.beta-bank.example/results-fy2025.html", file: web/beta-results-fy2025.html, content_type: "text/html; charset=utf-8"}
+- {url: "https://ir.gamma-financial.example/results-fy2025.html", file: web/gamma-results-fy2025.html, content_type: "text/html; charset=utf-8"}
+- {url: "https://ir.acme-bank.example/transcripts/fy2025-q4.txt", file: transcripts/fy2025-q4.txt, content_type: "text/plain; charset=utf-8"}
+- {url: "https://ir.acme-bank.example/transcripts/fy2026-q2.txt", file: transcripts/fy2026-q2.txt, content_type: "text/plain; charset=utf-8"}
+- {url: "https://patents.example/ACME-2024-001", file: web/patent-acme-2024-001.txt, content_type: "text/plain; charset=utf-8"}
+# Zeta Bank's results page is deliberately absent: its KPI claims must come back BLOCKED (source DEAD).
+- {url: "https://careers.acme-bank.example/jobs/004", file: web/jobs/acme-bank-004.txt, content_type: "text/plain; charset=utf-8"}
+- {url: "https://careers.acme-bank.example/jobs/010", file: web/jobs/acme-bank-010.txt, content_type: "text/plain; charset=utf-8"}
+- {url: "https://careers.acme-bank.example/jobs/007", file: web/jobs/acme-bank-007.txt, content_type: "text/plain; charset=utf-8"}
+- {url: "https://careers.acme-bank.example/jobs/012", file: web/jobs/acme-bank-012.txt, content_type: "text/plain; charset=utf-8"}
+- {url: "https://careers.acme-bank.example/jobs/003", file: web/jobs/acme-bank-003.txt, content_type: "text/plain; charset=utf-8"}

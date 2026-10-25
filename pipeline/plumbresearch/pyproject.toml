@@ -1,0 +1,38 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "plumbresearch"
+version = "0.1.0"
+description = "PLUMB Phase 1 outside-in research modules: annual-report rubric, postings AI-skill share, earnings-call density, patents, peer-set funnel, KPI decomposition; every claim verified through plumbverify."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "Proprietary" }
+dependencies = [
+    # path dependency on the sibling verification layer (PEP 508 direct reference;
+    # pip needs an absolute file URL, so for a checkout elsewhere run
+    #   pip install -e ../plumbverify && pip install -e .
+    "plumbverify @ file:///home/claude/plumb/pipeline/plumbverify",
+    "pydantic>=2.5",
+    "httpx>=0.27",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+pdf = ["pypdf>=4.0"]
+pdfminer = ["pdfminer.six>=20231228"]
+test = ["pytest>=7.4"]
+
+[project.scripts]
+plumbresearch = "plumbresearch.cli:main"
+
+[tool.setuptools]
+packages = ["plumbresearch", "plumbresearch.modules"]
+
+[tool.setuptools.package-data]
+plumbresearch = ["subjects/*.yaml", "fixtures/**/*", "tiers-overrides.yaml"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"

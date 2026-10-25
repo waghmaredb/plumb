@@ -1,0 +1,19 @@
+Acme Bank fourth quarter and full year 2025 results briefing, 20 February 2026.
+
+Chief Executive Officer: Good morning. Net profit for the year was S$1,207.1 million, up 12%. Our cost-to-income ratio improved to 43.5% as digital servicing continued to replace branch transactions. Artificial intelligence is now part of how we run the bank. The AI-powered underwriting assistant for SME credit decisions was rolled out across all branches during the year, and our generative AI contact centre assistant has reduced average handling time by 18%. We remain disciplined on cost and on risk. Loan growth was 6% and deposits grew 5%. Our capital position remains strong with a CET1 ratio of 14.8%.
+
+Chief Financial Officer: Thank you. Net interest income rose 4% on stable margins. Fee income grew 9%, led by wealth management and cards. Operating expenses rose 3%, within guidance. Technology investment under our Horizon 2030 programme is on track. Credit costs were 22 basis points. We propose a final dividend of 50 cents per share.
+
+=== Question-and-Answer Session ===
+
+Analyst (Example Securities): Could you quantify how much of the cost-to-income improvement came from AI, and what the run cost of the generative AI assistant is?
+
+Chief Executive Officer: We attribute roughly a third of the operating leverage this year to automation, of which the AI contact centre assistant is the largest single contributor. We do not disclose the token or run cost separately but it is well inside the technology budget.
+
+Analyst (Sample Capital): On the transaction monitoring pilot, when do you expect a decision on production rollout?
+
+Chief Executive Officer: The machine learning model for transaction monitoring is still in pilot and we expect a decision in the second half of 2026 after our model risk committee completes validation.
+
+Analyst (Example Securities): And on margins, how should we think about the second half?
+
+Chief Financial Officer: We expect margins to be broadly stable, with some pressure from repricing of deposits.

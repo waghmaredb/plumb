@@ -1,0 +1,38 @@
+# Synthetic fixture subject used by the offline tests and `--fixtures` demo runs.
+# Nothing here describes a real company.
+slug: acme-bank
+name: Acme Bank Limited
+short_name: Acme Bank
+sector: banks
+industry_codes: ["SSIC 64110", "GICS 4010"]
+listing: {exchange: Example Exchange, ticker: ACME}
+tickers: ["ACME.EX"]
+regulator_status: "Fixture regulator: full bank"
+regulated_entity: Acme Bank Limited
+latest_fy: 2025
+home_market: Exampleland
+name_patterns: ["Acme Bank", "Acme"]
+ir_urls:
+  - {label: "Annual report 2025", url: "https://ir.acme-bank.example/annual-report-2025.html"}
+  - {label: "FY2025 results release", url: "https://ir.acme-bank.example/results-fy2025.html"}
+documents:
+  - {kind: annual_report, fy: 2025, url: "https://ir.acme-bank.example/annual-report-2025.html"}
+  - {kind: results_release, fy: 2025, url: "https://ir.acme-bank.example/results-fy2025.html"}
+size: {metric: total_assets, value_usd_bn: 100, as_reported: "S$120 billion", source_url: "https://ir.acme-bank.example/results-fy2025.html"}
+seed_description: "fixture seed: SSIC 64110; coverage universe of six banks"
+tier_overrides:
+  T1: ["filings.exchange.example"]
+  T2: ["acme-bank.example", "beta-bank.example", "gamma-financial.example", "zeta-bank.example"]
+  T4: ["careers.acme-bank.example", "patents.example"]
+peers:
+  - {name: Beta Bank, role: core, listing: "EX (BETA)", size: {value_usd_bn: 150, as_reported: "S$150 billion", source_url: "https://ir.beta-bank.example/results-fy2025.html"}, why: "same home market, universal bank", name_patterns: ["Beta Bank"]}
+  - {name: Gamma Financial, role: core, listing: "EX (GAMA)", size: {value_usd_bn: 60}, why: "regional universal bank", name_patterns: ["Gamma Financial"]}
+  - {name: Delta Bank, role: core, listing: "EX (DLTA)", size: {value_usd_bn: 400}, why: "largest domestic competitor", name_patterns: ["Delta Bank"]}
+  - {name: Epsilon Bank, role: core, listing: "EX (EPSL)", size: {verify: true, note: "total assets [VERIFY]"}, why: "same licence class", name_patterns: ["Epsilon Bank"]}
+  - {name: Zeta Bank, role: core, listing: "EX (ZETA)", size: {value_usd_bn: 45}, why: "regional challenger", name_patterns: ["Zeta Bank"]}
+  - {name: Kappa Bank, role: core, listing: "EX (KAPA)", size: {value_usd_bn: 90}, why: "same regime, similar model", name_patterns: ["Kappa Bank"]}
+  - {name: Omega Global, role: secondary, listing: "NYSE", size: {value_usd_bn: 2000}, reason_secondary: "group far above band; local branch only"}
+  - {name: "Theta Bank retail → Beta Bank", role: exited, event: "Theta Bank's retail franchise sold to Beta Bank", event_year: 2021, status: Consolidated, why: "removes a retail competitor", sources: ["https://ir.beta-bank.example/results-fy2025.html"]}
+  - {name: "Iota Bank exit", role: exited, event: "Iota Bank wound down its branch network", event_year: 2019, status: Exit, verify: true}
+verify_flags:
+  - "fixture: Epsilon Bank total assets"

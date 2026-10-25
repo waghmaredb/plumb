@@ -1,0 +1,4 @@
+Generative AI Product Manager
+Acme Bank | Singapore | posted 2026-06-20
+
+Own the LLM roadmap for the contact centre assistant; prompt engineering; RAG evaluation.

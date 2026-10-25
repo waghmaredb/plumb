@@ -1,0 +1,5 @@
+entity,role,fy,currency,revenue,npat,total_assets,equity,cost_income,roe,source_urls,note
+Acme Bank,subject,2025,SGD,4200,1207.1,120000,10500,43.5,11.7,https://ir.acme-bank.example/results-fy2025.html;https://filings.exchange.example/acme/fy2025-financial-statements.html,two independent upstreams (IR release + exchange filing)
+Beta Bank,core,2025,SGD,,1800,150000,,41.0,12.5,https://ir.beta-bank.example/results-fy2025.html,
+Gamma Financial,core,2025,SGD,,500,60000,,48.2,9.8,https://ir.gamma-financial.example/results-fy2025.html,
+Zeta Bank,core,2025,SGD,,300,45000,,52.0,8.1,https://ir.zeta-bank.example/results-fy2025.html,source page is absent from the fixture web on purpose

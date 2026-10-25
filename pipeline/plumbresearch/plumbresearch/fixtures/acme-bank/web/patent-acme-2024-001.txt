@@ -1,0 +1,3 @@
+Machine learning system for real-time transaction anomaly scoring
+Patent ACME-2024-001. Assignee: Acme Bank Limited. Filed 2024-03-14.
+Abstract: A system that scores payment transactions in real time using a gradient-boosted machine learning model trained on labelled fraud outcomes, with a feedback loop from investigator decisions.
