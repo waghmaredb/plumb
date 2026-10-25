@@ -37,6 +37,7 @@ commercial/    Pricing ladder, engagement charter, engagement-letter clauses, DP
 | # | File | What it is |
 |---|---|---|
 | 1 | `docs/Next steps and path to GA gate.md` | Stage gates G0→GA, exit criteria, 30-day plan, decisions needed |
+| 1b | `docs/product-next-steps.md` | Claude's product queue P1–P10 (runs without founder input) |
 | 1a | `docs/founder-checklist.md` | Actions only the founder can do (identity, money, signature, network); product work lives everywhere else |
 | 2 | `docs/AI first consulting engagement framework.md` | Why the methodology is shaped this way (maturity, right-to-win, value pools, use cases, deep-research failure modes, business model) |
 | 3 | `docs/AI framework compliance standards layer.md` | Standards and regulation as of Oct 2026; tiering; evidence pack; the firm's own attestation path |
