@@ -1,0 +1,29 @@
+{
+  "subject": "great-eastern",
+  "run_id": "research-b053876078f4",
+  "claims": [
+    {
+      "id": "great-eastern.peer.size.aia-group-whole",
+      "text": "AIA Group (whole) total assets US$345bn",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "peer-set",
+      "sources": [
+        "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf"
+      ],
+      "passage": null,
+      "tier": "T2",
+      "instrument_items": [
+        "peer-size"
+      ],
+      "signal_ids": [
+        "great-eastern.peerset.core_n"
+      ],
+      "value": 345.0,
+      "unit": "USD bn",
+      "period": null,
+      "note": null
+    }
+  ]
+}

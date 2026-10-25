@@ -1,0 +1,2180 @@
+{
+  "subject": {
+    "slug": "great-eastern",
+    "name": "Great Eastern Holdings Limited",
+    "short_name": "Great Eastern",
+    "sector": "insurers",
+    "industry_codes": [
+      "SSIC 65110",
+      "SSIC 65120",
+      "GICS 4030"
+    ],
+    "listing": {
+      "exchange": "SGX Mainboard",
+      "ticker": "G07",
+      "code": null,
+      "verify": false
+    },
+    "tickers": [
+      "G07.SI"
+    ],
+    "regulator_status": "Direct life insurer: The Great Eastern Life Assurance Co Ltd (MAS code I516L); general: Great Eastern General Insurance (code [VERIFY]). SGX trading resumed 21 Aug 2025 after the OCBC exit offer lapsed; OCBC ordinary-share holding 88.19–88.44% (sources conflict) [VERIFY]",
+    "regulated_entity": "The Great Eastern Life Assurance Co Ltd (I516L)",
+    "fiscal_year_end": "12-31",
+    "latest_fy": 2025,
+    "home_market": "Singapore",
+    "ir_urls": [
+      {
+        "label": "FY-25 results release",
+        "url": "https://www.greateasternlife.com/sg/en/about-us/media-centre/media-releases/fy-25-financial-results.html",
+        "verify": false,
+        "note": null
+      },
+      {
+        "label": "Annual Report FY2025 (SGX)",
+        "url": "https://links.sgx.com/1.0.0/corporate-announcements/LNEPNAAMA9G4OO20/880681_GEH%20Annual%20Report%20FY2025.pdf",
+        "verify": false,
+        "note": "links.sgx.com returned 403 from the sandbox — download from a desktop"
+      },
+      {
+        "label": "AR FY2025 announcement",
+        "url": "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20260327-ar-fy2025-announcement.pdf",
+        "verify": false,
+        "note": null
+      },
+      {
+        "label": "Annual Report FY2024",
+        "url": "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20250328-annual-report-fy2024-sgx.pdf",
+        "verify": false,
+        "note": null
+      },
+      {
+        "label": "OCBC AR2025 Group CEO perspectives (parent ADD strategy)",
+        "url": "https://www.ocbc.com/group/investors/annual-reports/2025-annual-report/group-ceos-perspectives.page",
+        "verify": false,
+        "note": null
+      },
+      {
+        "label": "MAS insurance company returns",
+        "url": "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns",
+        "verify": false,
+        "note": null
+      },
+      {
+        "label": "LIA 4Q2025 results",
+        "url": "https://www.lia.org.sg/media/4789/20260211_lia-4q2025-results_media-release.pdf",
+        "verify": false,
+        "note": null
+      }
+    ],
+    "documents": [
+      {
+        "kind": "annual_report",
+        "fy": 2025,
+        "url": "https://links.sgx.com/1.0.0/corporate-announcements/LNEPNAAMA9G4OO20/880681_GEH%20Annual%20Report%20FY2025.pdf",
+        "local_file": "geh-annual-report-fy2025.pdf",
+        "verify": false,
+        "note": "AI paragraph count and governance wording [VERIFY — extract text locally]"
+      },
+      {
+        "kind": "results_release",
+        "fy": 2025,
+        "url": "https://www.greateasternlife.com/sg/en/about-us/media-centre/media-releases/fy-25-financial-results.html",
+        "local_file": null,
+        "verify": false,
+        "note": null
+      },
+      {
+        "kind": "annual_report",
+        "fy": 2024,
+        "url": "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20250328-annual-report-fy2024-sgx.pdf",
+        "local_file": "geh-annual-report-fy2024.pdf",
+        "verify": false,
+        "note": null
+      }
+    ],
+    "size": {
+      "metric": "total_assets",
+      "value_usd_bn": 90.0,
+      "as_reported": "over S$122 billion in assets",
+      "verify": false,
+      "source_url": "https://www.greateasternlife.com/sg/en/about-us/media-centre/media-releases/fy-25-financial-results.html",
+      "note": "profit attributable S$1,207.1m (+21%); NBEV S$739.7m; band ≈ US$27bn–270bn"
+    },
+    "name_patterns": [
+      "Great Eastern",
+      "Great Eastern Life",
+      "Great Eastern General",
+      "GEH"
+    ],
+    "peers": [
+      {
+        "name": "AIA Singapore Pte Ltd (I566C)",
+        "role": "core",
+        "listing": "AIA Group, HKEX 1299",
+        "entity": "AIA Singapore",
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": true,
+          "source_url": null,
+          "note": "MAS return assets [VERIFY]; segment VONB +14%, OPAT +5%"
+        },
+        "why": "#1/#2 Singapore life insurer by new business; agency-led like GE",
+        "reason_secondary": null,
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": "MAS return, AIA AR segment tables, AIA calls",
+        "verify": false,
+        "name_patterns": [
+          "AIA Singapore",
+          "AIA"
+        ]
+      },
+      {
+        "name": "Prudential Assurance Co Singapore",
+        "role": "core",
+        "listing": "Prudential plc, LSE/HKEX",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": true,
+          "source_url": null,
+          "note": "MAS return assets [VERIFY]; Singapore NBP +2%, sales +5%"
+        },
+        "why": "Agency + UOB/SCB bancassurance; most explicit AI operating metrics in the set",
+        "reason_secondary": null,
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": "MAS return, Pru AR segment, calls",
+        "verify": false,
+        "name_patterns": [
+          "Prudential Singapore",
+          "Prudential Assurance Company Singapore",
+          "Prudential"
+        ]
+      },
+      {
+        "name": "Income Insurance Ltd (I585C)",
+        "role": "core",
+        "listing": "Unlisted (NTUC Enterprise)",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": 35.0,
+          "as_reported": "total assets S$47.2bn",
+          "verify": true,
+          "source_url": null,
+          "note": "S$47.2bn per Wikipedia; USD conversion ours [VERIFY from MAS return I585C]"
+        },
+        "why": "Composite (life + general) like GEH; Singapore-only",
+        "reason_secondary": null,
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [
+          "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i585c"
+        ],
+        "data_sources": "MAS return 2022–2025, AGM slides",
+        "verify": false,
+        "name_patterns": [
+          "Income Insurance",
+          "NTUC Income"
+        ]
+      },
+      {
+        "name": "Singapore Life Ltd (Singlife)",
+        "role": "core",
+        "listing": "Unlisted (Sumitomo Life)",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": true,
+          "source_url": null,
+          "note": "MAS return assets [VERIFY]"
+        },
+        "why": "Digital-first challenger; absorbed Aviva SG",
+        "reason_secondary": null,
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": "MAS return, press",
+        "verify": false,
+        "name_patterns": [
+          "Singlife",
+          "Singapore Life"
+        ]
+      },
+      {
+        "name": "Manulife (Singapore) Pte Ltd (I522L)",
+        "role": "core",
+        "listing": "Manulife, TSX/NYSE/HKEX 945",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": true,
+          "source_url": null,
+          "note": "MAS return assets [VERIFY]"
+        },
+        "why": "DBS bancassurance partner",
+        "reason_secondary": null,
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": "MAS return; parent AR (Singapore not broken out)",
+        "verify": false,
+        "name_patterns": [
+          "Manulife Singapore",
+          "Manulife"
+        ]
+      },
+      {
+        "name": "HSBC Life (Singapore)",
+        "role": "core",
+        "listing": "HSBC → Allianz (announced 28 Jul 2026, ≈€2bn, completion 1H27)",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": true,
+          "source_url": null,
+          "note": "MAS return assets [VERIFY]"
+        },
+        "why": "In-flight consolidation; ex-AXA Singapore",
+        "reason_secondary": null,
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [
+          "https://atlas-mag.net/en/articles/allianz-acquire-hsbc-life-singapore"
+        ],
+        "data_sources": "MAS return",
+        "verify": false,
+        "name_patterns": [
+          "HSBC Life"
+        ]
+      },
+      {
+        "name": "Tokio Marine Life Insurance Singapore",
+        "role": "core",
+        "listing": "Tokio Marine Holdings, TSE",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": true,
+          "source_url": null,
+          "note": "MAS return assets [VERIFY]"
+        },
+        "why": "Agency-led life insurer",
+        "reason_secondary": null,
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": "MAS return",
+        "verify": false,
+        "name_patterns": [
+          "Tokio Marine Life"
+        ]
+      },
+      {
+        "name": "Etiqa Insurance Singapore",
+        "role": "core",
+        "listing": "Maybank (Bursa)",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": true,
+          "source_url": null,
+          "note": "MAS return assets [VERIFY]"
+        },
+        "why": "Bank-owned composite; links the two alpha subjects (Maybank owns Etiqa; OCBC owns GE)",
+        "reason_secondary": null,
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": "MAS return, Maybank IAR",
+        "verify": false,
+        "name_patterns": [
+          "Etiqa"
+        ]
+      },
+      {
+        "name": "China Taiping Insurance (Singapore)",
+        "role": "core",
+        "listing": "China Taiping Insurance Holdings, HKEX 966",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": true,
+          "source_url": null,
+          "note": "MAS return assets [VERIFY]"
+        },
+        "why": "Composite; growing life book",
+        "reason_secondary": null,
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": "MAS return",
+        "verify": false,
+        "name_patterns": [
+          "China Taiping"
+        ]
+      },
+      {
+        "name": "AIA Group (whole)",
+        "role": "secondary",
+        "listing": "HKEX 1299",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": 345.0,
+          "as_reported": "total assets US$345bn",
+          "verify": false,
+          "source_url": "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf",
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": "Total assets US$345bn = 3.8x subject, above band; AI-disclosure benchmark only",
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "Prudential plc (whole)",
+        "role": "secondary",
+        "listing": "LSE/HKEX",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": "Above band at group level; AI-disclosure benchmark",
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [
+          "https://www.prudentialplc.com/content/dam/prudential-plc/newsroom/company-news/2026/Presentation%20transcript.pdf"
+        ],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "FWD Group",
+        "role": "secondary",
+        "listing": "HKEX 1828 (listed 7 Jul 2025)",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": 62.4,
+          "as_reported": "AUM ≈ US$62.4bn",
+          "verify": false,
+          "source_url": null,
+          "note": "AUM, not total assets"
+        },
+        "why": null,
+        "reason_secondary": "In band on AUM but Singapore business small; exited Singapore group medical in 2020",
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [
+          "https://en.wikipedia.org/wiki/FWD_Group"
+        ],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "Manulife, Sun Life, Allianz SE, Tokio Marine Holdings, Sumitomo Life (mutual)",
+        "role": "secondary",
+        "listing": "TSX / TSX / Xetra / TSE / unlisted",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": "Parents of core peers; used only for AI-governance and spend disclosures",
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "Allianz Malaysia Bhd; Syarikat Takaful Malaysia Keluarga; Hong Leong Assurance (via HLFG)",
+        "role": "secondary",
+        "listing": "Bursa",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": true,
+          "source_url": null,
+          "note": "[VERIFY sizes]"
+        },
+        "why": null,
+        "reason_secondary": "GE Malaysia's listed competitors; in-band on a Malaysia-entity basis [VERIFY sizes]",
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "Thai Life Insurance; Bangkok Life Assurance",
+        "role": "secondary",
+        "listing": "SET",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": "ASEAN listed life insurers for the regional percentile when n is short",
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "United Overseas Insurance",
+        "role": "secondary",
+        "listing": "SGX U13",
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": "SGX-listed general insurer; below floor; general-business comparator only",
+        "event": null,
+        "event_year": null,
+        "status": null,
+        "sources": [
+          "https://links.sgx.com/1.0.0/corporate-announcements/10HJ7VSC02FVI5Z4/881515_UOI%20Annual%20Report%202025.pdf"
+        ],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "Aviva Singapore → Singlife",
+        "role": "exited",
+        "listing": null,
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": null,
+        "event": "Aviva Singapore → Singlife",
+        "event_year": 2020,
+        "status": "Consolidated",
+        "sources": [],
+        "data_sources": null,
+        "verify": true,
+        "name_patterns": []
+      },
+      {
+        "name": "AXA Insurance Singapore → HSBC",
+        "role": "exited",
+        "listing": null,
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": null,
+        "event": "AXA Insurance Singapore → HSBC",
+        "event_year": 2022,
+        "status": "Consolidated",
+        "sources": [],
+        "data_sources": null,
+        "verify": true,
+        "name_patterns": []
+      },
+      {
+        "name": "Allianz–Income offer withdrawn",
+        "role": "exited",
+        "listing": null,
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": null,
+        "event": "Allianz's offer for ≥51% of Income Insurance withdrawn (Dec 2024) after Government block (Oct 2024)",
+        "event_year": 2024,
+        "status": "Failed consolidation",
+        "sources": [
+          "https://en.wikipedia.org/wiki/Income_Insurance",
+          "https://www.insurancejournal.com/news/international/2026/07/24/878902.htm"
+        ],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "HSBC Life Singapore → Allianz",
+        "role": "exited",
+        "listing": null,
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": null,
+        "event": "HSBC Life Singapore → Allianz (announced Jul 2026)",
+        "event_year": 2026,
+        "status": "Pending",
+        "sources": [
+          "https://atlas-mag.net/en/articles/allianz-acquire-hsbc-life-singapore"
+        ],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "Sumitomo Life takes 100% of Singlife",
+        "role": "exited",
+        "listing": null,
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": null,
+        "event": "Sumitomo Life takes 100% of Singlife",
+        "event_year": 2024,
+        "status": "Ownership change",
+        "sources": [
+          "https://www.insurancebusinessmag.com/asia/news/breaking-news/giant-japanese-insurer-looking-south-and-to-the-us-for-deals-593771.aspx"
+        ],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "FWD exits Singapore group medical",
+        "role": "exited",
+        "listing": null,
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": null,
+        "event": "FWD exits Singapore group medical",
+        "event_year": 2020,
+        "status": "Line exit",
+        "sources": [
+          "https://en.wikipedia.org/wiki/FWD_Group"
+        ],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      },
+      {
+        "name": "Zurich Life Singapore exit",
+        "role": "exited",
+        "listing": null,
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": null,
+        "event": "Zurich Life Singapore exit",
+        "event_year": 2015,
+        "status": "Exit",
+        "sources": [],
+        "data_sources": null,
+        "verify": true,
+        "name_patterns": []
+      },
+      {
+        "name": "OCBC offers for GEH",
+        "role": "exited",
+        "listing": null,
+        "entity": null,
+        "size": {
+          "metric": "total_assets",
+          "value_usd_bn": null,
+          "as_reported": null,
+          "verify": false,
+          "source_url": null,
+          "note": null
+        },
+        "why": null,
+        "reason_secondary": null,
+        "event": "OCBC's two offers for GEH (2024, 2025); delisting failed",
+        "event_year": 2025,
+        "status": "Subject's own near-exit",
+        "sources": [
+          "https://theindependent.sg/great-eastern-to-resume-trading-after-less-than-75-voted-in-favour-of-delisting-proposal-ocbc-says-no-further-offers-in-the-foreseeable-future/"
+        ],
+        "data_sources": null,
+        "verify": false,
+        "name_patterns": []
+      }
+    ],
+    "seed_description": "SSIC 65110/65120 → GICS 4030; MAS insurer directory for Singapore-present entities; LIA membership (TWNBP S$6.53bn in 2025, +11.3%); Malaysian coverage universe for GE Malaysia; long list 18. Competitors named in GEH's AR not yet extracted [VERIFY]. Two-layer set: core = Singapore operating entities on MAS-return metrics (so unlisted peers are not dropped); secondary = listed parent groups for AI-disclosure benchmarking.",
+    "tier_overrides": {
+      "T2": [
+        "greateasternlife.com",
+        "ocbc.com",
+        "aia.com",
+        "aia.com.sg",
+        "aia.gcs-web.com",
+        "prudentialplc.com",
+        "lia.org.sg"
+      ]
+    },
+    "verify_flags": [
+      "Exact post-bonus OCBC ordinary-share percentage in GEH (88.19% vs 88.44%) from the SGX shareholding announcement",
+      "Great Eastern General Insurance MAS code",
+      "Annual-report AI paragraph count and governance wording — extract text locally (SGX PDF was 403 from the sandbox)",
+      "No earnings calls found — confirm; proxy-by-parent (OCBC results-call Q&A on GE) must be declared with a label",
+      "Expense lines in AR for disclosed technology spend",
+      "Job-posting volumes (Great Eastern Life / GE General) over 24 months",
+      "Management AI/data titles; OCBC group CDO/CTO roles",
+      "FEAT/Veritas participation; MAS enforcement history",
+      "Every MAS-return asset figure for the nine core entities (needed to apply the 0.3x–3x band numerically)",
+      "Founder conflict declaration (C6) for OCBC/GEH"
+    ],
+    "notes": "Only MAS-regulated insurer that is itself SGX-listed with a free float. FY25 release names an AI-enabled advisory platform (~75% cut in adviser preparation time), an AI medical-claims automation platform rolled out, and an AI underwriting solution under test. 9 core entities, ~4 with public AI disclosure: n < 15, scorecard prints 'global, peer n insufficient'."
+  },
+  "run_id": "research-b053876078f4",
+  "generated_at": "2026-10-25T11:42:00.314584+00:00",
+  "cap": 40,
+  "fixtures": false,
+  "modules": [
+    {
+      "module": "annual-report",
+      "claims": 0,
+      "signals": 0,
+      "gaps": 3,
+      "tool_calls": 1,
+      "restarts": 0,
+      "escalated": false,
+      "data_available": false,
+      "detail": {
+        "documents": [
+          {
+            "doc_url": "https://links.sgx.com/1.0.0/corporate-announcements/LNEPNAAMA9G4OO20/880681_GEH%20Annual%20Report%20FY2025.pdf",
+            "doc_kind": "annual_report",
+            "fy": 2025,
+            "rubric": null,
+            "competitors": null,
+            "leadership": null,
+            "gap": "local file missing: data/great-eastern/geh-annual-report-fy2025.pdf (download the PDF and place it there)"
+          },
+          {
+            "doc_url": "https://www.greateasternlife.com/sg/en/about-us/media-centre/media-releases/fy-25-financial-results.html",
+            "doc_kind": "results_release",
+            "fy": 2025,
+            "rubric": null,
+            "competitors": null,
+            "leadership": null,
+            "gap": "document not readable: state=DEAD health=DEAD  — text extraction not attempted"
+          },
+          {
+            "doc_url": "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20250328-annual-report-fy2024-sgx.pdf",
+            "doc_kind": "annual_report",
+            "fy": 2024,
+            "rubric": null,
+            "competitors": null,
+            "leadership": null,
+            "gap": "local file missing: data/great-eastern/geh-annual-report-fy2024.pdf (download the PDF and place it there)"
+          }
+        ]
+      }
+    },
+    {
+      "module": "peer-set",
+      "claims": 1,
+      "signals": 1,
+      "gaps": 12,
+      "tool_calls": 0,
+      "restarts": 0,
+      "escalated": false,
+      "data_available": true,
+      "detail": {
+        "subject_slug": "great-eastern",
+        "subject_size_usd_bn": 90.0,
+        "band_low_usd_bn": 27.0,
+        "band_high_usd_bn": 270.0,
+        "seed_count": 16,
+        "core": [
+          {
+            "name": "AIA Singapore Pte Ltd (I566C)",
+            "role": "core",
+            "listing": "AIA Group, HKEX 1299",
+            "entity": "AIA Singapore",
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": true,
+              "source_url": null,
+              "note": "MAS return assets [VERIFY]; segment VONB +14%, OPAT +5%"
+            },
+            "why": "#1/#2 Singapore life insurer by new business; agency-led like GE",
+            "reason_secondary": null,
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": "MAS return, AIA AR segment tables, AIA calls",
+            "verify": false,
+            "name_patterns": [
+              "AIA Singapore",
+              "AIA"
+            ]
+          },
+          {
+            "name": "Prudential Assurance Co Singapore",
+            "role": "core",
+            "listing": "Prudential plc, LSE/HKEX",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": true,
+              "source_url": null,
+              "note": "MAS return assets [VERIFY]; Singapore NBP +2%, sales +5%"
+            },
+            "why": "Agency + UOB/SCB bancassurance; most explicit AI operating metrics in the set",
+            "reason_secondary": null,
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": "MAS return, Pru AR segment, calls",
+            "verify": false,
+            "name_patterns": [
+              "Prudential Singapore",
+              "Prudential Assurance Company Singapore",
+              "Prudential"
+            ]
+          },
+          {
+            "name": "Income Insurance Ltd (I585C)",
+            "role": "core",
+            "listing": "Unlisted (NTUC Enterprise)",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": 35.0,
+              "as_reported": "total assets S$47.2bn",
+              "verify": true,
+              "source_url": null,
+              "note": "S$47.2bn per Wikipedia; USD conversion ours [VERIFY from MAS return I585C]"
+            },
+            "why": "Composite (life + general) like GEH; Singapore-only",
+            "reason_secondary": null,
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [
+              "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i585c"
+            ],
+            "data_sources": "MAS return 2022–2025, AGM slides",
+            "verify": false,
+            "name_patterns": [
+              "Income Insurance",
+              "NTUC Income"
+            ]
+          },
+          {
+            "name": "Singapore Life Ltd (Singlife)",
+            "role": "core",
+            "listing": "Unlisted (Sumitomo Life)",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": true,
+              "source_url": null,
+              "note": "MAS return assets [VERIFY]"
+            },
+            "why": "Digital-first challenger; absorbed Aviva SG",
+            "reason_secondary": null,
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": "MAS return, press",
+            "verify": false,
+            "name_patterns": [
+              "Singlife",
+              "Singapore Life"
+            ]
+          },
+          {
+            "name": "Manulife (Singapore) Pte Ltd (I522L)",
+            "role": "core",
+            "listing": "Manulife, TSX/NYSE/HKEX 945",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": true,
+              "source_url": null,
+              "note": "MAS return assets [VERIFY]"
+            },
+            "why": "DBS bancassurance partner",
+            "reason_secondary": null,
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": "MAS return; parent AR (Singapore not broken out)",
+            "verify": false,
+            "name_patterns": [
+              "Manulife Singapore",
+              "Manulife"
+            ]
+          },
+          {
+            "name": "HSBC Life (Singapore)",
+            "role": "core",
+            "listing": "HSBC → Allianz (announced 28 Jul 2026, ≈€2bn, completion 1H27)",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": true,
+              "source_url": null,
+              "note": "MAS return assets [VERIFY]"
+            },
+            "why": "In-flight consolidation; ex-AXA Singapore",
+            "reason_secondary": null,
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [
+              "https://atlas-mag.net/en/articles/allianz-acquire-hsbc-life-singapore"
+            ],
+            "data_sources": "MAS return",
+            "verify": false,
+            "name_patterns": [
+              "HSBC Life"
+            ]
+          },
+          {
+            "name": "Tokio Marine Life Insurance Singapore",
+            "role": "core",
+            "listing": "Tokio Marine Holdings, TSE",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": true,
+              "source_url": null,
+              "note": "MAS return assets [VERIFY]"
+            },
+            "why": "Agency-led life insurer",
+            "reason_secondary": null,
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": "MAS return",
+            "verify": false,
+            "name_patterns": [
+              "Tokio Marine Life"
+            ]
+          },
+          {
+            "name": "Etiqa Insurance Singapore",
+            "role": "core",
+            "listing": "Maybank (Bursa)",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": true,
+              "source_url": null,
+              "note": "MAS return assets [VERIFY]"
+            },
+            "why": "Bank-owned composite; links the two alpha subjects (Maybank owns Etiqa; OCBC owns GE)",
+            "reason_secondary": null,
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": "MAS return, Maybank IAR",
+            "verify": false,
+            "name_patterns": [
+              "Etiqa"
+            ]
+          },
+          {
+            "name": "China Taiping Insurance (Singapore)",
+            "role": "core",
+            "listing": "China Taiping Insurance Holdings, HKEX 966",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": true,
+              "source_url": null,
+              "note": "MAS return assets [VERIFY]"
+            },
+            "why": "Composite; growing life book",
+            "reason_secondary": null,
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": "MAS return",
+            "verify": false,
+            "name_patterns": [
+              "China Taiping"
+            ]
+          }
+        ],
+        "secondary": [
+          {
+            "name": "AIA Group (whole)",
+            "role": "secondary",
+            "listing": "HKEX 1299",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": 345.0,
+              "as_reported": "total assets US$345bn",
+              "verify": false,
+              "source_url": "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf",
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": "Total assets US$345bn = 3.8x subject, above band; AI-disclosure benchmark only",
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "Prudential plc (whole)",
+            "role": "secondary",
+            "listing": "LSE/HKEX",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": "Above band at group level; AI-disclosure benchmark",
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [
+              "https://www.prudentialplc.com/content/dam/prudential-plc/newsroom/company-news/2026/Presentation%20transcript.pdf"
+            ],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "FWD Group",
+            "role": "secondary",
+            "listing": "HKEX 1828 (listed 7 Jul 2025)",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": 62.4,
+              "as_reported": "AUM ≈ US$62.4bn",
+              "verify": false,
+              "source_url": null,
+              "note": "AUM, not total assets"
+            },
+            "why": null,
+            "reason_secondary": "In band on AUM but Singapore business small; exited Singapore group medical in 2020",
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [
+              "https://en.wikipedia.org/wiki/FWD_Group"
+            ],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "Manulife, Sun Life, Allianz SE, Tokio Marine Holdings, Sumitomo Life (mutual)",
+            "role": "secondary",
+            "listing": "TSX / TSX / Xetra / TSE / unlisted",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": "Parents of core peers; used only for AI-governance and spend disclosures",
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "Allianz Malaysia Bhd; Syarikat Takaful Malaysia Keluarga; Hong Leong Assurance (via HLFG)",
+            "role": "secondary",
+            "listing": "Bursa",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": true,
+              "source_url": null,
+              "note": "[VERIFY sizes]"
+            },
+            "why": null,
+            "reason_secondary": "GE Malaysia's listed competitors; in-band on a Malaysia-entity basis [VERIFY sizes]",
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "Thai Life Insurance; Bangkok Life Assurance",
+            "role": "secondary",
+            "listing": "SET",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": "ASEAN listed life insurers for the regional percentile when n is short",
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "United Overseas Insurance",
+            "role": "secondary",
+            "listing": "SGX U13",
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": "SGX-listed general insurer; below floor; general-business comparator only",
+            "event": null,
+            "event_year": null,
+            "status": null,
+            "sources": [
+              "https://links.sgx.com/1.0.0/corporate-announcements/10HJ7VSC02FVI5Z4/881515_UOI%20Annual%20Report%202025.pdf"
+            ],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          }
+        ],
+        "exited": [
+          {
+            "name": "Aviva Singapore → Singlife",
+            "role": "exited",
+            "listing": null,
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": null,
+            "event": "Aviva Singapore → Singlife",
+            "event_year": 2020,
+            "status": "Consolidated",
+            "sources": [],
+            "data_sources": null,
+            "verify": true,
+            "name_patterns": []
+          },
+          {
+            "name": "AXA Insurance Singapore → HSBC",
+            "role": "exited",
+            "listing": null,
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": null,
+            "event": "AXA Insurance Singapore → HSBC",
+            "event_year": 2022,
+            "status": "Consolidated",
+            "sources": [],
+            "data_sources": null,
+            "verify": true,
+            "name_patterns": []
+          },
+          {
+            "name": "Allianz–Income offer withdrawn",
+            "role": "exited",
+            "listing": null,
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": null,
+            "event": "Allianz's offer for ≥51% of Income Insurance withdrawn (Dec 2024) after Government block (Oct 2024)",
+            "event_year": 2024,
+            "status": "Failed consolidation",
+            "sources": [
+              "https://en.wikipedia.org/wiki/Income_Insurance",
+              "https://www.insurancejournal.com/news/international/2026/07/24/878902.htm"
+            ],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "HSBC Life Singapore → Allianz",
+            "role": "exited",
+            "listing": null,
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": null,
+            "event": "HSBC Life Singapore → Allianz (announced Jul 2026)",
+            "event_year": 2026,
+            "status": "Pending",
+            "sources": [
+              "https://atlas-mag.net/en/articles/allianz-acquire-hsbc-life-singapore"
+            ],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "Sumitomo Life takes 100% of Singlife",
+            "role": "exited",
+            "listing": null,
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": null,
+            "event": "Sumitomo Life takes 100% of Singlife",
+            "event_year": 2024,
+            "status": "Ownership change",
+            "sources": [
+              "https://www.insurancebusinessmag.com/asia/news/breaking-news/giant-japanese-insurer-looking-south-and-to-the-us-for-deals-593771.aspx"
+            ],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "FWD exits Singapore group medical",
+            "role": "exited",
+            "listing": null,
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": null,
+            "event": "FWD exits Singapore group medical",
+            "event_year": 2020,
+            "status": "Line exit",
+            "sources": [
+              "https://en.wikipedia.org/wiki/FWD_Group"
+            ],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          },
+          {
+            "name": "Zurich Life Singapore exit",
+            "role": "exited",
+            "listing": null,
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": null,
+            "event": "Zurich Life Singapore exit",
+            "event_year": 2015,
+            "status": "Exit",
+            "sources": [],
+            "data_sources": null,
+            "verify": true,
+            "name_patterns": []
+          },
+          {
+            "name": "OCBC offers for GEH",
+            "role": "exited",
+            "listing": null,
+            "entity": null,
+            "size": {
+              "metric": "total_assets",
+              "value_usd_bn": null,
+              "as_reported": null,
+              "verify": false,
+              "source_url": null,
+              "note": null
+            },
+            "why": null,
+            "reason_secondary": null,
+            "event": "OCBC's two offers for GEH (2024, 2025); delisting failed",
+            "event_year": 2025,
+            "status": "Subject's own near-exit",
+            "sources": [
+              "https://theindependent.sg/great-eastern-to-resume-trading-after-less-than-75-voted-in-favour-of-delisting-proposal-ocbc-says-no-further-offers-in-the-foreseeable-future/"
+            ],
+            "data_sources": null,
+            "verify": false,
+            "name_patterns": []
+          }
+        ],
+        "demoted": [],
+        "retained_unverified": [
+          "AIA Singapore Pte Ltd (I566C)",
+          "Prudential Assurance Co Singapore",
+          "Income Insurance Ltd (I585C)",
+          "Singapore Life Ltd (Singlife)",
+          "Manulife (Singapore) Pte Ltd (I522L)",
+          "HSBC Life (Singapore)",
+          "Tokio Marine Life Insurance Singapore",
+          "Etiqa Insurance Singapore",
+          "China Taiping Insurance (Singapore)"
+        ],
+        "warnings": [],
+        "percentile_note": "n = 9 core (+7 secondary): below the instrument §5.5 minimum of 15; the scorecard must print \"global, peer n insufficient\""
+      }
+    },
+    {
+      "module": "postings",
+      "claims": 0,
+      "signals": 7,
+      "gaps": 1,
+      "tool_calls": 1,
+      "restarts": 0,
+      "escalated": false,
+      "data_available": false,
+      "detail": {
+        "subject": {
+          "company": "Great Eastern",
+          "total": 0,
+          "ai": 0,
+          "share": null,
+          "by_group": {},
+          "monthly": {},
+          "first_half_share": null,
+          "second_half_share": null,
+          "window_start": "2024-11-01",
+          "window_end": "2026-10-25"
+        },
+        "peers": {
+          "AIA Singapore Pte Ltd (I566C)": {
+            "company": "AIA Singapore Pte Ltd (I566C)",
+            "total": 0,
+            "ai": 0,
+            "share": null,
+            "by_group": {},
+            "monthly": {},
+            "first_half_share": null,
+            "second_half_share": null,
+            "window_start": "2024-11-01",
+            "window_end": "2026-10-25"
+          },
+          "Prudential Assurance Co Singapore": {
+            "company": "Prudential Assurance Co Singapore",
+            "total": 0,
+            "ai": 0,
+            "share": null,
+            "by_group": {},
+            "monthly": {},
+            "first_half_share": null,
+            "second_half_share": null,
+            "window_start": "2024-11-01",
+            "window_end": "2026-10-25"
+          },
+          "Income Insurance Ltd (I585C)": {
+            "company": "Income Insurance Ltd (I585C)",
+            "total": 0,
+            "ai": 0,
+            "share": null,
+            "by_group": {},
+            "monthly": {},
+            "first_half_share": null,
+            "second_half_share": null,
+            "window_start": "2024-11-01",
+            "window_end": "2026-10-25"
+          },
+          "Singapore Life Ltd (Singlife)": {
+            "company": "Singapore Life Ltd (Singlife)",
+            "total": 0,
+            "ai": 0,
+            "share": null,
+            "by_group": {},
+            "monthly": {},
+            "first_half_share": null,
+            "second_half_share": null,
+            "window_start": "2024-11-01",
+            "window_end": "2026-10-25"
+          },
+          "Manulife (Singapore) Pte Ltd (I522L)": {
+            "company": "Manulife (Singapore) Pte Ltd (I522L)",
+            "total": 0,
+            "ai": 0,
+            "share": null,
+            "by_group": {},
+            "monthly": {},
+            "first_half_share": null,
+            "second_half_share": null,
+            "window_start": "2024-11-01",
+            "window_end": "2026-10-25"
+          },
+          "HSBC Life (Singapore)": {
+            "company": "HSBC Life (Singapore)",
+            "total": 0,
+            "ai": 0,
+            "share": null,
+            "by_group": {},
+            "monthly": {},
+            "first_half_share": null,
+            "second_half_share": null,
+            "window_start": "2024-11-01",
+            "window_end": "2026-10-25"
+          },
+          "Tokio Marine Life Insurance Singapore": {
+            "company": "Tokio Marine Life Insurance Singapore",
+            "total": 0,
+            "ai": 0,
+            "share": null,
+            "by_group": {},
+            "monthly": {},
+            "first_half_share": null,
+            "second_half_share": null,
+            "window_start": "2024-11-01",
+            "window_end": "2026-10-25"
+          },
+          "Etiqa Insurance Singapore": {
+            "company": "Etiqa Insurance Singapore",
+            "total": 0,
+            "ai": 0,
+            "share": null,
+            "by_group": {},
+            "monthly": {},
+            "first_half_share": null,
+            "second_half_share": null,
+            "window_start": "2024-11-01",
+            "window_end": "2026-10-25"
+          },
+          "China Taiping Insurance (Singapore)": {
+            "company": "China Taiping Insurance (Singapore)",
+            "total": 0,
+            "ai": 0,
+            "share": null,
+            "by_group": {},
+            "monthly": {},
+            "first_half_share": null,
+            "second_half_share": null,
+            "window_start": "2024-11-01",
+            "window_end": "2026-10-25"
+          }
+        }
+      }
+    },
+    {
+      "module": "earnings-calls",
+      "claims": 0,
+      "signals": 0,
+      "gaps": 1,
+      "tool_calls": 1,
+      "restarts": 0,
+      "escalated": false,
+      "data_available": false,
+      "detail": {}
+    },
+    {
+      "module": "patents",
+      "claims": 0,
+      "signals": 2,
+      "gaps": 1,
+      "tool_calls": 1,
+      "restarts": 0,
+      "escalated": false,
+      "data_available": true,
+      "detail": {
+        "subject": {
+          "total": 0,
+          "ai": 0,
+          "records": []
+        },
+        "peers": {
+          "AIA Singapore Pte Ltd (I566C)": {
+            "total": 0,
+            "ai": 0
+          },
+          "Prudential Assurance Co Singapore": {
+            "total": 0,
+            "ai": 0
+          },
+          "Income Insurance Ltd (I585C)": {
+            "total": 0,
+            "ai": 0
+          },
+          "Singapore Life Ltd (Singlife)": {
+            "total": 0,
+            "ai": 0
+          },
+          "Manulife (Singapore) Pte Ltd (I522L)": {
+            "total": 0,
+            "ai": 0
+          },
+          "HSBC Life (Singapore)": {
+            "total": 0,
+            "ai": 0
+          },
+          "Tokio Marine Life Insurance Singapore": {
+            "total": 0,
+            "ai": 0
+          },
+          "Etiqa Insurance Singapore": {
+            "total": 0,
+            "ai": 0
+          },
+          "China Taiping Insurance (Singapore)": {
+            "total": 0,
+            "ai": 0
+          }
+        },
+        "source_available": true
+      }
+    },
+    {
+      "module": "financials",
+      "claims": 0,
+      "signals": 0,
+      "gaps": 1,
+      "tool_calls": 0,
+      "restarts": 0,
+      "escalated": false,
+      "data_available": false,
+      "detail": {}
+    }
+  ],
+  "signals": [
+    {
+      "id": "great-eastern.peerset.core_n",
+      "module": "peer-set",
+      "name": "Core peer count after funnel",
+      "instrument_items": [
+        "§5.5"
+      ],
+      "value": 9,
+      "unit": "peers",
+      "source": "subject YAML long list + annual-report competitor names",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [
+        "great-eastern.peer.size.aia-group-whole"
+      ],
+      "detail": {
+        "secondary": 7,
+        "exited": 8,
+        "demoted": [],
+        "band": [
+          27.0,
+          270.0
+        ]
+      },
+      "note": "n = 9 core (+7 secondary): below the instrument §5.5 minimum of 15; the scorecard must print \"global, peer n insufficient\"",
+      "status": "blocked"
+    },
+    {
+      "id": "great-eastern.postings.share",
+      "module": "postings",
+      "name": "AI-skill share of job postings (24 months)",
+      "instrument_items": [
+        "D4.1"
+      ],
+      "value": null,
+      "unit": "%",
+      "source": "CsvPostingsSource (data/great-eastern/postings.csv)",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [],
+      "detail": {
+        "ai": 0,
+        "total": 0,
+        "window": [
+          "2024-11-01",
+          "2026-10-25"
+        ],
+        "first_12m_share": null,
+        "last_12m_share": null,
+        "by_group": {},
+        "monthly": {}
+      },
+      "note": "Babina et al. method; numerator = postings matching the AI lexicon (ml/llm/mlops/ai_governance/ai_product)",
+      "status": "not-available"
+    },
+    {
+      "id": "great-eastern.postings.peer_percentile",
+      "module": "postings",
+      "name": "AI-skill share: percentile vs core peers",
+      "instrument_items": [
+        "D4.1"
+      ],
+      "value": null,
+      "unit": "percentile",
+      "source": "CsvPostingsSource (data/great-eastern/postings.csv)",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [],
+      "detail": {
+        "peer_shares": {},
+        "peer_n": 0
+      },
+      "note": "peer n below the instrument's 15 threshold: directional only",
+      "status": "not-available"
+    },
+    {
+      "id": "great-eastern.postings.data_eng",
+      "module": "postings",
+      "name": "Postings mentioning data_eng skills (24 months)",
+      "instrument_items": [
+        "D2.2",
+        "D2.3"
+      ],
+      "value": 0,
+      "unit": "postings",
+      "source": "CsvPostingsSource (data/great-eastern/postings.csv)",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [],
+      "detail": {
+        "share_of_all": null
+      },
+      "note": null,
+      "status": "computed"
+    },
+    {
+      "id": "great-eastern.postings.mlops",
+      "module": "postings",
+      "name": "Postings mentioning mlops skills (24 months)",
+      "instrument_items": [
+        "D3.2"
+      ],
+      "value": 0,
+      "unit": "postings",
+      "source": "CsvPostingsSource (data/great-eastern/postings.csv)",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [],
+      "detail": {
+        "share_of_all": null
+      },
+      "note": null,
+      "status": "computed"
+    },
+    {
+      "id": "great-eastern.postings.ai_product",
+      "module": "postings",
+      "name": "Postings mentioning ai_product skills (24 months)",
+      "instrument_items": [
+        "D4.5"
+      ],
+      "value": 0,
+      "unit": "postings",
+      "source": "CsvPostingsSource (data/great-eastern/postings.csv)",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [],
+      "detail": {
+        "share_of_all": null
+      },
+      "note": null,
+      "status": "computed"
+    },
+    {
+      "id": "great-eastern.postings.ai_governance",
+      "module": "postings",
+      "name": "Postings mentioning ai_governance skills (24 months)",
+      "instrument_items": [
+        "D6.2"
+      ],
+      "value": 0,
+      "unit": "postings",
+      "source": "CsvPostingsSource (data/great-eastern/postings.csv)",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [],
+      "detail": {
+        "share_of_all": null
+      },
+      "note": null,
+      "status": "computed"
+    },
+    {
+      "id": "great-eastern.postings.llm",
+      "module": "postings",
+      "name": "Postings mentioning llm skills (24 months)",
+      "instrument_items": [
+        "D3.1"
+      ],
+      "value": 0,
+      "unit": "postings",
+      "source": "CsvPostingsSource (data/great-eastern/postings.csv)",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [],
+      "detail": {
+        "share_of_all": null
+      },
+      "note": null,
+      "status": "computed"
+    },
+    {
+      "id": "great-eastern.patents.ai_count",
+      "module": "patents",
+      "name": "AI-related patents (5 filing years)",
+      "instrument_items": [
+        "D4.2",
+        "D1.5"
+      ],
+      "value": 0,
+      "unit": "patents",
+      "source": "CsvPatentSource (data/great-eastern/patents.csv)",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [],
+      "detail": {
+        "total_patents": 0,
+        "peers": {
+          "AIA Singapore Pte Ltd (I566C)": {
+            "total": 0,
+            "ai": 0
+          },
+          "Prudential Assurance Co Singapore": {
+            "total": 0,
+            "ai": 0
+          },
+          "Income Insurance Ltd (I585C)": {
+            "total": 0,
+            "ai": 0
+          },
+          "Singapore Life Ltd (Singlife)": {
+            "total": 0,
+            "ai": 0
+          },
+          "Manulife (Singapore) Pte Ltd (I522L)": {
+            "total": 0,
+            "ai": 0
+          },
+          "HSBC Life (Singapore)": {
+            "total": 0,
+            "ai": 0
+          },
+          "Tokio Marine Life Insurance Singapore": {
+            "total": 0,
+            "ai": 0
+          },
+          "Etiqa Insurance Singapore": {
+            "total": 0,
+            "ai": 0
+          },
+          "China Taiping Insurance (Singapore)": {
+            "total": 0,
+            "ai": 0
+          }
+        }
+      },
+      "note": "zero is a finding, not level 1 (ASEAN FIs rarely file); hiring and patent evidence outweigh narrative (P3/P9)",
+      "status": "computed"
+    },
+    {
+      "id": "great-eastern.patents.peer_ratio",
+      "module": "patents",
+      "name": "AI patents: subject vs core-peer median",
+      "instrument_items": [
+        "D4.2"
+      ],
+      "value": null,
+      "unit": "x median",
+      "source": "CsvPatentSource (data/great-eastern/patents.csv)",
+      "source_urls": [],
+      "tier": null,
+      "confidence_label": "model-inferred",
+      "evidence_claim_ids": [],
+      "detail": {
+        "peer_ai_counts": {
+          "AIA Singapore Pte Ltd (I566C)": 0,
+          "Prudential Assurance Co Singapore": 0,
+          "Income Insurance Ltd (I585C)": 0,
+          "Singapore Life Ltd (Singlife)": 0,
+          "Manulife (Singapore) Pte Ltd (I522L)": 0,
+          "HSBC Life (Singapore)": 0,
+          "Tokio Marine Life Insurance Singapore": 0,
+          "Etiqa Insurance Singapore": 0,
+          "China Taiping Insurance (Singapore)": 0
+        }
+      },
+      "note": "BCG P4: future-built 3.5x patents",
+      "status": "not-available"
+    }
+  ],
+  "verification": {
+    "run_id": "research-b053876078f4",
+    "generated_at": "2026-10-25T11:42:00.314031Z",
+    "spec_version": "PI-CV v0.1",
+    "sources": [
+      {
+        "url": "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf",
+        "url_final": "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf",
+        "fetched_at": "2026-10-25T11:42:00.312357Z",
+        "sha256": null,
+        "tier": "T2",
+        "content_type": null,
+        "detected_content_type": null,
+        "page_count": null,
+        "needs_ocr": false,
+        "recheck_after": null,
+        "archived_url": null,
+        "http_status": 404,
+        "health_class": "DEAD",
+        "state": "DEAD",
+        "text_extract": null,
+        "aigen_score": 0.0,
+        "farm_score": 0.0,
+        "upstream_of": [],
+        "upstream_candidates": [],
+        "error": null
+      }
+    ],
+    "claims": [
+      {
+        "id": "great-eastern.peer.size.aia-group-whole",
+        "text": "AIA Group (whole) total assets US$345bn",
+        "kind": "number",
+        "load_bearing": false,
+        "confidence_label": "filed",
+        "module": "peer-set",
+        "sources": [
+          "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf"
+        ]
+      }
+    ],
+    "citations": [
+      {
+        "claim_id": "great-eastern.peer.size.aia-group-whole",
+        "source_url": "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf",
+        "passage": null,
+        "page": null,
+        "match_score": 0.0,
+        "status": "blocked",
+        "reasons": [
+          "source not citable: state=DEAD health=DEAD"
+        ]
+      }
+    ],
+    "decisions": [
+      {
+        "claim_id": "great-eastern.peer.size.aia-group-whole",
+        "status": "blocked",
+        "blocked": true,
+        "load_bearing": false,
+        "reasons": [
+          "no citation reaches the support threshold (C4)",
+          "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf: source not citable: state=DEAD health=DEAD"
+        ],
+        "independent_upstreams": 0,
+        "upstream_pairs": []
+      }
+    ],
+    "gap_register": [
+      {
+        "claim_id": "great-eastern.peer.size.aia-group-whole",
+        "text": "AIA Group (whole) total assets US$345bn",
+        "reasons": [
+          "no citation reaches the support threshold (C4)",
+          "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf: source not citable: state=DEAD health=DEAD"
+        ]
+      }
+    ],
+    "build_pass": false,
+    "metrics": {
+      "claims": 1,
+      "sources": 1,
+      "citations": 1,
+      "blocked_claims": 1,
+      "citation_resolution_rate": 0.0,
+      "quotation_pass_rate": 1.0,
+      "two_upstream_coverage": 1.0,
+      "aigen_or_farm_cited": 0
+    }
+  },
+  "released_claim_ids": [],
+  "gap_register": {
+    "blocked_claims": [
+      {
+        "claim_id": "great-eastern.peer.size.aia-group-whole",
+        "text": "AIA Group (whole) total assets US$345bn",
+        "reasons": [
+          "no citation reaches the support threshold (C4)",
+          "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf: source not citable: state=DEAD health=DEAD"
+        ]
+      }
+    ],
+    "module_gaps": [
+      {
+        "module": "annual-report",
+        "topic": "annual_report FY2025",
+        "detail": "local file missing: data/great-eastern/geh-annual-report-fy2025.pdf (download the PDF and place it there)",
+        "verify_flag": true,
+        "instrument_items": [
+          "D1.1"
+        ]
+      },
+      {
+        "module": "annual-report",
+        "topic": "results_release FY2025",
+        "detail": "document not readable: state=DEAD health=DEAD  — text extraction not attempted",
+        "verify_flag": true,
+        "instrument_items": [
+          "D1.1"
+        ]
+      },
+      {
+        "module": "annual-report",
+        "topic": "annual_report FY2024",
+        "detail": "local file missing: data/great-eastern/geh-annual-report-fy2024.pdf (download the PDF and place it there)",
+        "verify_flag": true,
+        "instrument_items": [
+          "D1.1"
+        ]
+      },
+      {
+        "module": "peer-set",
+        "topic": "peer size unverified",
+        "detail": "AIA Singapore Pte Ltd (I566C): size needed to apply the 0.3x–3x band",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "peer size unverified",
+        "detail": "Prudential Assurance Co Singapore: size needed to apply the 0.3x–3x band",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "peer size unverified",
+        "detail": "Income Insurance Ltd (I585C): size needed to apply the 0.3x–3x band",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "peer size unverified",
+        "detail": "Singapore Life Ltd (Singlife): size needed to apply the 0.3x–3x band",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "peer size unverified",
+        "detail": "Manulife (Singapore) Pte Ltd (I522L): size needed to apply the 0.3x–3x band",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "peer size unverified",
+        "detail": "HSBC Life (Singapore): size needed to apply the 0.3x–3x band",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "peer size unverified",
+        "detail": "Tokio Marine Life Insurance Singapore: size needed to apply the 0.3x–3x band",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "peer size unverified",
+        "detail": "Etiqa Insurance Singapore: size needed to apply the 0.3x–3x band",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "peer size unverified",
+        "detail": "China Taiping Insurance (Singapore): size needed to apply the 0.3x–3x band",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "exited peer unsourced",
+        "detail": "Aviva Singapore → Singlife: Consolidated — no fetched source",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "exited peer unsourced",
+        "detail": "AXA Insurance Singapore → HSBC: Consolidated — no fetched source",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "peer-set",
+        "topic": "exited peer unsourced",
+        "detail": "Zurich Life Singapore exit: Exit — no fetched source",
+        "verify_flag": true,
+        "instrument_items": []
+      },
+      {
+        "module": "postings",
+        "topic": "no postings in window",
+        "detail": "no postings for ['Great Eastern', 'Great Eastern Life', 'Great Eastern General', 'GEH'] between 2024-11-01 and 2026-10-25 in CsvPostingsSource (data/great-eastern/postings.csv); alpha-targets §6 item 5: 24-month posting series not yet collected",
+        "verify_flag": true,
+        "instrument_items": [
+          "D4.1"
+        ]
+      },
+      {
+        "module": "earnings-calls",
+        "topic": "no transcripts",
+        "detail": "no earnings-call transcripts for Great Eastern between 2024-10-01 and 2026-10-25 (alpha-targets §4: availability [VERIFY]; GEH has no calls — proxy-by-parent must be declared with a label)",
+        "verify_flag": true,
+        "instrument_items": [
+          "D1.1",
+          "D8.6"
+        ]
+      },
+      {
+        "module": "patents",
+        "topic": "no patents found",
+        "detail": "no patents for ['Great Eastern', 'Great Eastern Life', 'Great Eastern General', 'GEH'] in CsvPatentSource (data/great-eastern/patents.csv) since 2021-01-01; confirm with IPOS / MyIPO / Google Patents before treating as zero",
+        "verify_flag": true,
+        "instrument_items": [
+          "D4.2"
+        ]
+      },
+      {
+        "module": "financials",
+        "topic": "no financials",
+        "detail": "data/great-eastern/financials.csv missing or empty; populate from segment disclosures / MAS returns (alpha-targets §5.1: value axis reported as Band A 'not evidenced')",
+        "verify_flag": true,
+        "instrument_items": [
+          "V1",
+          "D8.3"
+        ]
+      }
+    ],
+    "verify_items": [
+      "Exact post-bonus OCBC ordinary-share percentage in GEH (88.19% vs 88.44%) from the SGX shareholding announcement",
+      "Great Eastern General Insurance MAS code",
+      "Annual-report AI paragraph count and governance wording — extract text locally (SGX PDF was 403 from the sandbox)",
+      "No earnings calls found — confirm; proxy-by-parent (OCBC results-call Q&A on GE) must be declared with a label",
+      "Expense lines in AR for disclosed technology spend",
+      "Job-posting volumes (Great Eastern Life / GE General) over 24 months",
+      "Management AI/data titles; OCBC group CDO/CTO roles",
+      "FEAT/Veritas participation; MAS enforcement history",
+      "Every MAS-return asset figure for the nine core entities (needed to apply the 0.3x–3x band numerically)",
+      "Founder conflict declaration (C6) for OCBC/GEH",
+      "peer size for AIA Singapore Pte Ltd (I566C): MAS return assets [VERIFY]; segment VONB +14%, OPAT +5%",
+      "peer size for Prudential Assurance Co Singapore: MAS return assets [VERIFY]; Singapore NBP +2%, sales +5%",
+      "peer size for Income Insurance Ltd (I585C): S$47.2bn per Wikipedia; USD conversion ours [VERIFY from MAS return I585C]",
+      "peer size for Singapore Life Ltd (Singlife): MAS return assets [VERIFY]",
+      "peer size for Manulife (Singapore) Pte Ltd (I522L): MAS return assets [VERIFY]",
+      "peer size for HSBC Life (Singapore): MAS return assets [VERIFY]",
+      "peer size for Tokio Marine Life Insurance Singapore: MAS return assets [VERIFY]",
+      "peer size for Etiqa Insurance Singapore: MAS return assets [VERIFY]",
+      "peer size for China Taiping Insurance (Singapore): MAS return assets [VERIFY]",
+      "peer size for Allianz Malaysia Bhd; Syarikat Takaful Malaysia Keluarga; Hong Leong Assurance (via HLFG): [VERIFY sizes]",
+      "peer Aviva Singapore → Singlife: Aviva Singapore → Singlife",
+      "peer AXA Insurance Singapore → HSBC: AXA Insurance Singapore → HSBC",
+      "peer Zurich Life Singapore exit: Zurich Life Singapore exit"
+    ]
+  },
+  "escalations": [],
+  "log": "out/geh/great-eastern/inference.jsonl",
+  "log_chain_ok": true
+}
