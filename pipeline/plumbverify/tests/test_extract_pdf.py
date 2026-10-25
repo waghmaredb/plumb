@@ -1,11 +1,15 @@
-"""PDF extraction, magic-byte content-type detection and page-aware citations (v0.2)."""
+"""PDF extraction, magic-byte content-type detection and page-aware citations (v0.2);
+layout-aware two-column extraction (v0.3.1)."""
+import io
 import json
 
+import pytest
+
 from plumbverify.extract import (
-    PAGE_SEP, extract_document, extract_main_text, extract_pdf, page_of, sniff_content_type,
-    split_passages, split_passages_paged,
+    PAGE_SEP, extract_document, extract_main_text, extract_pdf, page_of, pdfplumber, pdftotext_available,
+    sniff_content_type, split_columns, split_passages, split_passages_paged,
 )
-from plumbverify.match import normalize
+from plumbverify.match import normalize, quote_match
 from plumbverify.models import CitationStatus, ConfidenceLabel, SourceState
 from plumbverify.pipeline import Verifier, load_claims
 from plumbverify.tier import load_tier_rules
@@ -31,7 +35,7 @@ def test_sniff_magic_bytes_beat_declared_header():
 # ---- PDF text, pages -------------------------------------------------------
 def test_extract_pdf_pages_and_engine():
     pdf = extract_pdf(REPORT_PDF)
-    assert pdf.engine in ("pypdf", "pdfminer") and pdf.page_count == 2 and not pdf.needs_ocr
+    assert pdf.engine in ("pdftotext-layout", "pdfplumber-layout", "pypdf", "pdfminer") and pdf.page_count == 2 and not pdf.needs_ocr
     assert "A$440,000" in pdf.pages[0].text
     assert "3% and 13%" in pdf.pages[1].text
     assert PAGE_SEP in pdf.text
@@ -116,3 +120,71 @@ def test_pipeline_citation_carries_page_number(fetcher, store, tmp_path):
     data = json.loads(report.model_dump_json())
     assert data["citations"][1]["page"] == 2
     assert any(s["needs_ocr"] for s in data["sources"])
+
+
+# ---- 0.3.1: layout-aware extraction of two-column pages ----------------------
+LEFT = ["A1 The left column opens on underwriting, where the assistant now drafts the first assessment for every new case.",
+        "A2 It continues on medical claims, which are triaged by the same model within the day.",
+        "A3 And it closes on advisory tools that prepare the meeting notes for each advisor."]
+RIGHT = ["B1 The right column starts elsewhere, with the bonus issue approved at the general meeting.",
+         "B2 It covers the dividend payout, which was adjusted for the larger share count.",
+         "B3 And ends on capital management, where buffers were kept above the regulatory floor."]
+
+
+def two_column_pdf() -> bytes:
+    """A one-page PDF whose body is two wrapped columns (LEFT at x=40, RIGHT at
+    x=400, 180 pt wide) sharing the same baselines, so a plain text engine
+    reads the page line by line and interleaves A and B sentences."""
+    pytest.importorskip("reportlab")
+    from reportlab.lib.pagesizes import A4
+    from reportlab.lib.utils import simpleSplit
+    from reportlab.pdfgen import canvas
+    buf = io.BytesIO()
+    c = canvas.Canvas(buf, pagesize=A4)
+    c.setFont("Helvetica", 10)
+    c.drawString(40, 800, "Two column fixture")
+    for x, text in ((40, " ".join(LEFT)), (400, " ".join(RIGHT))):
+        y = 760
+        for line in simpleSplit(text, "Helvetica", 10, 180):
+            c.drawString(x, y, line)
+            y -= 13
+    c.showPage()
+    c.save()
+    return buf.getvalue()
+
+
+def test_split_columns_reorders_a_layout_dump():
+    page = "\n".join(f"{l[:40]:<52}{r[:40]}" for l, r in zip(LEFT, RIGHT))
+    out = split_columns("Heading across the page\n" + page)
+    flat = " ".join(out.split())
+    order = [flat.index(k) for k in ("A1", "A2", "A3", "B1", "B2", "B3")]
+    assert order == sorted(order), out
+    assert flat.startswith("Heading across the page")
+    # a page without a stable gutter is left alone
+    plain = "one line of text\nanother line of text\nthird line"
+    assert split_columns(plain) == plain
+
+
+def test_two_column_pdf_reads_left_then_right_and_quotes_match():
+    layout_engine = pdftotext_available() or pdfplumber is not None
+    if not layout_engine:
+        pytest.skip("no layout-aware PDF engine (pdftotext / pdfplumber) installed")
+    raw = two_column_pdf()
+    ex = extract_document(raw, "application/pdf")
+    assert ex.engine in ("pdftotext-layout", "pdfplumber-layout"), ex.engine
+    flat = " ".join(ex.text.split())
+    order = [flat.index(k) for k in ("A1", "A2", "A3", "B1", "B2", "B3")]
+    assert order == sorted(order), ex.text
+    assert quote_match(LEFT[1] + " " + LEFT[2], ex.text).passed
+    assert quote_match(RIGHT[0] + " " + RIGHT[1], ex.text).passed
+    assert not quote_match(LEFT[0] + " " + RIGHT[0], ex.text).passed  # the interleaved reading is gone
+    # the plain engines interleave the same page (documenting why the layout path exists)
+    plain = extract_pdf(raw, layout=False)
+    assert plain.engine in ("pypdf", "pdfminer")
+    assert "A1" in plain.text and "B1" in plain.text
+
+
+def test_engine_is_reported_in_extraction():
+    ex = extract_document(REPORT_PDF, "application/pdf")
+    assert ex.engine is not None and ex.page_count == 2
+    assert "A$440,000" in ex.text  # the layout path keeps the text the earlier engines produced

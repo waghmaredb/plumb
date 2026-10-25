@@ -5,11 +5,25 @@ fallback when installed. PDF text is page-aware so a citation can carry
 ``p. N``; pages are joined with PAGE_SEP (form feed) inside ``text_extract``
 and recovered by :func:`split_passages_paged`. A PDF with no text layer
 (scanned) is reported with ``needs_ocr=True`` instead of an empty string.
+
+v0.3.1 adds a layout-aware path for multi-column PDFs (annual reports are
+mostly two-column): ``pdftotext -layout`` (poppler) when the binary is on
+PATH, else pdfplumber when installed, else pypdf / pdfminer as before. The
+layout engines keep the horizontal geometry of each line, which lets
+:func:`split_columns` detect pages whose lines share a wide interior gap at a
+stable x-offset and re-order them left column first, then right column, so
+sentences from adjacent columns no longer interleave (a C5 quotation lifted
+from a two-column page then exact-matches the stored text). The engine that
+produced the text is reported in ``Extraction.engine`` / ``PdfExtraction.engine``.
 """
 from __future__ import annotations
 
 import io
+import os
 import re
+import shutil
+import subprocess
+import tempfile
 from dataclasses import dataclass, field
 from typing import Optional
 
@@ -19,6 +33,11 @@ try:  # optional, better boilerplate removal
     import trafilatura  # type: ignore
 except Exception:  # pragma: no cover
     trafilatura = None
+
+try:  # layout-aware PDF engine (pure Python); second choice after pdftotext
+    import pdfplumber  # type: ignore
+except Exception:  # pragma: no cover
+    pdfplumber = None
 
 try:  # preferred PDF engine (pure Python)
     import pypdf  # type: ignore
@@ -107,6 +126,208 @@ class PdfExtraction:
         return sum(len(p.text) for p in self.pages)
 
 
+# ---- column handling for layout-preserving engines ---------------------
+#: a run of at least this many spaces inside a line is a candidate column gutter
+COLUMN_GAP_MIN_SPACES = 6
+#: share of a page's non-blank lines that must show the gutter at the same x-offset
+COLUMN_MIN_LINE_SHARE = 0.40
+#: the same share for a gutter inside an already split column (third column, pull quote)
+COLUMN_INNER_LINE_SHARE = 0.25
+#: a column must be at least this wide (characters) to be split off
+COLUMN_MIN_WIDTH = 12
+_GAP_RE = re.compile(r" {%d,}" % COLUMN_GAP_MIN_SPACES)
+_LINE_GAP_RE = re.compile(r" {2,}")
+
+
+def _tab_expand(line: str) -> str:
+    return line.expandtabs(8).rstrip("\r\n")
+
+
+def find_column_gutter(lines: list[str], min_share: float = COLUMN_MIN_LINE_SHARE) -> Optional[int]:
+    """Return the x-offset where the right column starts, or None.
+
+    Two kinds of line vote for a gutter position: a line with text on both
+    sides of a run of >= COLUMN_GAP_MIN_SPACES spaces votes for every x inside
+    that run, and a line that is indented by at least ``2 * COLUMN_MIN_WIDTH``
+    spaces (a right-column-only line: the left column's lines sit at other
+    y-positions, which is the common case in a two-column layout dump) votes
+    for every x up to its first character. The best x wins when at least
+    ``min_share`` of the non-blank lines vote for it; it is then snapped to
+    the most common first-character position of the right column."""
+    nonblank = [ln for ln in lines if ln.strip()]
+    if len(nonblank) < 3:
+        return None
+    votes: dict[int, int] = {}
+    for ln in nonblank:
+        seen: set[int] = set()
+        indent = len(ln) - len(ln.lstrip(" "))
+        if indent >= 2 * COLUMN_MIN_WIDTH:
+            for x in range(COLUMN_MIN_WIDTH, indent + 1):
+                seen.add(x)
+                votes[x] = votes.get(x, 0) + 1
+            continue
+        for m in _GAP_RE.finditer(ln):
+            if m.start() < COLUMN_MIN_WIDTH or m.end() >= len(ln):
+                continue  # too far left to be a column, or trailing padding
+            if not ln[: m.start()].strip() or not ln[m.end():].strip():
+                continue
+            for x in range(m.start() + 1, m.end() + 1):
+                if x not in seen:
+                    seen.add(x)
+                    votes[x] = votes.get(x, 0) + 1
+    if not votes:
+        return None
+    best_x = max(votes, key=lambda x: (votes[x], x))
+    if votes[best_x] < max(3, int(min_share * len(nonblank) + 0.999)):
+        return None
+    # snap to the right column's first character among the voting lines
+    starts: dict[int, int] = {}
+    for ln in nonblank:
+        if len(ln) > best_x and ln[best_x - 1] == " " and ln[best_x:].strip():
+            s = best_x + (len(ln[best_x:]) - len(ln[best_x:].lstrip()))
+            starts[s] = starts.get(s, 0) + 1
+    if not starts:
+        return None
+    # the right column's left edge is the smallest well-supported start: numbered paragraphs and
+    # bullets begin at the edge while the bulk of the lines are indented a few characters further
+    support = max(2, int(0.05 * sum(starts.values()) + 0.999))
+    x = min(s for s, n in starts.items() if n >= support) if any(n >= support for n in starts.values()) \
+        else max(starts, key=lambda s: (starts[s], -s))
+    # the left column must hold real text too, else this is an indented single column
+    left_chars = sum(len(ln[:x].strip()) for ln in nonblank)
+    right_chars = sum(len(ln[x:].strip()) for ln in nonblank)
+    if left_chars < COLUMN_MIN_WIDTH * 3 or right_chars < COLUMN_MIN_WIDTH * 3:
+        return None
+    return x
+
+
+def _split_point(ln: str, x: int) -> Optional[int]:
+    """Where the right column starts on this line, given the page gutter at
+    x; None when the line crosses the gutter (full-width heading, table row).
+    Blank and left-only lines split at their end, right-only lines at their
+    first character. A line whose gutter run is a few characters off x (a
+    quote mark or bullet at the start of the right column, a hanging indent)
+    still splits at the end of its own gap."""
+    if not ln.strip() or len(ln) <= x:
+        return len(ln)
+    if not ln[:x].strip():
+        return x  # right-only line; slicing at x keeps the column's own geometry for a recursive split
+    # once the page's gutter is known, a narrower run of spaces at the gutter is enough for an
+    # individual line: pdftotext -layout squeezes a long left-column line to within 2-5 spaces of
+    # the right column
+    for m in _LINE_GAP_RE.finditer(ln):
+        if m.start() <= x - 2 and m.end() >= x - 3:
+            return min(m.end(), x) if m.end() >= x else m.end()
+    return None
+
+
+def split_columns(page_text: str, depth: int = 2, min_share: Optional[float] = None) -> str:
+    """Re-order a layout-preserved page into reading order.
+
+    Lines are grouped into blocks: runs of lines that respect the detected
+    gutter (two-column text) and runs that cross it (full-width headings,
+    tables, captions). Full-width blocks stay in place; inside a two-column
+    block the left column is emitted first, then the right column. Each
+    column is split again (``depth`` - 1) so a three-column management page
+    comes out column by column. Pages without a stable gutter are returned
+    unchanged apart from tab expansion."""
+    lines = [_tab_expand(ln) for ln in page_text.split("\n")]
+    # a column that is itself split (three-column pages, pull quotes) shows its inner gutter on
+    # fewer lines, so the share threshold is relaxed below the page level
+    x = find_column_gutter(lines, min_share if min_share is not None else COLUMN_MIN_LINE_SHARE) if depth > 0 else None
+    if x is None:
+        return "\n".join(ln.rstrip() for ln in lines)
+    out: list[str] = []
+    block: list[tuple[str, Optional[int]]] = []
+    block_split: Optional[bool] = None
+
+    def flush() -> None:
+        nonlocal block
+        if not block:
+            return
+        if block_split:
+            left = [ln[:sp].rstrip() for ln, sp in block]
+            right = [ln[sp:].rstrip() for ln, sp in block if sp is not None and len(ln) > sp]
+            if any(l.strip() for l in left) and any(r.strip() for r in right):
+                out.extend(_strip_blank_edges(split_columns("\n".join(left), depth - 1, COLUMN_INNER_LINE_SHARE).split("\n")))
+                out.append("")
+                out.extend(_strip_blank_edges(split_columns("\n".join(right), depth - 1, COLUMN_INNER_LINE_SHARE).split("\n")))
+                out.append("")
+            else:  # text on one side only: indented or short lines, keep as is
+                out.extend(ln.strip() for ln, _ in block)
+        else:
+            out.extend(ln.rstrip() for ln, _ in block)
+        block = []
+
+    for ln in lines:
+        sp = _split_point(ln, x)
+        if not ln.strip():
+            block.append((ln, sp))  # blank lines belong to the current block
+            continue
+        is_split = sp is not None
+        if block_split is None or is_split == block_split:
+            block.append((ln, sp))
+            block_split = is_split
+        else:
+            flush()
+            block = [(ln, sp)]
+            block_split = is_split
+    flush()
+    return "\n".join(out)
+
+
+def _strip_blank_edges(lines: list[str]) -> list[str]:
+    a, b = 0, len(lines)
+    while a < b and not lines[a].strip():
+        a += 1
+    while b > a and not lines[b - 1].strip():
+        b -= 1
+    return lines[a:b]
+
+
+def _layout_pages(page_texts: list[str]) -> list[PageText]:
+    return [PageText(page=i, text=normalize_text(split_columns(t))) for i, t in enumerate(page_texts, start=1)]
+
+
+def pdftotext_available() -> bool:
+    return shutil.which("pdftotext") is not None
+
+
+def _pdftotext_pages(raw: bytes) -> list[PageText]:
+    """poppler ``pdftotext -layout``: one form feed per page; the geometry of
+    each line is preserved so the column splitter can work."""
+    fd, path = tempfile.mkstemp(suffix=".pdf")
+    try:
+        with os.fdopen(fd, "wb") as fh:
+            fh.write(raw)
+        proc = subprocess.run(["pdftotext", "-layout", "-enc", "UTF-8", path, "-"], capture_output=True, timeout=300)
+    finally:
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+    if proc.returncode != 0:
+        raise RuntimeError(f"pdftotext exit {proc.returncode}: {proc.stderr.decode('utf-8', 'replace').strip()[:200]}")
+    text = proc.stdout.decode("utf-8", errors="replace")
+    pages = text.split("\f")
+    if pages and not pages[-1].strip():
+        pages = pages[:-1]  # pdftotext ends the last page with a form feed
+    if not pages:
+        raise RuntimeError("pdftotext returned no pages")
+    return _layout_pages(pages)
+
+
+def _pdfplumber_pages(raw: bytes) -> list[PageText]:
+    texts: list[str] = []
+    with pdfplumber.open(io.BytesIO(raw)) as pdf:
+        for page in pdf.pages:
+            try:
+                texts.append(page.extract_text(layout=True) or "")
+            except Exception:
+                texts.append("")
+    return _layout_pages(texts)
+
+
 def _pypdf_pages(raw: bytes) -> list[PageText]:
     reader = pypdf.PdfReader(io.BytesIO(raw))
     if reader.is_encrypted:
@@ -136,18 +357,39 @@ def _pdfminer_pages(raw: bytes) -> list[PageText]:
     return out
 
 
-def extract_pdf(raw: bytes, min_chars_per_page: int = OCR_MIN_CHARS_PER_PAGE) -> PdfExtraction:
-    """Extract text per page. pypdf is tried first; pdfminer.six when pypdf is
-    missing, fails, or yields no text. A document whose text layer averages
-    fewer than ``min_chars_per_page`` characters per page is flagged
-    ``needs_ocr`` (scanned or image-only PDF) rather than returned as ''."""
+ENGINE_PDFTOTEXT = "pdftotext-layout"
+ENGINE_PDFPLUMBER = "pdfplumber-layout"
+ENGINE_PYPDF = "pypdf"
+ENGINE_PDFMINER = "pdfminer"
+
+
+def available_pdf_engines(layout: bool = True) -> list[tuple[str, object]]:
+    """Engines in preference order: layout-aware first (pdftotext -layout,
+    pdfplumber), then the plain text engines (pypdf, pdfminer.six)."""
+    engines: list[tuple[str, object]] = []
+    if layout and pdftotext_available():
+        engines.append((ENGINE_PDFTOTEXT, _pdftotext_pages))
+    if layout and pdfplumber is not None:
+        engines.append((ENGINE_PDFPLUMBER, _pdfplumber_pages))
+    if pypdf is not None:
+        engines.append((ENGINE_PYPDF, _pypdf_pages))
+    if _pdfminer_extract_text is not None and _PDFPage is not None:
+        engines.append((ENGINE_PDFMINER, _pdfminer_pages))
+    return engines
+
+
+def extract_pdf(raw: bytes, min_chars_per_page: int = OCR_MIN_CHARS_PER_PAGE, layout: bool = True) -> PdfExtraction:
+    """Extract text per page. Layout-aware engines first (``pdftotext
+    -layout`` when the poppler binary is on PATH, else pdfplumber) with
+    column splitting; pypdf, then pdfminer.six, when neither is available or
+    the layout engine fails / yields no text. ``layout=False`` skips the
+    layout engines. A document whose text layer averages fewer than
+    ``min_chars_per_page`` characters per page is flagged ``needs_ocr``
+    (scanned or image-only PDF) rather than returned as ''. The engine that
+    produced the text is in ``engine``."""
     result = PdfExtraction()
     errors: list[str] = []
-    engines = []
-    if pypdf is not None:
-        engines.append(("pypdf", _pypdf_pages))
-    if _pdfminer_extract_text is not None and _PDFPage is not None:
-        engines.append(("pdfminer", _pdfminer_pages))
+    engines = available_pdf_engines(layout)
     if not engines:
         result.error = "no PDF engine installed (pip install pypdf or pdfminer.six)"
         result.needs_ocr = False
