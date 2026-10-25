@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import subprocess
 import sys
 from pathlib import Path
@@ -131,29 +132,38 @@ def resolve(story: dict, run_dir: Path, pdf: Path | None, signoff: Path | None) 
     if errors:
         raise StorylineError("Storyline refused:\n  " + "\n  ".join(errors))
 
-    # per-slide source footnote from every supporting page on the slide
+    # per-slide source footnote, in the document's PRINTED page numbers (what a reader of the
+    # printed report sees), not PDF page indices (CXO review 2026-10-26)
+    offset = int(story.get("printed_page_offset", 0))
+
+    def printed(p: int) -> int:
+        q = p + offset
+        if pdf and offset:
+            txt = page_text(pdf, p)
+            if not re.search(rf"(?<!\d){q}(?!\d)", txt):
+                errors.append(f"printed folio {q} not found on PDF page {p}; check printed_page_offset")
+        return q
+
     for s in story["slides"]:
         pages = sorted({p for _, el in walk(s) for p in el.get("_pages", [])}
                        | {p for _, el in items_with_support(s) for p in el.get("_pages", [])})
         if pages:
-            lab = "p." if len(pages) == 1 else "pp."
-            s["_source"] = f"Source: {story['source_doc']}, {lab} {', '.join(str(p) for p in pages)}"
+            pp = sorted({printed(p) for p in pages})
+            lab = "p." if len(pp) == 1 else "pp."
+            s["_source"] = f"Source: {story['source_doc']}, {lab} {', '.join(str(p) for p in pp)}"
+    if errors:
+        raise StorylineError("Storyline refused:\n  " + "\n  ".join(errors))
+
+    # founder inputs: visible "to confirm" fields; a deck containing any cannot be final
+    founder = sorted({m for _, el in walk(story["slides"]) for m in re.findall(r"\[\[FOUNDER: ([^\]]+)\]\]", el["text"])}
+                     | {m for s in story["slides"] for b in s.get("blocks", []) for m in re.findall(r"\[\[FOUNDER: ([^\]]+)\]\]", b.get("body", ""))})
 
     run = RunData(run_dir)
     lock = compute_interlock(run, signoff)
-    if lock.passed:
-        status_text = (f"Independently reviewed by {lock.reviewer} on {lock.signoff_date}. "
-                       "Every statement in this document traces to its source.")
-        marker = None
-    else:
-        status_text = ("Draft for discussion. Independent review of every statement against its source is "
-                       "in progress; this document is not yet for board use.")
-        marker = "DRAFT FOR DISCUSSION"
-    for s in story["slides"]:
-        for b in s.get("blocks", []):
-            if b.get("body") == "STATUS_FROM_INTERLOCK":
-                b["body"] = status_text
-    story["_status"] = {"final": lock.passed, "marker": marker, "status_text": status_text}
+    final = lock.passed and not founder
+    # the client sees one quiet footer mark while the deck is a draft; the reasons live in the QA sheet
+    story["_status"] = {"final": final, "marker": None if final else "Discussion draft",
+                        "founder_inputs": founder, "interlock_reasons": lock.reasons}
     return story, qa_rows, lock.to_dict()
 
 
@@ -163,6 +173,7 @@ def write_qa(out: Path, story: dict, rows: list[dict], lock: dict) -> None:
          "INTERNAL — never sent to the client. The client deck carries only page footnotes and the status line.",
          "",
          f"Interlock: {'PASSED' if lock['passed'] else 'NOT PASSED'} — " + ("; ".join(lock["reasons"]) or "all conditions met"),
+         f"Founder inputs outstanding: {', '.join(story['_status']['founder_inputs']) or 'none'}",
          f"Run outcome: {lock['outcome']}",
          "",
          "## Reviewer must-check list",
@@ -204,7 +215,7 @@ def main(argv=None) -> int:
     flagged = [r for r in rows if r.get("c4_rules")]
     print(f"resolved {len(story['slides'])} slides; {len(rows)} text elements; "
           f"{sum(r['reviewer_check'] for r in rows)} on reviewer must-check list; "
-          f"{len(flagged)} with C4 rule hits; status: {story['_status']['marker'] or 'FINAL'}")
+          f"{len(flagged)} with C4 rule hits; status: {story['_status']['marker'] or 'FINAL'}; founder inputs: {len(story['_status']['founder_inputs'])}")
     for r in flagged:
         print(f"  C4 rule hit: {r['path']}: {r['c4_rules']}")
     return 0

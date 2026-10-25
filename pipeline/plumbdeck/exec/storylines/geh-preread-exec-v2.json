@@ -1,0 +1,140 @@
+{
+  "deck_id": "PLUMB-GEH-PREREAD",
+  "version": "2.0",
+  "client": "Great Eastern Holdings",
+  "audience": "Group CEO, COO, CRO and Data & AI lead — pre-read before a first meeting",
+  "as_at": "FY2025 Annual Report (March 2026)",
+  "source_doc": "Great Eastern Holdings Annual Report 2025",
+  "printed_page_offset": -2,
+  "date_label": "October 2026",
+  "notes": "v2 after independent CXO review 2026-10-26: leadership slide removed (stale), status box removed, statuses/qualifiers corrected, printed page numbers, governance reframed as disclosure observation with board-level AI oversight credited, questions -> hypotheses with method, proposal mapped to hypotheses with a specific ask. Pending (v3): current leadership, 1H2026, MAS AI risk guidelines, peer comparison, directional value sizing.",
+  "slides": [
+    {
+      "id": "cover",
+      "layout": "cover",
+      "eyebrow": {"kind": "label", "text": "Great Eastern Holdings"},
+      "title": {"kind": "label", "text": "Scaling AI at Great Eastern: from proven use cases to measurable value"},
+      "subtitle": {"kind": "label", "text": "Perspectives for discussion with the leadership team"}
+    },
+    {
+      "id": "exec-summary",
+      "layout": "exec_summary",
+      "section": "Executive summary",
+      "title": {"kind": "synthesis", "text": "Great Eastern already runs AI in advice, claims and compliance; the next gains depend on proving value and evidencing AI governance",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.governance.2", "great-eastern.findings.governance.1", "great-eastern.findings.governance.1.context1"]},
+      "points": [
+        {"head": {"kind": "synthesis", "text": "AI is in use from advice to claims and compliance",
+           "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.governance.2"]},
+         "body": {"kind": "synthesis", "text": "Great Eastern has deployed an AI-enabled advisory platform for its financial advisers, rolled out a proprietary platform that automates medical claims, and uses AI to monitor transactions and sales for compliance risk.",
+           "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.governance.2"]}},
+        {"head": {"kind": "synthesis", "text": "Reported outcomes are speed and effort, not yet dollars",
+           "support": ["great-eastern.findings.deploy.4", "great-eastern.findings.deploy.1"]},
+         "body": {"kind": "synthesis", "text": "In 2025, 75% of medical claims were turned around the same day, and the advisory platform aims to cut adviser preparation time by about 75%; neither is reported with a baseline or a financial value.",
+           "support": ["great-eastern.findings.deploy.4", "great-eastern.findings.deploy.1"], "observation": "measurement-absence"}},
+        {"head": {"kind": "synthesis", "text": "Board oversight of AI exists; how AI itself is governed is not yet described",
+           "support": ["great-eastern.findings.governance.4", "great-eastern.findings.governance.1", "great-eastern.findings.governance.1.context1"]},
+         "body": {"kind": "synthesis", "text": "Two named directors are to receive fees for their work on data and AI initiatives, while the governance the report cites alongside AI is a service-quality scorecard and the Cyber Trust Mark.",
+           "support": ["great-eastern.findings.governance.4", "great-eastern.findings.governance.1", "great-eastern.findings.governance.1.context1"], "observation": "governance-disclosure"}}
+      ],
+      "callout": {"kind": "label", "text": "Three hypotheses to test together — page 6"}
+    },
+    {
+      "id": "value-chain",
+      "layout": "value_chain",
+      "section": "Where AI is in use",
+      "title": {"kind": "synthesis", "text": "AI is in use from advice to claims and compliance; complex-case underwriting is still in testing",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.deploy.3", "great-eastern.findings.governance.2"]},
+      "stages": [
+        {"name": "Advice & distribution", "items": [
+          {"text": "AI-enabled advisory platform for financial advisers", "status": "In use", "support": ["great-eastern.findings.deploy.1"]}]},
+        {"name": "Underwriting", "items": [
+          {"text": "In-house analytics and AI for underwriting", "status": "In use", "support": ["great-eastern.ar.annual_report.2025.q6"], "pages": [8]},
+          {"text": "AI for complex underwriting cases", "status": "Testing", "support": ["great-eastern.findings.deploy.3"]}]},
+        {"name": "Onboarding", "items": [
+          {"text": "AI segmentation enabling instant approvals for existing lower-risk Great CareShield customers", "status": "In use", "support": ["great-eastern.findings.deploy.5"]}]},
+        {"name": "Claims", "items": [
+          {"text": "Proprietary platform automating medical claims", "status": "In use", "support": ["great-eastern.findings.deploy.2"]},
+          {"text": "Medical-bill OCR to detect wastage and abuse; won an industry award", "status": "In use", "market": "Malaysia", "support": ["great-eastern.findings.deploy.6", "great-eastern.findings.deploy.6.context1", "great-eastern.findings.deploy.6.context2"]}]},
+        {"name": "Risk & conduct", "items": [
+          {"text": "AI monitoring of transactions and sales for compliance risk", "status": "In use", "support": ["great-eastern.findings.governance.2"]},
+          {"text": "AI model flagging potential misconduct for investigation", "status": "In use", "market": "Malaysia", "support": ["great-eastern.findings.deploy.7"]}]}
+      ]
+    },
+    {
+      "id": "outcomes",
+      "layout": "hero_stat",
+      "section": "Reported outcomes",
+      "title": {"kind": "synthesis", "text": "Claims shows the clearest AI result; the adviser platform's benefit is still a target",
+        "support": ["great-eastern.findings.deploy.4", "great-eastern.findings.deploy.1"]},
+      "hero": {"value": "75%", "tag": "RESULT · 2025",
+        "label": {"kind": "synthesis", "text": "of medical claims turned around the same day", "support": ["great-eastern.findings.deploy.4"]},
+        "detail": {"kind": "synthesis", "text": "One of the fastest among Singapore’s health insurers, based on Ministry of Health service indicators", "support": ["great-eastern.findings.deploy.4"]}},
+      "secondary": {"value": "~75%", "tag": "TARGET",
+        "label": {"kind": "synthesis", "text": "targeted cut in financial advisers’ preparation time", "support": ["great-eastern.findings.deploy.1"]},
+        "detail": {"kind": "synthesis", "text": "The AI-enabled advisory platform “aims to reduce” preparation time; no achieved figure is reported", "support": ["great-eastern.findings.deploy.1"]}},
+      "so_what": {"kind": "synthesis", "text": "Neither figure is tied to a baseline or a dollar value — the evidence a board needs to fund the next wave of AI.",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.4"], "observation": "measurement-absence"}
+    },
+    {
+      "id": "governance",
+      "layout": "two_columns",
+      "section": "AI governance",
+      "title": {"kind": "synthesis", "text": "AI oversight reaches the board, but how AI itself is governed is not yet described publicly",
+        "support": ["great-eastern.findings.governance.4", "great-eastern.findings.governance.3", "great-eastern.findings.governance.1", "great-eastern.findings.governance.1.context1"]},
+      "left": {"head": "What the 2025 report shows", "items": [
+        {"kind": "synthesis", "text": "Two named directors are to receive fees for their contributions to IT infrastructure, data and AI initiatives", "support": ["great-eastern.findings.governance.4"]},
+        {"kind": "synthesis", "text": "The Board’s collective competencies include artificial intelligence and risk management", "support": ["great-eastern.findings.governance.3"]},
+        {"kind": "synthesis", "text": "AI monitors transactions and sales patterns for compliance risks, including anti-money laundering and misconduct", "support": ["great-eastern.findings.governance.2"]},
+        {"kind": "synthesis", "text": "The governance cited alongside AI is a Quality Assurance Scorecard and the Cyber Trust Mark", "support": ["great-eastern.findings.governance.1", "great-eastern.findings.governance.1.context1"]}]},
+      "right": {"head": "Not yet described publicly", "observation": "governance-disclosure", "items": [
+        {"kind": "observation", "text": "AI policy or responsible-AI principles"},
+        {"kind": "observation", "text": "An inventory of AI systems and their risk materiality"},
+        {"kind": "observation", "text": "Model risk management extended to AI"}]},
+      "footnote": {"kind": "method", "text": "Annual reports rarely describe AI governance in detail; this reflects public disclosure, not an assessment of practice. Frameworks set at OCBC group level were not reviewed."}
+    },
+    {
+      "id": "hypotheses",
+      "layout": "hypotheses",
+      "section": "Hypotheses to test together",
+      "title": {"kind": "label", "text": "Three hypotheses would turn this outside-in view into decisions"},
+      "col_heads": ["Hypothesis to test", "How the assessment would answer it"],
+      "rows": [
+        {"topic": "Value", "kind": "question", "text": "Which three AI use cases would move Great Eastern’s claims and expense ratios most in 2027, and what are they worth?",
+         "how": "Size each candidate against Great Eastern’s own claims and expense lines, then rank by value and feasibility", "support": ["great-eastern.findings.deploy.4"]},
+        {"topic": "Governance", "kind": "question", "text": "What would board-ready evidence of AI risk management look like, and how much can build on OCBC group frameworks?",
+         "how": "Map today’s AI systems to a risk-tiered inventory and show which controls group frameworks already cover", "support": ["great-eastern.findings.governance.1"]},
+        {"topic": "Scale", "kind": "question", "text": "What evidence would move complex-case underwriting AI into production, and what would it be worth?",
+         "how": "Define production criteria, test evidence and decision rights, and size the underwriting benefit", "support": ["great-eastern.findings.deploy.3"]}
+      ]
+    },
+    {
+      "id": "proposal",
+      "layout": "proposal",
+      "section": "Proposed next step",
+      "title": {"kind": "offer", "text": "A 12-day assessment would test these hypotheses with your leadership team"},
+      "columns": [
+        {"head": "Value", "body": "AI value pools sized from Great Eastern’s own numbers, with the three use cases worth funding first"},
+        {"head": "Governance", "body": "An AI inventory and risk-tier view that a board and regulator can rely on, built to reuse group frameworks"},
+        {"head": "Scale", "body": "Production criteria and decision rights for the next use cases, starting with complex-case underwriting"}
+      ],
+      "phases": [
+        {"when": "Days 1–3", "what": "Public evidence and peer comparison"},
+        {"when": "Days 4–9", "what": "Leadership questionnaire and 10–12 interviews"},
+        {"when": "Days 10–12", "what": "Synthesis and leadership read-out"}
+      ],
+      "ask": {"kind": "offer", "text": "Proposed: a 45-minute working session with the Group CEO, COO, CRO and Data & AI lead in [[FOUNDER: week]]. Fixed fee [[FOUNDER: S$ amount]]. No confidential data is needed for this phase."}
+    },
+    {
+      "id": "about",
+      "layout": "about",
+      "section": "About PLUMB Advisory",
+      "title": {"kind": "label", "text": "About PLUMB Advisory"},
+      "blocks": [
+        {"head": "Who we are", "body": "[[FOUNDER: two-line firm description and lead advisor credentials]]"},
+        {"head": "How we work", "body": "Every statement in our work traces to its source, and quotations match the source word for word. Findings are reviewed by an advisor who did not produce them."},
+        {"head": "This document", "body": "Prepared from Great Eastern Holdings’ Annual Report 2025, as at its publication in March 2026. It has not been reviewed by Great Eastern."},
+        {"head": "Contact", "body": "[[FOUNDER: name, email, phone]]"}
+      ]
+    }
+  ]
+}

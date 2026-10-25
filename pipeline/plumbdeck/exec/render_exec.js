@@ -47,30 +47,42 @@ pres.company = "PLUMB Advisory";
 pres.title = story.slides[0].title.text;
 pres.theme = { headFontFace: F.head, bodyFontFace: F.body };
 
-const footerLeft = `PLUMB Advisory   |   ${story.client}   |   Discussion document`;
+const footerLeft = `PLUMB Advisory   |   ${story.client}   |   ${STATUS.marker || "Confidential"}`;
 
 pres.defineSlideMaster({
   title: "PLUMB_CONTENT",
   background: { color: COL.white },
   objects: [
-    { text: { text: footerLeft, options: { x: MX, y: 7.02, w: 8, h: 0.25, fontFace: F.body, fontSize: 8, color: COL.muted, margin: 0 } } },
+    { text: { text: footerLeft, options: { x: MX, y: 7.0, w: 8, h: 0.25, fontFace: F.body, fontSize: 9, color: COL.muted, margin: 0 } } },
   ],
-  slideNumber: { x: W - MX - 0.5, y: 7.02, w: 0.5, h: 0.25, fontFace: F.body, fontSize: 8, color: COL.muted, align: "right" },
+  slideNumber: { x: W - MX - 0.5, y: 7.0, w: 0.5, h: 0.25, fontFace: F.body, fontSize: 9, color: COL.muted, align: "right" },
 });
 pres.defineSlideMaster({ title: "PLUMB_DARK", background: { color: COL.ink }, objects: [] });
 
 // ---------------------------------------------------------------- helpers
 const t = (el) => (el == null ? "" : typeof el === "string" ? el : el.text);
+// "[[FOUNDER: x]]" -> visible amber "to confirm" run; a deck containing one can never be final
+function fmt(text, base) {
+  const out = [];
+  String(text).split(/(\[\[FOUNDER: [^\]]+\]\])/).forEach((part) => {
+    if (!part) return;
+    const m = part.match(/^\[\[FOUNDER: ([^\]]+)\]\]$/);
+    out.push(m ? { text: `‹to confirm: ${m[1]}›`, options: Object.assign({}, base, { color: COL.amber, italic: true, bold: true }) }
+               : { text: part, options: Object.assign({}, base) });
+  });
+  return out;
+}
 
 function plumbMark(s, x, y, len, color, bob) {
   // brand motif: a plumb line and bob
   s.addShape(pres.shapes.LINE, { x, y, w: 0, h: len, line: { color, width: 1.25 } });
   const r = bob || 0.11;
-  s.addShape(pres.shapes.OVAL, { x: x - r / 2, y: y + len, w: r, h: r * 1.25, fill: { color }, line: { color, width: 0 } });
+  s.addShape(pres.shapes.OVAL, { x: x - r / 2, y: y + len, w: r, h: r, fill: { color }, line: { color, width: 0 } });
 }
 
 function draftMarker(s, dark) {
-  if (!STATUS.marker) return;
+  return; // status is carried by the footer mark only (CXO review 2026-10-26)
+  // eslint-disable-next-line no-unreachable
   s.addText(STATUS.marker, {
     x: W - MX - 2.1, y: 0.32, w: 2.1, h: 0.28, isTextBox: true,
     fontFace: F.body, fontSize: 8, bold: true, charSpacing: 1.5, align: "center", valign: "middle",
@@ -79,7 +91,27 @@ function draftMarker(s, dark) {
   });
 }
 
-function titleLines(txt) { return txt.length > 80 ? 2 : 1; }
+// exact wrapping against Arial-metric fonts (Liberation Sans ships the same advance widths)
+const opentype = require("opentype.js");
+const FONT_DIR = process.env.PLUMB_FONT_DIR || "/usr/share/fonts/truetype/liberation";
+const FONTS = {};
+function font(bold) {
+  const k = bold ? "b" : "r";
+  if (!FONTS[k]) FONTS[k] = opentype.loadSync(path.join(FONT_DIR, bold ? "LiberationSans-Bold.ttf" : "LiberationSans-Regular.ttf"));
+  return FONTS[k];
+}
+const SERIF_FILE = process.env.PLUMB_SERIF_FILE || "/usr/share/fonts/truetype/crosextra/Caladea-Regular.ttf"; // metric-compatible with Cambria
+function serif() { if (!FONTS.s) FONTS.s = opentype.loadSync(SERIF_FILE); return FONTS.s; }
+function lines(txt, wIn, pt, bold, useSerif) {
+  const f = useSerif ? serif() : font(bold), limit = wIn * 72;
+  let n = 1, cur = "";
+  for (const word of String(txt).split(/\s+/)) {
+    const trial = cur ? cur + " " + word : word;
+    if (f.getAdvanceWidth(trial, pt) <= limit || !cur) { cur = trial; } else { n += 1; cur = word; }
+  }
+  return n;
+}
+function titleLines(txt) { return lines(txt, CW - 0.4, 25, false, true) > 1 ? 2 : 1; }
 function contentTop(sl) { return titleLines(t(sl.title)) === 2 ? 2.05 : 1.6; }
 
 // text over a shape: draw the shape, then a separate zero-margin text box inside it
@@ -102,8 +134,8 @@ function frame(sl, slideIdx) {
     fontFace: F.head, fontSize: 25, color: COL.ink, valign: "top", paraSpaceAfter: 0,
   });
   if (sl._source) {
-    s.addText(sl._source, { x: MX, y: 6.66, w: CW, h: 0.26, isTextBox: true, margin: 0,
-      fontFace: F.body, fontSize: 8.5, color: COL.muted, valign: "bottom" });
+    s.addText(sl._source, { x: MX, y: 6.62, w: CW, h: 0.28, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 10, color: COL.muted, valign: "bottom" });
   }
   return s;
 }
@@ -119,8 +151,8 @@ function cover(sl) {
     fontFace: F.head, fontSize: 40, color: COL.white, valign: "top" });
   s.addText(`${t(sl.subtitle)}  ·  ${story.date_label}`, { x: MX + 0.2, y: 4.55, w: 8.9, h: 0.4, isTextBox: true, margin: 0,
     fontFace: F.body, fontSize: 15, color: COL.onDark });
-  s.addText(t(sl.footnote), { x: MX + 0.2, y: 6.45, w: 8.9, h: 0.5, isTextBox: true, margin: 0,
-    fontFace: F.body, fontSize: 9.5, color: "8C99AA", valign: "bottom" });
+  if (sl.footnote) s.addText(t(sl.footnote), { x: MX + 0.2, y: 6.45, w: 8.9, h: 0.5, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 10, color: "8C99AA", valign: "bottom" });
   s.addText("PLUMB ADVISORY", { x: W - MX - 2.6, y: 6.6, w: 2.6, h: 0.35, isTextBox: true, margin: 0,
     fontFace: F.body, fontSize: 10, bold: true, color: COL.onDark, charSpacing: 3, align: "right" });
 }
@@ -160,9 +192,11 @@ function valueChain(sl, i) {
       { fontSize: 12, bold: true, color: COL.ink }, st.name);
     let y = top + 0.68;
     st.items.forEach((it) => {
-      const h = 1.22;
+      const h = 0.62 + lines(it.text, cw - 0.28, 12) * 0.205 + 0.12;
       s.addShape(pres.shapes.RECTANGLE, { x, y, w: cw, h, fill: { color: COL.white }, line: { color: COL.hair, width: 0.75 } });
       chip(s, x + 0.14, y + 0.14, it.status);
+      if (it.market) s.addText(it.market.toUpperCase(), { x: x + 1.27, y: y + 0.14, w: cw - 1.4, h: 0.24, isTextBox: true, margin: 0,
+        fontFace: F.body, fontSize: 7.5, bold: true, color: COL.muted, charSpacing: 1, valign: "middle" });
       s.addText(it.text, { x: x + 0.14, y: y + 0.44, w: cw - 0.28, h: h - 0.52, isTextBox: true, margin: 0,
         fontFace: F.body, fontSize: 12, color: COL.text, valign: "top" });
       y += h + 0.14;
@@ -171,9 +205,10 @@ function valueChain(sl, i) {
   // legend
   const ly = 6.08;
   let lx = MX;
-  ["In use", "Developed", "Testing"].forEach((st) => { chip(s, lx, ly, st); lx += 1.2; });
-  s.addText(t(sl.legend_note), { x: lx + 0.1, y: ly - 0.06, w: CW - (lx - MX) - 0.1, h: 0.38, isTextBox: true, margin: 0,
-    fontFace: F.body, fontSize: 9.5, color: COL.muted, valign: "middle" });
+  const used = new Set(sl.stages.flatMap((st) => st.items.map((it) => it.status)));
+  ["In use", "Developed", "Testing"].filter((st) => used.has(st)).forEach((st) => { chip(s, lx, ly, st); lx += 1.2; });
+  if (sl.legend_note) s.addText(t(sl.legend_note), { x: lx + 0.1, y: ly - 0.06, w: CW - (lx - MX) - 0.1, h: 0.38, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 10, color: COL.muted, valign: "middle" });
 }
 
 function twoStats(sl, i) {
@@ -196,6 +231,55 @@ function twoStats(sl, i) {
   });
   onShape(s, pres.shapes.RECTANGLE, { x: MX, y: top + h + 0.3, w: CW, h: 0.75, fill: COL.white, line: COL.hair, lineW: 0.75, padL: 0.25, padR: 0.3 },
     { fontSize: 14 }, [{ text: "So what   ", options: { bold: true, color: COL.teal } }, { text: t(sl.so_what), options: { color: COL.ink } }]);
+}
+
+function heroStat(sl, i) {
+  const s = frame(sl, i);
+  const top = contentTop(sl), h = 3.45, gap = 0.35, hw = 7.6, sw = CW - hw - gap;
+  // hero
+  s.addShape(pres.shapes.RECTANGLE, { x: MX, y: top, w: hw, h, fill: { color: COL.ink }, line: { color: COL.ink, width: 0 } });
+  s.addText(sl.hero.tag, { x: MX + 0.45, y: top + 0.4, w: 1.7, h: 0.28, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 9, bold: true, color: COL.white, charSpacing: 1.5, align: "center", valign: "middle",
+    shape: pres.shapes.ROUNDED_RECTANGLE, rectRadius: 0.05, fill: { color: COL.teal }, line: { color: COL.teal, width: 0 } });
+  s.addText(sl.hero.value, { x: MX + 0.42, y: top + 0.8, w: hw - 0.9, h: 1.3, isTextBox: true, margin: 0,
+    fontFace: F.head, fontSize: 80, color: COL.white, valign: "middle" });
+  s.addText(t(sl.hero.label), { x: MX + 0.45, y: top + 2.15, w: hw - 0.9, h: 0.45, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 20, bold: true, color: COL.white, valign: "top" });
+  s.addText(t(sl.hero.detail), { x: MX + 0.45, y: top + 2.65, w: hw - 0.9, h: 0.6, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 13.5, color: COL.onDark, valign: "top" });
+  // secondary
+  const sx = MX + hw + gap;
+  s.addShape(pres.shapes.RECTANGLE, { x: sx, y: top, w: sw, h, fill: { color: COL.panel }, line: { color: COL.panel, width: 0 } });
+  s.addText(sl.secondary.tag, { x: sx + 0.35, y: top + 0.4, w: 1.2, h: 0.28, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 9, bold: true, color: COL.white, charSpacing: 1.5, align: "center", valign: "middle",
+    shape: pres.shapes.ROUNDED_RECTANGLE, rectRadius: 0.05, fill: { color: COL.amber }, line: { color: COL.amber, width: 0 } });
+  s.addText(sl.secondary.value, { x: sx + 0.33, y: top + 0.85, w: sw - 0.66, h: 0.9, isTextBox: true, margin: 0,
+    fontFace: F.head, fontSize: 48, color: COL.ink, valign: "middle" });
+  s.addText(t(sl.secondary.label), { x: sx + 0.35, y: top + 1.85, w: sw - 0.7, h: 0.6, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 15, bold: true, color: COL.ink, valign: "top" });
+  s.addText(t(sl.secondary.detail), { x: sx + 0.35, y: top + 2.5, w: sw - 0.7, h: 0.8, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 12.5, color: COL.text, valign: "top" });
+  onShape(s, pres.shapes.RECTANGLE, { x: MX, y: top + h + 0.3, w: CW, h: 0.7, fill: COL.white, line: COL.hair, lineW: 0.75, padL: 0.25, padR: 0.3 },
+    { fontSize: 14 }, [{ text: "So what   ", options: { bold: true, color: COL.teal } }, { text: t(sl.so_what), options: { color: COL.ink } }]);
+}
+
+function hypotheses(sl, i) {
+  const s = frame(sl, i);
+  const top = contentTop(sl) + 0.15, tx = MX + 0.6, qx = MX + 2.3, qw = 5.35, hx = qx + qw + 0.4, hw = W - MX - hx;
+  s.addText(sl.col_heads[0].toUpperCase(), { x: qx, y: top, w: qw, h: 0.3, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 9.5, bold: true, color: COL.muted, charSpacing: 1.5 });
+  s.addText(sl.col_heads[1].toUpperCase(), { x: hx, y: top, w: hw, h: 0.3, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 9.5, bold: true, color: COL.muted, charSpacing: 1.5 });
+  const rowH = 1.35, r0 = top + 0.45;
+  sl.rows.forEach((r, k) => {
+    const y = r0 + k * rowH;
+    s.addShape(pres.shapes.LINE, { x: MX, y: y - 0.12, w: CW, h: 0, line: { color: COL.hair, width: 0.75 } });
+    s.addText(String(k + 1), { x: MX, y, w: 0.5, h: 0.6, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 30, color: COL.teal, valign: "top" });
+    s.addText(r.topic.toUpperCase(), { x: tx, y: y + 0.12, w: 1.6, h: 0.3, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 10, bold: true, color: COL.teal, charSpacing: 1.5 });
+    s.addText(r.text, { x: qx, y, w: qw, h: rowH - 0.25, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15.5, color: COL.ink, valign: "top" });
+    s.addText(r.how, { x: hx, y, w: hw, h: rowH - 0.25, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 13.5, color: COL.text, valign: "top" });
+  });
 }
 
 function timeline(sl, i) {
@@ -227,26 +311,30 @@ function timeline(sl, i) {
 
 function twoColumns(sl, i) {
   const s = frame(sl, i);
-  const gap = 0.35, cw = (CW - gap) / 2, top = contentTop(sl) + 0.1, h = 3.75;
+  const gap = 0.35, cw = (CW - gap) / 2, top = contentTop(sl) + 0.1;
+  const need = (items) => 0.9 + items.reduce((a, it) => a + lines(t(it), cw - 1.1, 14) * 0.255 + 0.22, 0) + 0.1;
+  const h = Math.min(6.25 - top, Math.max(3.2, need(sl.left.items), need(sl.right.items)));
   [["left", false], ["right", true]].forEach(([key, quiet], k) => {
     const col = sl[key], x = MX + k * (cw + gap);
     s.addShape(pres.shapes.RECTANGLE, { x, y: top, w: cw, h,
       fill: { color: quiet ? COL.panel : COL.white }, line: { color: quiet ? COL.panel : COL.hair, width: 0.75 } });
     s.addText(col.head, { x: x + 0.35, y: top + 0.28, w: cw - 0.7, h: 0.4, isTextBox: true, margin: 0,
       fontFace: F.body, fontSize: 15, bold: true, color: COL.ink });
+    let y = top + 0.9;
     col.items.forEach((it, j) => {
-      const y = top + 0.9 + j * 0.68;
+      const nl = lines(t(it), cw - 1.1, 14), ih = nl * 0.255;
       if (quiet) {
         s.addShape(pres.shapes.OVAL, { x: x + 0.37, y: y + 0.06, w: 0.2, h: 0.2, fill: { color: COL.panel }, line: { color: COL.muted, width: 1.25 } });
       } else {
         s.addShape(pres.shapes.OVAL, { x: x + 0.37, y: y + 0.06, w: 0.2, h: 0.2, fill: { color: COL.teal }, line: { color: COL.teal, width: 0 } });
       }
-      s.addText(t(it), { x: x + 0.75, y, w: cw - 1.1, h: 0.6, isTextBox: true, margin: 0,
+      s.addText(t(it), { x: x + 0.75, y, w: cw - 1.1, h: ih + 0.05, isTextBox: true, margin: 0,
         fontFace: F.body, fontSize: 14, color: COL.text, valign: "top" });
+      y += ih + 0.22;
     });
   });
-  s.addText(t(sl.footnote), { x: MX, y: top + h + 0.15, w: CW, h: 0.5, isTextBox: true, margin: 0,
-    fontFace: F.body, fontSize: 9.5, italic: true, color: COL.muted, valign: "top" });
+  s.addText(t(sl.footnote), { x: MX, y: top + h + 0.12, w: CW, h: 0.4, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 10, italic: true, color: COL.muted, valign: "top" });
 }
 
 function questions(sl, i) {
@@ -283,8 +371,8 @@ function proposal(sl, i) {
       { color: COL.white },
       [{ text: p.when, options: { bold: true, fontSize: 13, breakLine: true } }, { text: p.what, options: { fontSize: 12 } }]);
   });
-  s.addText(t(sl.ask), { x: MX, y: py + 1.2, w: CW, h: 0.4, isTextBox: true, margin: 0,
-    fontFace: F.body, fontSize: 13, color: COL.ink, valign: "top" });
+  s.addText(fmt(t(sl.ask), { color: COL.ink }), { x: MX, y: py + 1.2, w: CW, h: 0.7, isTextBox: true, margin: 0,
+    fontFace: F.body, fontSize: 14, valign: "top" });
 }
 
 function about(sl, i) {
@@ -297,12 +385,12 @@ function about(sl, i) {
       fill: { color: isStatus && !STATUS.final ? "FBF6EC" : COL.panel }, line: { color: COL.panel, width: 0 } });
     s.addText(b.head, { x: x + 0.3, y: y + 0.25, w: cw - 0.6, h: 0.35, isTextBox: true, margin: 0,
       fontFace: F.body, fontSize: 13, bold: true, color: isStatus && !STATUS.final ? COL.amber : COL.teal });
-    s.addText(b.body, { x: x + 0.3, y: y + 0.68, w: cw - 0.6, h: rh - 0.85, isTextBox: true, margin: 0,
-      fontFace: F.body, fontSize: 13.5, color: COL.text, valign: "top" });
+    s.addText(fmt(b.body, { color: COL.text }), { x: x + 0.3, y: y + 0.68, w: cw - 0.6, h: rh - 0.85, isTextBox: true, margin: 0,
+      fontFace: F.body, fontSize: 13.5, valign: "top" });
   });
 }
 
-const LAYOUTS = { cover, exec_summary: execSummary, value_chain: valueChain, two_stats: twoStats,
+const LAYOUTS = { cover, exec_summary: execSummary, value_chain: valueChain, two_stats: twoStats, hero_stat: heroStat, hypotheses,
   timeline, two_columns: twoColumns, questions, proposal, about };
 
 story.slides.forEach((sl, i) => {

@@ -369,6 +369,19 @@ def analyse(subject: Subject, doc_url: str, fy: Optional[int], text: str, tier: 
             gov_claims.append(add(f"governance.{len(gov_claims) + 1}", s, page, ["D4.4", "D6.1"],
                                   "board-level reference to artificial intelligence (directors' competencies or fees), not an AI-governance framework",
                                   category="governance-adjacent", basis="artificial intelligence named in a directors' competency or fee statement"))
+    # the sentence that follows a governance statement is the report's own evidence for it
+    # (e.g. "… with discipline and robust governance. In 2025, we introduced a Quality Assurance
+    # Scorecard … Cyber Trust Mark …"): kept as a context claim so the deck can say what the
+    # governance cited actually is (CXO review 2026-10-26)
+    for c in list(gov_claims):
+        if c.attrs.get("basis", "").startswith("AI term"):
+            idx = next((i for i, (s, _) in enumerate(cands) if norm_for_dedupe(s) == norm_for_dedupe(c.text)), None)
+            if idx is not None and idx + 1 < len(cands):
+                nxt, pg = cands[idx + 1]
+                if norm_for_dedupe(nxt) not in used and 30 <= len(nxt) <= 500:
+                    add(f"governance.{c.id.rsplit('.', 1)[-1]}.context1",
+                        nxt, pg, ["D6.1"], f"sentence following {c.id.rsplit('.', 1)[-1]}: the report's own evidence for the governance statement",
+                        category="governance-context", of=c.id)
     parent = (subject_org_aliases(subject).get("parent") or [None])[0]
     pages_total = page_count or ((text.count("\f") + 1) if text else 0)
     specific = _search(text, AI_GOVERNANCE_TERMS)

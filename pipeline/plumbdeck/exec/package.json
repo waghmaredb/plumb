@@ -1,0 +1,6 @@
+{
+  "name": "plumbdeck-exec",
+  "private": true,
+  "description": "PLUMB executive deck renderer",
+  "dependencies": { "opentype.js": "1.3.4" }
+}

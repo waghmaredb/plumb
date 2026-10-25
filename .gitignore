@@ -7,3 +7,4 @@ build/
 *.egg-info/
 out/
 data/
+node_modules/
