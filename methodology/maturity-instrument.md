@@ -422,3 +422,22 @@ Known limits of the proxy layer (carry into every outside-in pre-score): firm-le
 | 3 | Add APAC regulatory overlays as scoring notes (MAS AIRG dates; Korea AI Basic Act; IMDA agentic MGF) without changing anchors |
 | 4 | Decide whether D3.5 and D6.6 are merged in scoring to avoid double-counting agent controls |
 | 5 | Build the free self-scored web version with the cap rule enforced (all self-only entries display ≤3 per item) |
+
+## Appendix — v0.2 items raised by the scorer transcription (2026-10-25)
+
+Found while transcribing to `instrument/instrument-v0.1.yaml`; the scorer's interim choice is noted. Resolve in v0.2 and update both files together.
+
+| # | Ambiguity | Scorer interim choice |
+|---|---|---|
+| 1 | Band edges are integer-stated (0–25, 26–50 …) but scored on unrounded values; 25–26, 50–51, 75–76 undefined; "Leading (≥76)" conflicts with upper-inclusive reading | Upper-inclusive edges: ≤25 / ≤50 / ≤75 / >75 |
+| 2 | Cap rule scope: §1 per response vs §5.4 consensus | Per response (stricter) |
+| 3 | No rule for organisation-level item score across 10–30 respondents | Mean of capped rows |
+| 4 | §1 promises 2–4 proxies per item; D1.6, D4.5, D4.6, D5.1, D8.3–8.6 have one; D8.1/8.2 share a row | As written; add proxies in v0.2 |
+| 5 | §7 calls D4.4 interview-only but Ev≥4 column says I(≥2)+O | Follow the Ev≥4 column |
+| 6 | Percentile rank undefined for ties | Mid-rank |
+| 7 | §5.5 peer set includes region; benchmark CSV has no region column | Region optional |
+| 8 | V2 band edges leave 39–40% and 61–62% undefined | Upper-inclusive |
+| 9 | §5.2 target band shares sum to 95–105%; BCG reference listed in reverse order | Fix text in v0.2 |
+| 10 | V1 evidence rule depends on D8.4 ≥3 — only cross-item dependency | Implemented as stated |
+| 11 | "I (≥2 independent interviewees)" not verifiable from one evidence row | Treated as assessor attestation |
+| 12 | Open item: merge D3.5 and D6.6 (agent controls double-count) | Scored separately |
