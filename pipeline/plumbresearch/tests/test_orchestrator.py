@@ -31,7 +31,7 @@ def test_end_to_end_on_fixtures(acme, tmp_path):
 
     # every module produced claims and the subject's load-bearing KPIs passed the two-upstream rule
     mods = {m.module: m for m in out.modules}
-    assert set(mods) == {"annual-report", "peer-set", "postings", "earnings-calls", "patents", "financials"}
+    assert set(mods) == {"annual-report", "peer-set", "postings", "earnings-calls", "patents", "financials", "findings"}
     assert all(m.claims for m in mods.values()) and not any(m.escalated for m in mods.values())
     subj_kpis = [c for c in out.claims if c.id.startswith("acme-bank.fin.acme-bank.") and c.load_bearing]
     assert subj_kpis and all(decisions[c.id].independent_upstreams >= 2 for c in subj_kpis)

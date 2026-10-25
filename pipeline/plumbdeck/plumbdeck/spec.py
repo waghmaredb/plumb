@@ -11,8 +11,10 @@ import yaml
 TOP_KEYS = {"spec_version", "name", "ghost_deck", "deliverable", "slides"}
 DELIVERABLE_KEYS = {"id", "version", "firm", "tools", "scope_of_ai", "corrections_contact", "verification_control_owner", "jurisdictions"}
 SLIDE_KEYS = {"id", "section", "kind", "title", "title_withheld", "exhibit", "bind", "so_what", "requires", "optional", "source", "exhibit_note"}
-KINDS = {"cover", "disclosure", "data", "register", "placeholder"}
-EXHIBITS = {"cover", "disclosure", "peer_funnel", "signals_table", "scorecard_two_axis", "gap_register", "evidence_log", "placeholder"}
+KINDS = {"cover", "disclosure", "data", "register", "offer", "placeholder"}
+EXHIBITS = {"cover", "disclosure", "peer_funnel", "signals_table", "scorecard_two_axis", "gap_register", "evidence_log", "placeholder",
+            # P5 pre-read: claim-bound lists, SCQA from released claims, questions for management, rubric detail, offer text
+            "claim_list", "scqa", "questions", "rubric_detail", "offer"}
 SOURCE_KEYS = {"tier", "doc", "date", "confidence"}
 
 
@@ -81,6 +83,8 @@ def load_spec(path: Path) -> DeckSpec:
         exhibit = s.get("exhibit") or ("placeholder" if kind == "placeholder" else kind)
         if exhibit not in EXHIBITS:
             raise SpecError(f"slide {s['id']}: exhibit '{exhibit}' not in {sorted(EXHIBITS)}")
+        if (kind == "offer") != (exhibit == "offer"):
+            raise SpecError(f"slide {s['id']}: the offer exhibit goes only on an offer slide (static offer text is never mixed with claim-bound data)")
         if s.get("source") is not None:
             _unknown(s["source"], SOURCE_KEYS, f"slide {s['id']} source")
         slides.append(

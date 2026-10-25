@@ -2,7 +2,7 @@
 lint pass parses: ``<!-- plumbdeck:slide id=S06 kind=data -->``."""
 from __future__ import annotations
 
-from .model import Bars, Block, Bullets, Cells, Columns, Para, Slide, Table
+from .model import Bars, Block, Boxes, Bullets, Cells, Columns, Para, Slide, Table
 
 
 def _esc(s: str) -> str:
@@ -26,7 +26,7 @@ def _block(b: Block) -> list[str]:
             t = f"**{t}**"
         elif b.style == "muted":
             t = f"_{t}_"
-        elif b.style == "withheld":
+        elif b.style in ("withheld", "withheld_inline"):
             t = f"**{t}**"
         return [t, ""]
     if isinstance(b, Bullets):
@@ -47,6 +47,12 @@ def _block(b: Block) -> list[str]:
         out = ["| Item | Recorded | Note |", "|---|---|---|"]
         out += [f"| {_esc(l)} | {_esc(v)} | {_esc(n)} |" for l, v, n in b.cells]
         return out + [""]
+    if isinstance(b, Boxes):
+        out = []
+        for label, paras in b.boxes:
+            out.append(f"**{label}.** " + " ".join(_block(p)[0] for p in paras))
+            out.append("")
+        return out
     if isinstance(b, Columns):
         out: list[str] = []
         for x in b.left + b.right:

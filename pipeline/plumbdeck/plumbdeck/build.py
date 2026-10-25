@@ -103,7 +103,7 @@ def _make_slide(ss: SlideSpec, ex: Exhibit, ctx: dict, il: Interlock) -> Slide:
             sl.blocks.append(Para(f"Exhibit when built: {ss.exhibit_note}", "muted"))
         return sl
     title, hit = fill(ss.title, tokens, ex.withheld_tokens)
-    if (hit or (ss.exhibit == "disclosure" and not il.passed)) and ss.title_withheld:
+    if (hit or ex.title_withheld_flag or (ss.exhibit == "disclosure" and not il.passed)) and ss.title_withheld:
         title, _ = fill(ss.title_withheld, tokens, ex.withheld_tokens)
     sl.title = title
     sl.blocks = list(ex.blocks)

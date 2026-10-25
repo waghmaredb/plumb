@@ -14,7 +14,7 @@ fully testable offline.
 pip install -e ../plumbverify && pip install -e ".[test]"      # pyproject pins plumbverify by absolute path; see note below
 plumbresearch run plumbresearch/fixtures/acme-bank/subject.yaml --out out --fixtures   # offline demo
 plumbresearch ingest plumbresearch/subjects/great-eastern.yaml --file ~/Downloads/geh-ar-fy2025.pdf --doc annual_report-2025 --out out --supplied-by "Deepak Waghmare"
-pytest                                                          # 46 tests, no network
+pytest                                                          # 72 tests, no network (incl. tests/test_findings.py)
 ```
 
 Exit code follows plumbverify: 0 when the build gate passes (zero BLOCKED
@@ -35,6 +35,7 @@ ceiling of 60).
 | `modules/earnings_calls.py` | AI mentions per 1,000 words, prepared vs Q&A, `TranscriptSource` protocol, file implementation |
 | `modules/patents.py` | AI patent counts, `PatentSource` protocol, CSV implementation, PatentsView client (untested), EPO OPS stub |
 | `modules/peerset.py` | the funnel (size band, core/secondary, exited retained) and the Markdown protocol exhibit |
+| `modules/findings.py` | P5 prospect findings: named AI applications (stage from the verb), operating-model and leadership-transition quotations, governance-adjacent quotations, regulatory-clock fact claims against the regulator's primary URL (`regulatory.yaml`); the governance **observation** (exact search record + limitations, `presentation: question`, never a claim) and questions for management with basis claim ids, written to `report.json` `findings` and `gap-register.md` §6 |
 | `modules/financials.py` | KPI percentiles vs core peers from a CSV, economic-profit placeholder with explicit assumptions |
 | `orchestrator.py` | module loop with cap / checkpoint / escalation, Verifier pass, signal status, output writers; `signals.md` and `gap-register.md` carry an attached-documents section with the reconciliation status per document |
 | `cli.py` | `plumbresearch run <subject.yaml> --out DIR [--data-dir DIR] [--fixtures] [--offline] [--cap N] [--modules a,b] [--as-of DATE]`; `plumbresearch ingest <subject.yaml> --file PATH --doc <document-key> [--out DIR] [--supplied-by NAME]` |

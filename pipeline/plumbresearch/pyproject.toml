@@ -31,7 +31,7 @@ plumbresearch = "plumbresearch.cli:main"
 packages = ["plumbresearch", "plumbresearch.modules"]
 
 [tool.setuptools.package-data]
-plumbresearch = ["subjects/*.yaml", "fixtures/**/*", "tiers-overrides.yaml"]
+plumbresearch = ["subjects/*.yaml", "fixtures/**/*", "tiers-overrides.yaml", "regulatory.yaml"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

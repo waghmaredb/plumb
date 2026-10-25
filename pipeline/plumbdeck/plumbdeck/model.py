@@ -9,7 +9,7 @@ from typing import Optional, Union
 @dataclass
 class Para:
     text: str
-    style: str = "normal"  # normal | lead | muted | strong | withheld
+    style: str = "normal"  # normal | lead | muted | strong | withheld | withheld_inline
 
 
 @dataclass
@@ -50,22 +50,29 @@ class Cells:
 
 
 @dataclass
+class Boxes:
+    """Labelled boxes in a grid (SCQA four-box): each box is (label, paragraphs)."""
+    boxes: list[tuple[str, list["Para"]]]
+    columns: int = 2
+
+
+@dataclass
 class Columns:
     left: list["Block"]
     right: list["Block"]
     ratio: float = 0.6
 
 
-Block = Union[Para, Bullets, Table, Bars, Cells, Columns]
+Block = Union[Para, Bullets, Table, Bars, Cells, Columns, Boxes]
 
-KINDS = ("cover", "disclosure", "data", "register", "placeholder")
+KINDS = ("cover", "disclosure", "data", "register", "offer", "placeholder")
 
 
 @dataclass
 class Slide:
     id: str
     section: str
-    kind: str  # cover | disclosure | data | register | placeholder
+    kind: str  # cover | disclosure | data | register | offer | placeholder
     title: str
     blocks: list[Block] = field(default_factory=list)
     so_what: Optional[str] = None

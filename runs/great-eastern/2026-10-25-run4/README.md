@@ -73,3 +73,5 @@ Seat-level reading for D1.2: GEH has one CAIO-equivalent seat, and it is in tran
 4. **A run-in heading is still glued to a sentence.** "Elevating Advisory and Service Excellence Our in-house AI capabilities …" still counts toward specificity. This is cosmetic, because specificity stays at 10 either way.
 5. **Departure status uses the whole sentence.** A sentence such as "X retired from DBS and is now our Head of Data" would mark the title departed. The common cases are handled: "appointed as <title>" means present, a title after "join <org> as" means incoming, and a former role in a dated biography ("from 2014 to 2022") means former. No such sentence occurs in GEH FY2025.
 6. **Client profile (unchanged by design, C2a).** No annual-report signal is released until `plumbverify reconcile` returns MATCH on a machine with egress.
+
+> **Superseded (2026-10-25, run 5):** "governance 0" overstated the finding. The report mentions governance alongside AI ("with discipline and robust governance", p. 14) and board AI competencies/fees (pp. 73, 80); it lacks AI-specific governance terms. See run 5, S08 Q1.

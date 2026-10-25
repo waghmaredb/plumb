@@ -32,10 +32,10 @@ from plumbverify.policy import BUILD_PROFILES, DEFAULT_BUILD_PROFILE, present_ou
 
 from .context import DEFAULT_CAP, RunContext, ToolCapExceeded
 from .models import Gap, ModuleResult, ResearchClaim, Signal
-from .modules import annual_report, earnings_calls, financials, patents, peerset, postings
+from .modules import annual_report, earnings_calls, financials, findings, patents, peerset, postings
 from .subject import Subject
 
-MODULE_ORDER = ["annual-report", "peer-set", "postings", "earnings-calls", "patents", "financials"]
+MODULE_ORDER = ["annual-report", "peer-set", "postings", "earnings-calls", "patents", "financials", "findings"]
 
 
 @dataclass
@@ -89,6 +89,7 @@ def _module_fns(ctx: RunContext, competitors_box: dict) -> dict[str, Callable[[R
         "earnings-calls": lambda c: earnings_calls.run(s, c.store, c.log, c),
         "patents": lambda c: patents.run(s, c.store, c.log, c),
         "financials": lambda c: financials.run(s, c.store, c.log, c),
+        "findings": lambda c: findings.run(s, c.store, c.log, c),
     }
 
 
@@ -184,6 +185,9 @@ def _write_outputs(ctx: RunContext, o: RunOutcome) -> None:
                          "module_gaps": [g.model_dump(mode="json") for g in o.gaps],
                          "verify_items": o.subject.all_verify_items()},
         "escalations": o.escalations,
+        # P5: observations (a search, not a claim; presentation "question") and questions for management from the
+        # findings module. The deck renders a question only when every basis claim is released.
+        "findings": _findings_summary(o),
         "attached_documents": o.attached_documents,
         "log": str(ctx.log.path) if ctx.log else None,
         "log_chain_ok": ctx.log.verify().ok if ctx.log else None,
@@ -196,6 +200,15 @@ def _write_outputs(ctx: RunContext, o: RunOutcome) -> None:
         (out / "peer-set.md").write_text(f"# Peer-set protocol exhibit — {o.subject.name}\n\nPeer-set module did not run.\n", encoding="utf-8")
     (out / "signals.md").write_text(signals_markdown(o), encoding="utf-8")
     (out / "gap-register.md").write_text(gap_register_markdown(o), encoding="utf-8")
+
+
+def _findings_summary(o: RunOutcome) -> dict:
+    obs, qs = [], []
+    for r in o.modules:
+        if r.module == "findings":
+            obs += list(r.detail.get("observations") or [])
+            qs += list(r.detail.get("questions") or [])
+    return {"observations": obs, "questions": qs}
 
 
 def _fmt_val(v) -> str:
@@ -354,4 +367,26 @@ def gap_register_markdown(o: RunOutcome) -> str:
             else:
                 L.append(f"- {r.get('document_key') or r['url']}: publisher hash unreconciled; {r.get('claims_released', 0)} released claim(s) carry the attached label "
                          f"until `plumbverify reconcile` returns MATCH (internal build; not for client use).")
+    fs = _findings_summary(o)
+    if fs["observations"] or fs["questions"]:
+        rel = {c.id for c in o.released_claims}
+        L.append("")
+        L.append(f"## 6. Observations and questions for management ({len(fs['observations'])} observation(s), {len(fs['questions'])} question(s))")
+        L.append("")
+        L.append("An observation records a search and its limits; it is never a claim about the subject and is shown only as a question "
+                 "to put to management (ghost deck §2.4). A question is shown only when every basis claim is released.")
+        for ob in fs["observations"]:
+            se = ob["search"]
+            L.append("")
+            L.append(f"- **{ob['id']}** — {ob['statement']} Document: {se['document']} (`{(se.get('sha256') or '')[:16]}`), pages {se['pages_searched']}, "
+                     f"engine {se['extraction_engine']}. Zero-hit terms: {', '.join(se['zero_hit_terms']) or 'none'}.")
+            for lim in ob["limitations"]:
+                L.append(f"  - limitation: {lim}")
+        L.append("")
+        L.append("| Question | Basis claims | Shown |")
+        L.append("|---|---|---|")
+        for q in fs["questions"]:
+            basis = q.get("basis_claim_ids") or []
+            shown = "yes" if all(b in rel for b in basis) else "withheld (basis not released)"
+            L.append(f"| {q['text']} | {', '.join(b.rsplit('.', 2)[-2] + '.' + b.rsplit('.', 1)[-1] for b in basis) or '—'} | {shown} |")
     return "\n".join(L) + "\n"

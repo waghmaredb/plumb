@@ -1,0 +1,34 @@
+# Regulatory-clock claims the findings module attaches to a subject (red-team review 2026-10-25 §4.6:
+# "which of our AI use cases will survive MAS's October 2027 inventory test").
+#
+# Every entry is a plumbverify Claim against the regulator's PRIMARY URL. The Verifier fetches it; nothing
+# here is released unless the primary source is fetched, hashed and supports the text (C4). Offline, the
+# MAS host is unreachable, so these claims are withheld and listed in the gap register — that is the
+# intended behaviour, not a defect. Text follows compliance/regulatory-status-map.md v0.1.1 (MAS AIRM row,
+# para 1.8), which was read from the MAS PDF on 2026-10-25.
+#
+# applies_if: every listed key must match the subject (home_market exact; sector one of).
+instruments:
+  - key: sg-mas-airm
+    name: MAS Guidelines on Artificial Intelligence Risk Management
+    short: MAS AIRM
+    applies_if:
+      home_market: [Singapore]
+      sector: [insurers, banks, asset-managers, payments, capital-markets, financial-advisers]
+    status_map: compliance/regulatory-status-map.md (MAS AIRM row)
+    sources:
+      - https://www.mas.gov.sg/-/media/mas-media-library/regulation/guidelines/bd/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions/guidelines-on-artificial-intelligence-risk-management.pdf
+      - https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions
+    claims:
+      - key: issued
+        text: "MAS issued the Guidelines on Artificial Intelligence Risk Management for Financial Institutions on 7 October 2026."
+        clock: issued
+        date: "7 October 2026"
+      - key: effective
+        text: "The MAS Guidelines on Artificial Intelligence Risk Management take effect on 7 October 2027."
+        clock: effective
+        date: "7 October 2027"
+      - key: lifecycle
+        text: "Financial institutions may meet the AI life cycle controls and AI capability and capacity sections of the MAS Guidelines on Artificial Intelligence Risk Management by 7 October 2028."
+        clock: lifecycle
+        date: "7 October 2028"

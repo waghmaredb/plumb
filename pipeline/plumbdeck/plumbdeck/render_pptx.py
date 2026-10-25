@@ -18,7 +18,7 @@ from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import MSO_ANCHOR, PP_ALIGN
 from pptx.util import Emu, Inches, Pt
 
-from .model import Bars, Block, Bullets, Cells, Columns, Para, Slide, Table
+from .model import Bars, Block, Boxes, Bullets, Cells, Columns, Para, Slide, Table
 
 W, H = 13.333, 7.5
 ML, MR = 0.6, 0.6
@@ -92,16 +92,16 @@ def _line(slide, x1, y1, x2, y2, color=RULE, width_pt=0.75):
 
 # ------------------------------------------------------------------ blocks
 def _para_h(b: Para, w: float) -> float:
-    pt = {"lead": 14, "strong": 12, "muted": 10, "withheld": 14}.get(b.style, 11)
-    return _lines(b.text, w, pt) * pt * 1.3 / 72 + 0.1
+    pt = {"lead": 14, "strong": 12, "muted": 10, "withheld": 14, "withheld_inline": 11}.get(b.style, 11)
+    return _lines(b.text, w, pt * 0.95) * pt * 1.25 / 72 + 0.08
 
 
 def _row_heights(t: Table, widths_in: list[float]) -> list[float]:
-    lh = t.font_pt * 1.25 / 72
+    lh = t.font_pt * 1.22 / 72
     hs = []
     for r in [t.header] + t.rows:
-        n = max(_lines(c, w - 0.1, t.font_pt) for c, w in zip(r, widths_in))
-        hs.append(n * lh + 0.08)
+        n = max(_lines(c, w - 0.12, t.font_pt * 0.97) for c, w in zip(r, widths_in))
+        hs.append(n * lh + 0.12)  # LibreOffice / PowerPoint add paragraph spacing per cell; estimate high, never overlap
     return hs
 
 
@@ -109,6 +109,19 @@ def _col_widths(t: Table, w: float) -> list[float]:
     rel = t.widths or [1.0] * len(t.header)
     s = sum(rel)
     return [w * r / s for r in rel]
+
+
+BOX_GAP, BOX_PAD, BOX_LABEL_H = 0.15, 0.1, 0.3
+
+
+def _boxes_row_heights(b: Boxes, w: float) -> list[float]:
+    cols = max(1, b.columns)
+    bw = (w - BOX_GAP * (cols - 1)) / cols
+    hs = []
+    for r in range(0, len(b.boxes), cols):
+        row = b.boxes[r:r + cols]
+        hs.append(max(BOX_LABEL_H + sum(_para_h(p, bw - 2 * BOX_PAD) for p in paras) + 2 * BOX_PAD for _, paras in row) + BOX_GAP)
+    return hs
 
 
 def _block_h(b: Block, w: float) -> float:
@@ -122,6 +135,8 @@ def _block_h(b: Block, w: float) -> float:
         return 0.55 * len(b.bars) + 0.45
     if isinstance(b, Cells):
         return math.ceil(len(b.cells) / b.columns) * 0.95 + 0.1
+    if isinstance(b, Boxes):
+        return sum(_boxes_row_heights(b, w)) + 0.1
     if isinstance(b, Columns):
         return max(sum(_block_h(x, w * b.ratio - 0.15) for x in b.left),
                    sum(_block_h(x, w * (1 - b.ratio) - 0.15) for x in b.right))
@@ -131,7 +146,8 @@ def _block_h(b: Block, w: float) -> float:
 def _draw_block(slide, b: Block, x: float, y: float, w: float) -> float:
     if isinstance(b, Para):
         style = {"lead": (14, True, INK, False), "strong": (12, True, INK, False), "muted": (10, False, MUTED, False),
-                 "withheld": (14, True, WITHHELD_INK, False)}.get(b.style, (11, False, INK, False))
+                 "withheld": (14, True, WITHHELD_INK, False),
+                 "withheld_inline": (11, True, WITHHELD_INK, False)}.get(b.style, (11, False, INK, False))
         h = _para_h(b, w)
         _text(slide, x, y, w, h, b.text, pt=style[0], bold=style[1], color=style[2], italic=style[3])
         return h
@@ -206,6 +222,21 @@ def _draw_block(slide, b: Block, x: float, y: float, w: float) -> float:
             _text(slide, cx + 0.05, cy + 0.22, cw - 0.1, 0.32, val, pt=14, bold=True, color=ACCENT)
             _text(slide, cx + 0.05, cy + 0.52, cw - 0.1, 0.33, note[:90], pt=7, color=MUTED)
         return math.ceil(len(b.cells) / cols) * 0.95 + 0.1
+    if isinstance(b, Boxes):
+        cols = max(1, b.columns)
+        bw = (w - BOX_GAP * (cols - 1)) / cols
+        yy = y
+        for r, rh in zip(range(0, len(b.boxes), cols), _boxes_row_heights(b, w)):
+            for k, (label, paras) in enumerate(b.boxes[r:r + cols]):
+                bx = x + k * (bw + BOX_GAP)
+                box = _rect(slide, bx, yy, bw, rh - BOX_GAP, HEAD_FILL)
+                _rect(slide, bx, yy, 0.06, rh - BOX_GAP, ACCENT)
+                _text(slide, bx + BOX_PAD, yy + BOX_PAD - 0.04, bw - 2 * BOX_PAD, BOX_LABEL_H, label, pt=11, bold=True, color=ACCENT)
+                py = yy + BOX_PAD + BOX_LABEL_H
+                for p in paras:
+                    py += _draw_block(slide, p, bx + BOX_PAD, py, bw - 2 * BOX_PAD)
+            yy += rh
+        return yy - y + 0.1
     if isinstance(b, Columns):
         lw = w * b.ratio - 0.15
         rw = w * (1 - b.ratio) - 0.15

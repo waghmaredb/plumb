@@ -1,0 +1,196 @@
+# PLUMB prospect pre-read spec v0.1 (product item P5) — an outside-in pre-read for a first management
+# meeting, NOT the full assessment (that is plumb-assessment-v0.1.yaml). 11 slide IDs: S01–S10 + A1.
+#
+# Principle: nothing appears on a slide that is not a released, verified claim (bound by id or id prefix),
+# a structured observation / question emitted by plumbresearch (rendered only as a question), or an
+# explicitly labelled placeholder or offer. This spec carries labels, column headers and method notes only;
+# it carries no finding. Title templates assert only what their bound claims say, and fall back to
+# `title_withheld` when a claim they rest on is withheld (`bind.title_requires`).
+#
+# Ghost deck rules apply (methodology/ghost-deck-template.md v0.1.1): R3 titles <= 15 words (lint), R6 source
+# lines (lint), R8/R9 interlock and DRAFT banner (no override), §2.4 run-presentation format (S10),
+# §2.4 "single-document findings are presented as a question to put to management" (S08).
+#
+# Claim ids come from pipeline/plumbresearch/plumbresearch/modules/findings.py:
+#   <slug>.findings.deploy.N[.contextK]   <slug>.findings.opmodel.N   <slug>.findings.leadership.{N,successor}
+#   <slug>.findings.governance.N          <slug>.findings.reg.<instrument>.<clock>
+# Questions: <slug>.findings.q.{governance,group,successor,testing.N,measurement,opmodel,regulatory}
+
+spec_version: "0.1"
+name: Outside-in AI pre-read
+ghost_deck: methodology/ghost-deck-template.md v0.1.1 (pre-read subset; P5)
+
+deliverable:
+  id: "PLUMB-PR-{subject_slug}-{run_id}"
+  version: "0.1"
+  firm: PLUMB
+  tools: []
+  scope_of_ai: research and source retrieval; rule-based claim extraction and verification; no model-generated text on any slide
+  verification_control_owner: "[Name, role]"
+  corrections_contact: "[contact]"
+
+slides:
+  - id: S01
+    section: Cover
+    kind: cover
+    exhibit: cover
+    bind:
+      lead: Outside-in AI pre-read
+      occasion: pre-read for a first management conversation
+    title: "{client_full}: what public evidence says about AI, {date}"
+
+  - id: S02
+    section: AI-use disclosure and verification statement
+    kind: disclosure
+    exhibit: disclosure
+    title: "This pre-read is AI-assisted, human-accountable, and every citation was verified before release"
+    title_withheld: "DRAFT — not for board use: {n_released} claims released, {n_withheld} withheld and listed"
+
+  - id: S03
+    section: What public evidence says (SCQA)
+    kind: data
+    exhibit: scqa
+    title: "{client}'s FY{fy} report shows AI in use and its AI leadership seat in transition"
+    title_withheld: "[H] {client}'s public AI record: the summary awaits released claims"
+    bind:
+      title_requires:
+        - "{subject_slug}.findings.deploy.1"
+        - "{subject_slug}.findings.leadership.1"
+        - "{subject_slug}.findings.leadership.successor"
+      boxes:
+        - label: Situation — the FY2025 annual report, verbatim
+          claims: ["{subject_slug}.findings.deploy.1", "{subject_slug}.findings.deploy.2"]
+        - label: Complication — leadership and the regulatory clock
+          claims: ["{subject_slug}.findings.leadership.1", "{subject_slug}.findings.leadership.successor", "{subject_slug}.findings.reg.sg-mas-airm.effective"]
+        - label: Question
+          question: q.governance
+        - label: Answer
+          offer: "the questions on S08 are what a Phase A assessment tests against evidence (S09)."
+      note: "Every sentence above is a verbatim quotation of a released claim, a question generated from released claims, a placeholder for a withheld claim, or labelled offer text."
+
+  - id: S04
+    section: AI in production — named deployments
+    kind: data
+    exhibit: claim_list
+    title: "{client}'s FY{fy} report names AI in {n_distinct_use_case|word} use cases, {n_stage_testing|word} still in testing"
+    title_withheld: "[H] {client}'s named AI applications await released claims"
+    bind:
+      prefix: "{subject_slug}.findings.deploy."
+      exclude_categories: [deployment-context]
+      context: true
+      quote_header: "What the FY2025 annual report says (verbatim)"
+      attr_columns: {use_case: "Use case", stage: "Stage (verb in quote)"}
+      counts_by: [stage]
+      count_values: {stage: [in use, testing, developed]}
+      distinct_by: [use_case]
+      title_requires_all: true
+      font_pt: 10
+      rows_per_slide: 8
+    so_what: "stage is the verb in each quote, the company's own description; production evidence and measurement are asked on S08."
+
+  - id: S05
+    section: AI leadership — seat in transition
+    kind: data
+    exhibit: claim_list
+    title: "{client}'s {seat_short} seat is in transition, successor to be named"
+    title_withheld: "[H] {client}'s AI leadership position awaits released claims"
+    bind:
+      claims:
+        - "{subject_slug}.findings.leadership.1"
+        - "{subject_slug}.findings.leadership.successor"
+        - "{subject_slug}.findings.leadership.2"
+        - "{subject_slug}.findings.opmodel.1"
+        - "{subject_slug}.findings.opmodel.2"
+      quote_header: "What the FY2025 annual report says (verbatim)"
+      attr_columns: {status: "Status (from the sentence)"}
+      tokens:
+        seat_short: {attr: seat_short, where: {status: in transition}}
+      title_requires:
+        - "{subject_slug}.findings.leadership.1"
+        - "{subject_slug}.findings.leadership.successor"
+      font_pt: 10
+      note: "Status is read from the sentence: 'expected to join' = in transition; 'left the Group' = departed. The report's own date is its as-of date; later appointments are not covered."
+    so_what: "continuity of AI ownership is not established by the public record; S08 asks who holds the seat now."
+
+  - id: S06
+    section: Disclosure rubric — what it can and cannot tell you
+    kind: data
+    exhibit: rubric_detail
+    title: "{client}'s FY{fy} annual report reaches level {rubric_level} of 5 on the AI-disclosure rubric"
+    title_withheld: "[H] {client}'s AI-disclosure rubric level awaits released evidence"
+    bind:
+      signal_suffix: ".rubric"
+      question_components: {governance: q.governance}
+      can:
+        - "How specifically the report describes AI use, on a published 1–5 ladder (Yu et al.)"
+        - "Which sentences triggered each component — each a released quotation in A1"
+        - "A like-for-like signal across named peers once their reports are run"
+      cannot:
+        - "Whether the systems work or at what scale: a report describes, it does not evidence"
+        - "Maturity: proxies corroborate only and never lift an item above level 3 (instrument §5.4)"
+        - "Governance maturity: a lexicon count in one document is a question, not a score"
+        - "Rank among peers: peer reports have not been run"
+    so_what: "level 4 says the report is specific about AI; whether that AI is governed and measured is asked on S08."
+
+  - id: S07
+    section: Regulatory clock
+    kind: data
+    exhibit: claim_list
+    title: "MAS AI risk management guidelines take effect for {client} on {effective_date}"
+    title_withheld: "[H] The MAS AI risk clock is withheld until its primary source is fetched"
+    bind:
+      prefix: "{subject_slug}.findings.reg."
+      quote_header: "Regulatory clock (regulator's primary source)"
+      attr_columns: {clock: "Milestone"}
+      tokens:
+        effective_date: {attr: date, where: {clock: effective}}
+      title_requires_all: true
+    so_what: "the clock sets how long the questions on S08 can stay open."
+    exhibit_note: "MAS AIRM milestones (issued, takes effect, lifecycle controls) from the MAS primary PDF and landing page; compliance/regulatory-status-map.md MAS AIRM row"
+
+  - id: S08
+    section: Questions for management
+    kind: data
+    exhibit: questions
+    title: "{n_questions_shown|Word} questions for management that the public record raises but cannot answer"
+    bind:
+      max: 8
+      limitations: true
+      font_pt: 10
+    so_what: "each answer moves an item from outside-in proxy to evidence; a Phase A assessment collects them (S09)."
+
+  - id: S09
+    section: What a PLUMB assessment would establish
+    kind: offer
+    exhibit: offer
+    title: "A Phase A assessment would test these questions against evidence in 12 working days"
+    bind:
+      lead: "What a PLUMB assessment would establish, and in what order."
+      columns:
+        - heading: "Phase A — public data, instrument, interviews (12 working days; no confidential data, no system access)"
+          items:
+            - "Outside-in research sprint on public sources, executed with egress and every attachment reconciled before anything is shown"
+            - "48-item self-assessment to 10–30 leaders: self-view and evidenced view side by side"
+            - "6–10 executive interviews: the S08 questions answered with artefacts, not assertions"
+            - "Rank within named core peers (n disclosed); no percentile below n = 15"
+            - "Gated use-case list and MAS-mapped evidence-pack skeleton; independent reviewer at QA gate 3"
+        - heading: "Phase B — confidential extracts (+8 working days, only after onboarding clears)"
+          items:
+            - "KPI extracts into the value driver tree; value pools re-sized on client data"
+            - "AI inventory, governance papers, vendor contracts and incident log reviewed"
+            - "Business cases on system-measured baselines; measurement design"
+            - "Full 10-artefact evidence pack; QA gate 3 re-run on every changed number"
+      note: "Fixed fee by client size band, Phase A sold alone; Phase B is a written option (pricing ladder §3.1)."
+      source: "commercial/pricing-ladder.md v0.2 §3 (static offer text; not a claim about the prospect)"
+
+  - id: S10
+    section: Released / withheld summary
+    kind: register
+    exhibit: gap_register
+    title: "{n_released} claims were released and {n_withheld} withheld; every withheld claim is listed"
+
+  - id: A1
+    section: Appendix — evidence log
+    kind: data
+    exhibit: evidence_log
+    title: "Every released claim traces to a stored source passage, page and hash"

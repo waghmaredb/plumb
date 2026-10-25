@@ -1,0 +1,1016 @@
+{
+  "subject": "great-eastern",
+  "run_id": "research-e0bc54685dce",
+  "claims": [
+    {
+      "id": "great-eastern.ar.annual_report.2025.q1",
+      "text": "In 2025, we deployed an AI-enabled advisory platform that aims to reduce preparation time for financial advisors by approximately 75%, enabling them to focus more on customer engagement and advice.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "In 2025, we deployed an AI-enabled advisory platform that aims to reduce preparation time for financial advisors by approximately 75%, enabling them to focus more on customer engagement and advice.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.3",
+        "D1.6",
+        "D5.4",
+        "D8.3"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): production, quantified, specificity",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.q2",
+      "text": "We rolled out a proprietary AI-powered platform to automate medical claims, enhancing claim efficiency while improving customer experience.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "We rolled out a proprietary AI-powered platform to automate medical claims, enhancing claim efficiency while improving customer experience.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): production",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.q3",
+      "text": "In 2025, our AI-driven claims system delivered same-day turnarounds for 75% of medical claims, one of the fastest among Singapore’s health insurers based on Ministry of Health service indicators.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "In 2025, our AI-driven claims system delivered same-day turnarounds for 75% of medical claims, one of the fastest among Singapore’s health insurers based on Ministry of Health service indicators.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.6",
+        "D8.3"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): quantified",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.q4",
+      "text": "ZHAO JINGYUAN Managing Director, Group Data and AI",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "ZHAO JINGYUAN Managing Director, Group Data and AI",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D4.4"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): ownership",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.q5",
+      "text": "Ms Zhao Jingyuan (Managing Director, Group Data and Artificial Intelligence) is expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”) as the Head of the Group Data Office in March 2026.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Ms Zhao Jingyuan (Managing Director, Group Data and Artificial Intelligence) is expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”) as the Head of the Group Data Office in March 2026.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D4.4"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): ownership",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.q6",
+      "text": "Sharpened in-house analytics and AI for underwriting and medical claims to enhance accuracy and consistency, empowering employees to drive continuous improvement through more agile workflows.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Sharpened in-house analytics and AI for underwriting and medical claims to enhance accuracy and consistency, empowering employees to drive continuous improvement through more agile workflows.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.3"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.rubric"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "rubric component(s): specificity",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.l1",
+      "text": "Wynn Chew Ai Ling Division Head, Group & Digital Affinity",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Wynn Chew Ai Ling Division Head, Group & Digital Affinity",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D2.1",
+        "D5.2"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.leadership"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "leadership title: Division Head, Group & Digital Affinity [CDigO] (Wynn Chew Ai Ling) @ Great Eastern Life Assurance (Malaysia) Berhad (subject-subsidiary, section); present",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.l2",
+      "text": "Lucy Loo Liuxi Division Head, Marketing and Digital Transformation",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Lucy Loo Liuxi Division Head, Marketing and Digital Transformation",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D2.1",
+        "D5.2"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.leadership"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "leadership title: Division Head, Marketing and Digital Transformation [CDigO] (Lucy Loo Liuxi) @ Great Eastern General Insurance (Malaysia) Berhad (subject-subsidiary, section); present",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.l3",
+      "text": "Ms Zhao Jingyuan (Managing Director, Group Data and Artificial Intelligence) is expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”) as the Head of the Group Data Office in March 2026.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Ms Zhao Jingyuan (Managing Director, Group Data and Artificial Intelligence) is expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”) as the Head of the Group Data Office in March 2026.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D2.1",
+        "D5.2"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.leadership",
+        "great-eastern.ar.annual_report.2025.leadership_parent"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "leadership title: Managing Director, Group Data and AI [CAIO-equivalent] (Zhao Jingyuan) @ Great Eastern Holdings Limited (subject, section); leaving: expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”); successor to be named in due course, March 2026; also Head of the Group Data Office [CDO-equivalent] @ Oversea-Chinese Banking Corporation Limited (parent, clause); incoming: joining Oversea-Chinese Banking Corporation Limited, March 2026",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.l4",
+      "text": "Mr Colin Chan (Managing Director, Group Marketing), Mr Ryan Cheong (Managing Director, Group Customer and Digital), Mr Clement Lien (Managing Director, Group Premier Wealth) and Mr Patrick Peck (Managing Director, Regional Agency, Financial Advisors and Bancassurance) left the Group in 2025.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Mr Colin Chan (Managing Director, Group Marketing), Mr Ryan Cheong (Managing Director, Group Customer and Digital), Mr Clement Lien (Managing Director, Group Premier Wealth) and Mr Patrick Peck (Managing Director, Regional Agency, Financial Advisors and Bancassurance) left the Group in 2025.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D2.1",
+        "D5.2"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.leadership"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "leadership title: Managing Director, Group Customer and Digital [CDigO] (Ryan Cheong) @ Great Eastern Holdings Limited (subject, sentence); departed: left the Group, 2025",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.ar.annual_report.2025.l5",
+      "text": "He was the Group Chief Risk Officer of OCBC from 2014 to 2022 and the Group Chief Information Security Officer of OCBC from 2021 to 2022.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "annual-report",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "He was the Group Chief Risk Officer of OCBC from 2014 to 2022 and the Group Chief Information Security Officer of OCBC from 2021 to 2022.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D2.1",
+        "D5.2"
+      ],
+      "signal_ids": [
+        "great-eastern.ar.annual_report.2025.leadership"
+      ],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "leadership title: Group Chief Information Security Officer [other] @ OCBC (parent, clause); former: former role (biography)",
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.peer.size.prudential-assurance-co-singapore-i527l",
+      "text": "Prudential Assurance Co Singapore (I527L) S$66.3 billion under management as at 31 December 2025 (AUM, not total assets)",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "peer-set",
+      "sources": [
+        "https://www.mas.gov.sg/-/media/mas-media-library/statistics/insurance-statistics/insurance-company-returns/annual_l/i527l/2025/2025.xlsx"
+      ],
+      "passage": null,
+      "tier": "T1",
+      "instrument_items": [
+        "peer-size"
+      ],
+      "signal_ids": [
+        "great-eastern.peerset.core_n"
+      ],
+      "value": null,
+      "unit": "USD bn",
+      "period": null,
+      "note": null,
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.peer.size.income-insurance-ltd-i585c",
+      "text": "Income Insurance Ltd (I585C) Total Assets S$44.7 billion (PY24 S$43.4 billion)",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "peer-set",
+      "sources": [
+        "https://www.income.com.sg/getContentAsset/f39850fb-3691-42e4-b8b9-bfb476d651f8/05c6012c-3879-4f1c-b994-00e61e65c363/Income-Insurance-%E2%80%93-Annual-Report-2025.pdf?language=en"
+      ],
+      "passage": null,
+      "tier": "T2",
+      "instrument_items": [
+        "peer-size"
+      ],
+      "signal_ids": [
+        "great-eastern.peerset.core_n"
+      ],
+      "value": 35.0,
+      "unit": "USD bn",
+      "period": null,
+      "note": null,
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.peer.size.singapore-life-ltd-singlife-i518c",
+      "text": "Singapore Life Ltd (Singlife, I518C) total assets over S$16 billion (newsroom, undated)",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "peer-set",
+      "sources": [
+        "https://www.mas.gov.sg/-/media/mas/statistics/insurance-returns/life-and-general-business/i518c/2025/2025.xlsx"
+      ],
+      "passage": null,
+      "tier": "T1",
+      "instrument_items": [
+        "peer-size"
+      ],
+      "signal_ids": [
+        "great-eastern.peerset.core_n"
+      ],
+      "value": null,
+      "unit": "USD bn",
+      "period": null,
+      "note": null,
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.peer.size.aia-group-whole",
+      "text": "AIA Group (whole) total assets US$345,423 million at 31 December 2025",
+      "kind": "number",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "peer-set",
+      "sources": [
+        "https://www.aia.com/content/dam/group-wise/en/docs/investor-relations/2025/AIA%202025%20annual%20report_EN.pdf"
+      ],
+      "passage": null,
+      "tier": "T2",
+      "instrument_items": [
+        "peer-size"
+      ],
+      "signal_ids": [
+        "great-eastern.peerset.core_n"
+      ],
+      "value": 345.0,
+      "unit": "USD bn",
+      "period": null,
+      "note": null,
+      "attrs": {}
+    },
+    {
+      "id": "great-eastern.findings.deploy.1",
+      "text": "In 2025, we deployed an AI-enabled advisory platform that aims to reduce preparation time for financial advisors by approximately 75%, enabling them to focus more on customer engagement and advice.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "In 2025, we deployed an AI-enabled advisory platform that aims to reduce preparation time for financial advisors by approximately 75%, enabling them to focus more on customer engagement and advice.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4",
+        "D1.3",
+        "D8.3"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "named AI application: adviser support; stage 'in use' from the verb in the quoted sentence",
+      "attrs": {
+        "page_expected": 14,
+        "document": "annual report FY2025",
+        "category": "deployment",
+        "stage": "in use",
+        "use_case": "adviser support",
+        "figures": [
+          "approximately 75%"
+        ],
+        "also_reported_on_pages": [
+          40
+        ]
+      }
+    },
+    {
+      "id": "great-eastern.findings.deploy.2",
+      "text": "We rolled out a proprietary AI-powered platform to automate medical claims, enhancing claim efficiency while improving customer experience.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "We rolled out a proprietary AI-powered platform to automate medical claims, enhancing claim efficiency while improving customer experience.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4",
+        "D1.3"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "named AI application: medical claims; stage 'in use' from the verb in the quoted sentence",
+      "attrs": {
+        "page_expected": 14,
+        "document": "annual report FY2025",
+        "category": "deployment",
+        "stage": "in use",
+        "use_case": "medical claims",
+        "figures": []
+      }
+    },
+    {
+      "id": "great-eastern.findings.deploy.3",
+      "text": "We are also testing an AI solution for complex underwriting cases to further improve automation and associated efficiency.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "We are also testing an AI solution for complex underwriting cases to further improve automation and associated efficiency.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4",
+        "D1.3"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "named AI application: underwriting; stage 'testing' from the verb in the quoted sentence",
+      "attrs": {
+        "page_expected": 14,
+        "document": "annual report FY2025",
+        "category": "deployment",
+        "stage": "testing",
+        "use_case": "underwriting",
+        "figures": []
+      }
+    },
+    {
+      "id": "great-eastern.findings.deploy.4",
+      "text": "In 2025, our AI-driven claims system delivered same-day turnarounds for 75% of medical claims, one of the fastest among Singapore’s health insurers based on Ministry of Health service indicators.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "In 2025, our AI-driven claims system delivered same-day turnarounds for 75% of medical claims, one of the fastest among Singapore’s health insurers based on Ministry of Health service indicators.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4",
+        "D1.3",
+        "D8.3"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "named AI application: medical claims; stage 'in use' from the verb in the quoted sentence",
+      "attrs": {
+        "page_expected": 40,
+        "document": "annual report FY2025",
+        "category": "deployment",
+        "stage": "in use",
+        "use_case": "medical claims",
+        "figures": [
+          "75%"
+        ]
+      }
+    },
+    {
+      "id": "great-eastern.findings.deploy.5",
+      "text": "We further leveraged AI in our customer segmentation process for our supplementary long-term care insurance plan, Great CareShield, to enable instant approvals for existing lower-risk customers.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "We further leveraged AI in our customer segmentation process for our supplementary long-term care insurance plan, Great CareShield, to enable instant approvals for existing lower-risk customers.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4",
+        "D1.3"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "named AI application: customer segmentation; stage 'in use' from the verb in the quoted sentence",
+      "attrs": {
+        "page_expected": 40,
+        "document": "annual report FY2025",
+        "category": "deployment",
+        "stage": "in use",
+        "use_case": "customer segmentation",
+        "figures": []
+      }
+    },
+    {
+      "id": "great-eastern.findings.deploy.6",
+      "text": "As AI accelerates transformation across the insurance industry, we have developed an Optical Character Recognition solution that extracts and analyses data from medical bills to identify potential wastage and abuse within medical claims.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "As AI accelerates transformation across the insurance industry, we have developed an Optical Character Recognition solution that extracts and analyses data from medical bills to identify potential wastage and abuse within medical claims.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4",
+        "D1.3"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "named AI application: medical-claims fraud, waste and abuse; stage 'developed' from the verb in the quoted sentence",
+      "attrs": {
+        "page_expected": 43,
+        "document": "annual report FY2025",
+        "category": "deployment",
+        "stage": "developed",
+        "use_case": "medical-claims fraud, waste and abuse",
+        "figures": []
+      }
+    },
+    {
+      "id": "great-eastern.findings.deploy.7",
+      "text": "We have also developed an AI-driven model to help identify potential misconduct cases, significantly reducing the manual effort and time required for investigations.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "We have also developed an AI-driven model to help identify potential misconduct cases, significantly reducing the manual effort and time required for investigations.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4",
+        "D1.3"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "named AI application: misconduct detection; stage 'developed; outcome stated' from the verb in the quoted sentence",
+      "attrs": {
+        "page_expected": 43,
+        "document": "annual report FY2025",
+        "category": "deployment",
+        "stage": "developed; outcome stated",
+        "use_case": "misconduct detection",
+        "figures": []
+      }
+    },
+    {
+      "id": "great-eastern.findings.deploy.6.context1",
+      "text": "This capability has significantly strengthened our claims oversight and operational efficiency.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "This capability has significantly strengthened our claims oversight and operational efficiency.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "follow-on sentence for 6 (same application)",
+      "attrs": {
+        "page_expected": 43,
+        "document": "annual report FY2025",
+        "category": "deployment-context",
+        "of": "great-eastern.findings.deploy.6"
+      }
+    },
+    {
+      "id": "great-eastern.findings.deploy.6.context2",
+      "text": "The initiative was awarded the Best Claims Initiative in Malaysia at the Insurance Asia Awards 2025.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "The initiative was awarded the Best Claims Initiative in Malaysia at the Insurance Asia Awards 2025.",
+      "tier": "T2",
+      "instrument_items": [
+        "D5.4"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "follow-on sentence for 6 (same application)",
+      "attrs": {
+        "page_expected": 43,
+        "document": "annual report FY2025",
+        "category": "deployment-context",
+        "of": "great-eastern.findings.deploy.6"
+      }
+    },
+    {
+      "id": "great-eastern.findings.opmodel.1",
+      "text": "In 2025, we restructured our Data & AI operating model to accelerate transformation.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "In 2025, we restructured our Data & AI operating model to accelerate transformation.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D2.1"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "AI / data / digital operating-model statement",
+      "attrs": {
+        "page_expected": 41,
+        "document": "annual report FY2025",
+        "category": "operating-model",
+        "unit": "Data & AI",
+        "year": "2025"
+      }
+    },
+    {
+      "id": "great-eastern.findings.opmodel.2",
+      "text": "A new Group Integrated Propositions and Platforms Division, which unified the Group Marketing, Group Customer and Digital and Group Premier Wealth functions under a single leadership structure, was established in September 2025 under Ms Kwek-Perroy Li Choo, who was appointed as Managing Director.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "A new Group Integrated Propositions and Platforms Division, which unified the Group Marketing, Group Customer and Digital and Group Premier Wealth functions under a single leadership structure, was established in September 2025 under Ms Kwek-Perroy Li Choo, who was appointed as Managing Director.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D2.1"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "AI / data / digital operating-model statement",
+      "attrs": {
+        "page_expected": 67,
+        "document": "annual report FY2025",
+        "category": "operating-model",
+        "unit": null,
+        "year": "2025"
+      }
+    },
+    {
+      "id": "great-eastern.findings.leadership.1",
+      "text": "Ms Zhao Jingyuan (Managing Director, Group Data and Artificial Intelligence) is expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”) as the Head of the Group Data Office in March 2026.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Ms Zhao Jingyuan (Managing Director, Group Data and Artificial Intelligence) is expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”) as the Head of the Group Data Office in March 2026.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D2.1",
+        "D5.2"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "AI / data seat in transition: Managing Director, Group Data and AI (Zhao Jingyuan)",
+      "attrs": {
+        "page_expected": 67,
+        "document": "annual report FY2025",
+        "category": "leadership",
+        "status": "in transition",
+        "title": "Managing Director, Group Data and AI",
+        "seat_short": "Group Data and AI",
+        "names": [
+          "Zhao Jingyuan"
+        ],
+        "status_detail": "expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”); successor to be named in due course",
+        "effective": "March 2026"
+      }
+    },
+    {
+      "id": "great-eastern.findings.leadership.2",
+      "text": "Mr Colin Chan (Managing Director, Group Marketing), Mr Ryan Cheong (Managing Director, Group Customer and Digital), Mr Clement Lien (Managing Director, Group Premier Wealth) and Mr Patrick Peck (Managing Director, Regional Agency, Financial Advisors and Bancassurance) left the Group in 2025.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Mr Colin Chan (Managing Director, Group Marketing), Mr Ryan Cheong (Managing Director, Group Customer and Digital), Mr Clement Lien (Managing Director, Group Premier Wealth) and Mr Patrick Peck (Managing Director, Regional Agency, Financial Advisors and Bancassurance) left the Group in 2025.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2",
+        "D2.1",
+        "D5.2"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "AI / data seat departed: Managing Director, Group Customer and Digital (Ryan Cheong)",
+      "attrs": {
+        "page_expected": 67,
+        "document": "annual report FY2025",
+        "category": "leadership",
+        "status": "departed",
+        "title": "Managing Director, Group Customer and Digital",
+        "seat_short": "Group Customer and Digital",
+        "names": [
+          "Ryan Cheong"
+        ],
+        "status_detail": "left the Group",
+        "effective": "2025"
+      }
+    },
+    {
+      "id": "great-eastern.findings.leadership.successor",
+      "text": "The successors to Ms Zhao Jingyuan and Mr Jimmy Tong will be named in due course.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "The successors to Ms Zhao Jingyuan and Mr Jimmy Tong will be named in due course.",
+      "tier": "T2",
+      "instrument_items": [
+        "D1.2"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "successor statement for the seat in transition",
+      "attrs": {
+        "page_expected": 67,
+        "document": "annual report FY2025",
+        "category": "leadership",
+        "status": "successor not yet named"
+      }
+    },
+    {
+      "id": "great-eastern.findings.governance.1",
+      "text": "As we expanded the use of digital and AI capabilities, we did so with discipline and robust governance.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "As we expanded the use of digital and AI capabilities, we did so with discipline and robust governance.",
+      "tier": "T2",
+      "instrument_items": [
+        "D6.1"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "sentence pairing an AI term with governance language (not an AI-governance framework statement)",
+      "attrs": {
+        "page_expected": 14,
+        "document": "annual report FY2025",
+        "category": "governance-adjacent",
+        "basis": "AI term + governance / oversight / accountability"
+      }
+    },
+    {
+      "id": "great-eastern.findings.governance.2",
+      "text": "Complementing these, our proprietary risk management AI solutions strengthen governance by continuously monitoring transactions and sales patterns to proactively detect compliance risks, including anti-money laundering and potential misconduct.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Complementing these, our proprietary risk management AI solutions strengthen governance by continuously monitoring transactions and sales patterns to proactively detect compliance risks, including anti-money laundering and potential misconduct.",
+      "tier": "T2",
+      "instrument_items": [
+        "D6.1"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "sentence pairing an AI term with governance language (not an AI-governance framework statement)",
+      "attrs": {
+        "page_expected": 40,
+        "document": "annual report FY2025",
+        "category": "governance-adjacent",
+        "basis": "AI term + governance / oversight / accountability"
+      }
+    },
+    {
+      "id": "great-eastern.findings.governance.3",
+      "text": "Collectively, they provide the necessary business acumen, knowledge, capabilities and core competencies to the Company and the Group, including industry knowledge in insurance (including key products and customers), investment and asset management (including real estate and property), banking (including key products and customers), accounting, finance, strategy formulation, business acumen, management experience, regulatory requirements, risk management, law, cyber risk, ESG and sustainability, taxation and artificial intelligence.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "Collectively, they provide the necessary business acumen, knowledge, capabilities and core competencies to the Company and the Group, including industry knowledge in insurance (including key products and customers), investment and asset management (including real estate and property), banking (including key products and customers), accounting, finance, strategy formulation, business acumen, management experience, regulatory requirements, risk management, law, cyber risk, ESG and sustainability, taxation and artificial intelligence.",
+      "tier": "T2",
+      "instrument_items": [
+        "D4.4",
+        "D6.1"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "board-level reference to artificial intelligence (directors' competencies or fees), not an AI-governance framework",
+      "attrs": {
+        "page_expected": 73,
+        "document": "annual report FY2025",
+        "category": "governance-adjacent",
+        "basis": "artificial intelligence named in a directors' competency or fee statement"
+      }
+    },
+    {
+      "id": "great-eastern.findings.governance.4",
+      "text": "(4) Dr Chong Yoke Sin and Mr Lee Fook Sun will each receive a fixed amount of $20,000 and $5,699 respectively for their contributions in respect of Great Eastern Group’s information technology infrastructure, data and artificial intelligence initiatives for FY2025.",
+      "kind": "quote",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+      ],
+      "passage": "(4) Dr Chong Yoke Sin and Mr Lee Fook Sun will each receive a fixed amount of $20,000 and $5,699 respectively for their contributions in respect of Great Eastern Group’s information technology infrastructure, data and artificial intelligence initiatives for FY2025.",
+      "tier": "T2",
+      "instrument_items": [
+        "D4.4",
+        "D6.1"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "board-level reference to artificial intelligence (directors' competencies or fees), not an AI-governance framework",
+      "attrs": {
+        "page_expected": 80,
+        "document": "annual report FY2025",
+        "category": "governance-adjacent",
+        "basis": "artificial intelligence named in a directors' competency or fee statement"
+      }
+    },
+    {
+      "id": "great-eastern.findings.reg.sg-mas-airm.issued",
+      "text": "MAS issued the Guidelines on Artificial Intelligence Risk Management for Financial Institutions on 7 October 2026.",
+      "kind": "fact",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.mas.gov.sg/-/media/mas-media-library/regulation/guidelines/bd/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions/guidelines-on-artificial-intelligence-risk-management.pdf",
+        "https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions"
+      ],
+      "passage": null,
+      "tier": "T1",
+      "instrument_items": [
+        "D6",
+        "S12"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "regulatory clock (MAS Guidelines on Artificial Intelligence Risk Management): issued; text from compliance/regulatory-status-map.md (MAS AIRM row)",
+      "attrs": {
+        "category": "regulatory",
+        "instrument": "MAS Guidelines on Artificial Intelligence Risk Management",
+        "instrument_short": "MAS AIRM",
+        "clock": "issued",
+        "date": "7 October 2026",
+        "page_expected": null
+      }
+    },
+    {
+      "id": "great-eastern.findings.reg.sg-mas-airm.effective",
+      "text": "The MAS Guidelines on Artificial Intelligence Risk Management take effect on 7 October 2027.",
+      "kind": "fact",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.mas.gov.sg/-/media/mas-media-library/regulation/guidelines/bd/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions/guidelines-on-artificial-intelligence-risk-management.pdf",
+        "https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions"
+      ],
+      "passage": null,
+      "tier": "T1",
+      "instrument_items": [
+        "D6",
+        "S12"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "regulatory clock (MAS Guidelines on Artificial Intelligence Risk Management): effective; text from compliance/regulatory-status-map.md (MAS AIRM row)",
+      "attrs": {
+        "category": "regulatory",
+        "instrument": "MAS Guidelines on Artificial Intelligence Risk Management",
+        "instrument_short": "MAS AIRM",
+        "clock": "effective",
+        "date": "7 October 2027",
+        "page_expected": null
+      }
+    },
+    {
+      "id": "great-eastern.findings.reg.sg-mas-airm.lifecycle",
+      "text": "Financial institutions may meet the AI life cycle controls and AI capability and capacity sections of the MAS Guidelines on Artificial Intelligence Risk Management by 7 October 2028.",
+      "kind": "fact",
+      "load_bearing": false,
+      "confidence_label": "filed",
+      "module": "findings",
+      "sources": [
+        "https://www.mas.gov.sg/-/media/mas-media-library/regulation/guidelines/bd/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions/guidelines-on-artificial-intelligence-risk-management.pdf",
+        "https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions"
+      ],
+      "passage": null,
+      "tier": "T1",
+      "instrument_items": [
+        "D6",
+        "S12"
+      ],
+      "signal_ids": [],
+      "value": null,
+      "unit": null,
+      "period": null,
+      "note": "regulatory clock (MAS Guidelines on Artificial Intelligence Risk Management): lifecycle; text from compliance/regulatory-status-map.md (MAS AIRM row)",
+      "attrs": {
+        "category": "regulatory",
+        "instrument": "MAS Guidelines on Artificial Intelligence Risk Management",
+        "instrument_short": "MAS AIRM",
+        "clock": "lifecycle",
+        "date": "7 October 2028",
+        "page_expected": null
+      }
+    }
+  ]
+}

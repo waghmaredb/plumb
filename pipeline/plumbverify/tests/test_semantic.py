@@ -320,3 +320,19 @@ def test_cli_models_pull_reports_failure(monkeypatch, tmp_path, capsys):
     monkeypatch.setitem(sys.modules, "huggingface_hub", fake)
     assert main(["models", "pull", "--dir", str(tmp_path)]) == 1
     assert "403" in capsys.readouterr().err
+
+
+def test_bare_label_claim_does_not_trigger_production_vs_pilot():
+    """Run-5 regression: a job-title claim with no predicate must not be read as
+    'asserting production' against a passage that mentions evaluation/testing."""
+    from plumbverify.semantic import contradiction_rules
+    hits = contradiction_rules("LLMOps Engineer",
+                 "LLMOps Engineer. Operate the model gateway, evaluation suites and observability for production GenAI applications.")
+    assert "production_vs_pilot" not in {h.rule for h in hits}
+
+
+def test_production_vs_pilot_still_fires_on_asserted_deployment():
+    from plumbverify.semantic import contradiction_rules
+    hits = contradiction_rules("Great Eastern deployed an AI solution for complex underwriting cases",
+                 "We are also testing an AI solution for complex underwriting cases to further improve automation.")
+    assert "production_vs_pilot" in {h.rule for h in hits}

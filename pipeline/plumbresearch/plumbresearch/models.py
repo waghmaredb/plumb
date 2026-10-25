@@ -39,6 +39,8 @@ class ResearchClaim(Claim):
     unit: Optional[str] = None
     period: Optional[str] = None
     note: Optional[str] = None
+    attrs: dict[str, Any] = Field(default_factory=dict, description="module-specific structured metadata (e.g. findings: category, stage, "
+                                  "use_case, page_expected); rides along into claims.json for the deck, never read by the Verifier")
 
 
 class Signal(BaseModel):

@@ -34,6 +34,8 @@ class Claim:
     reasons: list[str] = field(default_factory=list)
     awaiting_reconciliation: bool = False
     gap_id: Optional[str] = None  # "G-n" when withheld
+    attrs: dict[str, Any] = field(default_factory=dict)  # module metadata (plumbresearch findings: category, stage, …)
+    note: Optional[str] = None
 
 
 @dataclass
@@ -84,6 +86,10 @@ class RunData:
         self.metrics: dict[str, Any] = self.verification.get("metrics") or {}
         self.subject: dict[str, Any] = self.report.get("subject") or {}
         self.signals: list[dict[str, Any]] = list(self.report.get("signals") or [])
+        f = self.report.get("findings") or {}
+        # P5: observations (a search record, never a claim) and questions for management (shown only on released basis)
+        self.observations: list[dict[str, Any]] = list(f.get("observations") or [])
+        self.questions: list[dict[str, Any]] = list(f.get("questions") or [])
         self._load_sources()
         self._load_claims()
 
@@ -184,6 +190,8 @@ class RunData:
                 labels=list(d.get("labels") or []),
                 reasons=list(d.get("reasons") or []),
                 awaiting_reconciliation=bool(d.get("withheld_awaiting_reconciliation")),
+                attrs=dict(e.get("attrs") or c.get("attrs") or {}),
+                note=e.get("note") or c.get("note"),
             )
         # gap numbering: order of the run's gap register, then any other withheld claim
         order: list[str] = []
@@ -205,6 +213,16 @@ class RunData:
         for i, cid in enumerate(self.withheld_ids, 1):
             self.claims[cid].gap_id = f"G-{i}"
         self.released_ids: list[str] = [cid for cid, c in self.claims.items() if c.released]
+
+    def claims_with_prefix(self, prefix: str) -> list[str]:
+        """Claim ids starting with ``prefix`` in run order."""
+        return [cid for cid in self.claims if cid.startswith(prefix)]
+
+    def question(self, qid: str) -> Optional[dict[str, Any]]:
+        return next((q for q in self.questions if q.get("id") == qid or str(q.get("id", "")).endswith("." + qid)), None)
+
+    def observation(self, oid: str) -> Optional[dict[str, Any]]:
+        return next((o for o in self.observations if o.get("id") == oid or str(o.get("id", "")).endswith("." + oid)), None)
 
     def claim(self, cid: str) -> Optional[Claim]:
         return self.claims.get(cid)
@@ -258,6 +276,8 @@ class RunData:
             return f"Peer size: {p['name']}"
         if c is None:
             return cid
+        if c.attrs.get("category") == "regulatory":
+            return f"Regulatory clock: {c.attrs.get('instrument_short') or 'instrument'} ({c.attrs.get('clock') or 'milestone'})"
         tail = cid.rsplit(".", 1)[-1]
         page = f" (p. {c.page})" if c.page else ""
         kind = {"quote": "quotation", "number": "figure"}.get(c.kind, c.kind)

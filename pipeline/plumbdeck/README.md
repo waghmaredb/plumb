@@ -108,3 +108,15 @@ continue on extra slides with the same ID (`A1 (2/2)`).
 and `out/geh-run4/` (run 4). Both are DRAFT: `internal profile; 1 attachment
 unreconciled; resolution 0.2; no QA gate 3 sign-off`. PNG previews of S02, S09 and A6
 from LibreOffice are in `out/geh-run3/preview/`.
+
+## Pre-read spec (P5): `specs/plumb-prospect-preread-v0.1.yaml`
+
+An 11-ID outside-in pre-read for a first management meeting (S01–S10 + A1), built from the `findings`
+module of plumbresearch. New exhibits (`plumbdeck/exhibits_preread.py`): `claim_list` (bound claim ids or id
+prefix, verbatim quotes, attr columns, count/distinct tokens, `title_requires` → `title_withheld`),
+`scqa` (four boxes from released claims; a withheld claim becomes "Placeholder for a withheld claim: Withheld —
+see gap register G-n"), `questions` (observations rendered only as questions with their search record and
+limitations; a question whose basis is withheld shows only its gap id), `rubric_detail` (rubric components;
+a component can be rendered as a question, not a score), `offer` (static offer text, allowed only on
+`kind: offer` slides, headed "Offer — not a finding"). New block `Boxes`. Tests: `tests/test_preread.py`
+(11 tests, against `runs/great-eastern/2026-10-25-run5`); suite total 53.

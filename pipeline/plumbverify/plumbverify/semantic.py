@@ -561,7 +561,10 @@ def contradiction_rules(claim: str, passage: str) -> list[RuleHit]:
                 claim_trial_mismatch += 1
         elif t.modality == "NEG" and "NEG" not in mods:
             neg_flip.append(t.surface)
-    if trial_only and not c.has_trial:
+    # A bare label ("LLMOps Engineer") asserts nothing as done, so it cannot
+    # contradict a passage that mentions testing/evaluation (C4 run-5 fix).
+    claim_asserts = any(t.stem in _PREDICATE_CONCEPTS for t in c.content()) or bool(c.numbers)
+    if trial_only and not c.has_trial and claim_asserts:
         hits.append(RuleHit("production_vs_pilot", "contradiction",
                             f"claim asserts it as done; passage puts {', '.join(trial_only)} under testing/pilot"))
     if claim_trial_terms and claim_trial_mismatch * 2 >= claim_trial_terms and not p.has_trial:

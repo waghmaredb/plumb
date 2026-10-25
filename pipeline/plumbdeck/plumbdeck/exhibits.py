@@ -35,6 +35,7 @@ class Exhibit:
     all_withheld: bool = False
     requires: Optional[list[str]] = None  # set => becomes "requires engagement data" placeholder
     extra_signal_gaps: list[str] = field(default_factory=list)
+    title_withheld_flag: bool = False  # a claim the title rests on is withheld: use the slide's title_withheld
 
 
 # --------------------------------------------------------------- source lines
@@ -111,9 +112,11 @@ def _signal_has_citable_source(sig: dict[str, Any]) -> bool:
 # ===================================================================== cover
 def cover(ss: SlideSpec, run: RunData, il: Interlock, ctx: dict, sc: Optional[dict]) -> Exhibit:
     strap = "AI-assisted, human-accountable" if il.passed else "AI-assisted draft — not yet approved by a named professional"
+    lead = ss.bind.get("lead") or "Verified Enterprise AI Journey Assessment"
+    occasion = ss.bind.get("occasion") or "board read-out"
     blocks: list[Block] = [
-        Para("Verified Enterprise AI Journey Assessment", "lead"),
-        Para(f"{run.client_full} · board read-out · {ctx['date']}", "normal"),
+        Para(lead, "lead"),
+        Para(f"{run.client_full} · {occasion} · {ctx['date']}", "normal"),
         Para(f"Deliverable {ctx['deliverable_id']} · version {ctx['deliverable_version']} · run {run.run_id}", "muted"),
         Para(strap, "strong"),
     ]
@@ -410,7 +413,7 @@ def evidence_log(ss: SlideSpec, run: RunData, il: Interlock, ctx: dict, sc: Opti
         c = run.claims[cid]
         src = run.sources.get(c.sources[0]) if c.sources else None
         rows.append([
-            cid.rsplit(".", 1)[-1],
+            short_claim_id(run, cid),
             ", ".join(usage.get(cid, [])) or "A1",
             c.text if len(c.text) <= 110 else c.text[:107] + "…",
             f"p. {c.page}" if c.page else "—",
@@ -426,14 +429,25 @@ def evidence_log(ss: SlideSpec, run: RunData, il: Interlock, ctx: dict, sc: Opti
         ex.extra_signal_gaps = run.gap_ids(run.withheld_ids)
         return ex
     ex.blocks = [Table(["Claim", "Slides", "Claim text", "Page", "Tier", "Label", "Hash", "State"], rows,
-                       widths=[0.45, 0.55, 4.6, 0.5, 0.4, 0.7, 0.75, 1.0], font_pt=8, rows_per_slide=6)]
+                       widths=[1.25, 0.6, 4.6, 0.5, 0.4, 0.7, 0.75, 1.0], font_pt=9, rows_per_slide=8)]
     ex.source_line = source_line(run, run.released_ids)
     return ex
+
+
+def short_claim_id(run: RunData, cid: str) -> str:
+    """Unambiguous short id for tables: drop the subject slug and, for annual-report rubric claims,
+    the document prefix ("q1"); findings claims keep their category ("deploy.1", "leadership.successor")."""
+    tail = cid[len(run.slug) + 1:] if cid.startswith(run.slug + ".") else cid
+    if tail.startswith("findings."):
+        return tail[len("findings."):]
+    return tail.rsplit(".", 1)[-1]
 
 
 def placeholder(ss: SlideSpec, run: RunData, il: Interlock, ctx: dict, sc: Optional[dict]) -> Exhibit:
     return Exhibit(requires=ss.requires or ["engagement data"])
 
+
+from .exhibits_preread import claim_list, offer, questions, rubric_detail, scqa  # noqa: E402
 
 BUILDERS = {
     "cover": cover,
@@ -444,4 +458,9 @@ BUILDERS = {
     "gap_register": gap_register,
     "evidence_log": evidence_log,
     "placeholder": placeholder,
+    "claim_list": claim_list,
+    "scqa": scqa,
+    "questions": questions,
+    "rubric_detail": rubric_detail,
+    "offer": offer,
 }
