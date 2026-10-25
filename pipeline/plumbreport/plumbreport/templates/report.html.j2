@@ -144,14 +144,46 @@
 
     {% elif b.type == 'hypotheses' %}
       <table class="data hyp">
-        <colgroup><col class="h-topic"><col class="h-text"><col class="h-how"></colgroup>
-        <thead><tr><th></th><th>{{ b.head[0] }}</th><th>{{ b.head[1] }}</th></tr></thead>
+        <colgroup><col class="h-topic"><col class="h-text"><col class="h-how"><col class="h-refute"></colgroup>
+        <thead><tr><th></th>{% for h in b.head %}<th>{{ h }}</th>{% endfor %}</tr></thead>
         <tbody>
         {% for row in b.rows %}
-          <tr><td class="topic">{{ row.topic }}</td><td>{{ row.text | typo }}<span class="basis">Starting evidence: {{ row.basis }}</span></td><td>{{ row.how | typo }}</td></tr>
+          <tr><td class="topic">{{ row.topic }}</td><td class="hyp-text">{{ row.text | typo }}{% if row.basis %}<span class="basis">Starting evidence: {{ row.basis }}</span>{% endif %}</td><td>{{ row.how | md }}</td><td>{{ row.refute | md }}</td></tr>
         {% endfor %}
         </tbody>
       </table>
+
+    {% elif b.type == 'sensitivity' %}
+      <div class="keep">
+      {% if b.caption %}<p class="caption">{{ b.caption | typo }}</p>{% endif %}
+      <table class="data sens">
+        <colgroup><col class="sv-scen"><col class="sv-chg">{% for c in b.columns %}<col class="sv-val">{% endfor %}</colgroup>
+        <thead>
+          <tr><th>Assumption</th><th class="num">Change</th>{% for c in b.columns %}<th class="num">{{ c }}</th>{% endfor %}</tr>
+        </thead>
+        <tbody>
+        {% for row in b.rows %}
+          <tr{% if row.highlight %} class="hi"{% endif %}><td>{{ row.scenario | replace('Scenario ', '') | replace(' – ', '. ') }}</td><td class="num">{{ row.change }}</td>{% for v in row['values'] %}<td class="num">{{ v }}</td>{% endfor %}</tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <p class="table-note">{{ b.unit }}. {% if b.total %}{{ b.total_label | md }}: S${{ b.total }} million. {% endif %}Source: {{ b.source }}.{% if b.note %} {{ b.note | md }}{% endif %}</p>
+      </div>
+
+    {% elif b.type == 'plan' %}
+      {% if b.head %}<h2>{{ b.head | typo }}</h2>{% endif %}
+      {% if b.intro %}<p class="para">{{ b.intro | md }}</p>{% endif %}
+      <table class="data plan">
+        <colgroup><col class="p-lane">{% for u in range(b.units) %}<col class="p-unit">{% endfor %}</colgroup>
+        <thead><tr><th>Workstream</th>{% for u in range(1, b.units + 1) %}<th class="unit">{{ b.unit_label }} {{ u }}</th>{% endfor %}</tr></thead>
+        <tbody>
+        {% for l in b.lanes %}
+          <tr><td>{{ l.name | typo }}</td>{% for u in range(1, b.units + 1) %}<td class="cell">{% if l['from'] <= u <= l['to'] %}<span class="bar{% if u == l['from'] %} bar-start{% endif %}{% if u == l['to'] %} bar-end{% endif %}"></span>{% endif %}</td>{% endfor %}</tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% if b.outputs %}<p class="para"><strong>Outputs.</strong> {{ b.outputs | join('; ') }}.</p>{% endif %}
+      {% if b.close %}<p class="para">{{ b.close | md }}</p>{% endif %}
 
     {% elif b.type == 'questions' %}
       {% if b.head %}<h2>{{ b.head | typo }}</h2>{% endif %}

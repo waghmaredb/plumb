@@ -1,0 +1,99 @@
+{
+  "ok": true,
+  "strict": true,
+  "errors": [],
+  "binding": {
+    "verified_bound": [
+      "great-eastern.ar.annual_report.2025.q6",
+      "great-eastern.findings.deploy.1",
+      "great-eastern.findings.deploy.2",
+      "great-eastern.findings.deploy.3",
+      "great-eastern.findings.deploy.4",
+      "great-eastern.findings.deploy.5",
+      "great-eastern.findings.deploy.6",
+      "great-eastern.findings.deploy.6.context1",
+      "great-eastern.findings.deploy.6.context2",
+      "great-eastern.findings.deploy.7",
+      "great-eastern.findings.governance.1",
+      "great-eastern.findings.governance.1.context1",
+      "great-eastern.findings.governance.2",
+      "great-eastern.findings.governance.3",
+      "great-eastern.findings.governance.4",
+      "great-eastern.findings.leadership.1",
+      "great-eastern.findings.leadership.successor",
+      "great-eastern.findings.opmodel.1"
+    ],
+    "not_verified_in_awaiting": [],
+    "not_verified_in_run": [
+      "great-eastern.findings.reg.sg-mas-airm.effective",
+      "great-eastern.findings.reg.sg-mas-airm.issued",
+      "great-eastern.findings.reg.sg-mas-airm.lifecycle",
+      "great-eastern.peer.size.aia-group-whole",
+      "great-eastern.peer.size.income-insurance-ltd-i585c",
+      "great-eastern.peer.size.prudential-assurance-co-singapore-i527l",
+      "great-eastern.peer.size.singapore-life-ltd-singlife-i518c"
+    ],
+    "not_verified_unaccounted": []
+  },
+  "quotations_checked_against_source": 19,
+  "sections": [
+    {
+      "id": "summary",
+      "label": "1",
+      "title": "Summary"
+    },
+    {
+      "id": "uses",
+      "label": "2",
+      "title": "Where AI is in use"
+    },
+    {
+      "id": "outcomes",
+      "label": "3",
+      "title": "Reported outcomes"
+    },
+    {
+      "id": "value",
+      "label": "4",
+      "title": "Where the value sits"
+    },
+    {
+      "id": "governance",
+      "label": "5",
+      "title": "AI governance"
+    },
+    {
+      "id": "hypotheses",
+      "label": "6",
+      "title": "Hypotheses and how an assessment would test them"
+    },
+    {
+      "id": "sources",
+      "label": "A",
+      "title": "Sources"
+    },
+    {
+      "id": "method",
+      "label": "B",
+      "title": "Method"
+    },
+    {
+      "id": "open-items",
+      "label": "C",
+      "title": "Open items"
+    }
+  ],
+  "pages": 15,
+  "section_pages": {
+    "summary": 3,
+    "uses": 4,
+    "outcomes": 6,
+    "value": 7,
+    "governance": 9,
+    "hypotheses": 11,
+    "sources": 13,
+    "method": 14,
+    "open-items": 15
+  },
+  "sections_not_located": []
+}

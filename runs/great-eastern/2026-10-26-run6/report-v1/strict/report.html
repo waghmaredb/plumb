@@ -1,0 +1,760 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>Great Eastern Holdings · AI at Great Eastern: deep-dive evidence report</title>
+<style>/* PLUMB deep-dive report - A4 portrait. Restrained: hairline rules, one accent. */
+:root {
+  --ink: #13233A; --teal: #0B6E6E; --slate: #4B6584; --amber: #A86B12;
+  --panel: #F3F5F8; --hair: #D7DCE3;
+  --serif: Cambria, "Caladea", Georgia, serif;
+  --sans: "Liberation Sans", Arial, Helvetica, sans-serif;
+}
+
+@page {
+  size: A4;
+  margin: 23mm 22mm 20mm 25mm;
+  @top-left {
+    content: "Great Eastern Holdings · AI at Great Eastern: deep-dive evidence report";
+    font-family: "Liberation Sans", Arial, sans-serif; font-size: 7.5pt; letter-spacing: 0.02em;
+    color: #4B6584; vertical-align: bottom; padding-bottom: 3.2mm;
+    border-bottom: 0.5pt solid #D7DCE3;
+  }
+  @bottom-left {
+    content: "PLUMB Advisory · Discussion draft";
+    font-family: "Liberation Sans", Arial, sans-serif; font-size: 7.5pt; color: #4B6584;
+    vertical-align: top; padding-top: 3.2mm; border-top: 0.5pt solid #D7DCE3;
+  }
+  @bottom-right {
+    content: "Page " counter(page) " of " counter(pages);
+    font-family: "Liberation Sans", Arial, sans-serif; font-size: 7.5pt; color: #4B6584;
+    vertical-align: top; padding-top: 3.2mm; border-top: 0.5pt solid #D7DCE3;
+  }
+}
+@page :first {
+  margin: 0;
+  @top-left { content: none; border: none; }
+  @bottom-left { content: none; border: none; }
+  @bottom-right { content: none; border: none; }
+}
+
+* { box-sizing: border-box; }
+html { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+body {
+  margin: 0; color: var(--ink); background: #fff;
+  font-family: var(--sans); font-size: 10.5pt; line-height: 1.45;
+  font-kerning: normal; text-rendering: optimizeLegibility;
+  orphans: 3; widows: 3; hyphens: manual;
+}
+p { margin: 0 0 3.2mm; }
+a { color: inherit; text-decoration: none; }
+strong { font-weight: 700; }
+em { font-style: italic; }
+
+/* ------------------------------------------------------------------ cover */
+.cover {
+  height: 297mm; width: 210mm; position: relative; break-after: page; overflow: hidden;
+}
+.cover-band { position: absolute; left: 0; top: 0; bottom: 0; width: 9mm; background: var(--ink); }
+.cover-band::after { content: ""; position: absolute; left: 9mm; top: 0; bottom: 0; width: 1.2mm; background: var(--teal); }
+.cover-body { position: absolute; left: 34mm; right: 28mm; top: 78mm; }
+.cover-client {
+  font-family: var(--sans); font-size: 9pt; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 9mm; font-weight: 700;
+}
+.cover-title {
+  font-family: var(--serif); font-weight: 400; font-size: 34pt; line-height: 1.12;
+  color: var(--ink); margin: 0 0 9mm; letter-spacing: -0.005em;
+}
+.cover-sub { font-family: var(--serif); font-size: 13.5pt; line-height: 1.4; color: var(--slate); max-width: 125mm; }
+.cover-meta { position: absolute; left: 34mm; right: 28mm; bottom: 30mm; }
+.cover-meta table { border-collapse: collapse; font-size: 9pt; margin-bottom: 8mm; }
+.cover-meta th {
+  text-align: left; font-weight: 400; color: var(--slate); padding: 1.4mm 10mm 1.4mm 0;
+  text-transform: uppercase; letter-spacing: 0.1em; font-size: 7.5pt; vertical-align: baseline;
+}
+.cover-meta td { padding: 1.4mm 0; color: var(--ink); vertical-align: baseline; }
+.cover-meta td.status { color: var(--amber); font-weight: 700; }
+.cover-basis {
+  font-size: 8pt; color: var(--slate); max-width: 125mm; border-top: 0.5pt solid var(--hair);
+  padding-top: 3mm; line-height: 1.45;
+}
+
+/* --------------------------------------------------------------- contents */
+.contents { break-after: page; }
+.contents-title, .sec-head h1 {
+  font-family: var(--serif); font-weight: 400; font-size: 25pt; line-height: 1.15; margin: 0 0 6mm;
+  color: var(--ink); letter-spacing: -0.005em;
+}
+.kicker {
+  font-size: 7.5pt; letter-spacing: 0.16em; text-transform: uppercase; color: var(--teal);
+  font-weight: 700; margin: 0 0 2.5mm;
+}
+.toc { list-style: none; padding: 0; margin: 0; max-width: 140mm; }
+.toc-row {
+  display: flex; align-items: baseline; gap: 3mm; padding: 2.6mm 0; border-bottom: 0.5pt solid var(--hair);
+  font-size: 11pt;
+}
+.toc-num { width: 8mm; color: var(--teal); font-family: var(--serif); font-size: 12pt; }
+.toc-title { font-family: var(--serif); font-size: 12pt; }
+.toc-dots { flex: 1; }
+.toc-page { color: var(--slate); font-size: 10pt; min-width: 6mm; text-align: right; font-variant-numeric: tabular-nums; }
+.toc-appendix .toc-title, .toc-appendix .toc-num { font-size: 10.5pt; color: var(--slate); }
+.toc-first-appendix { margin-top: 7mm; border-top: 0.5pt solid var(--hair); }
+.contents-note { margin-top: 12mm; max-width: 130mm; font-size: 9pt; color: var(--slate); }
+
+/* --------------------------------------------------------------- sections */
+.sec { break-before: page; }
+.sec-head { margin-bottom: 1mm; }
+h2 {
+  font-family: var(--serif); font-weight: 700; font-size: 13pt; line-height: 1.25; color: var(--ink);
+  margin: 6.5mm 0 2.5mm; break-after: avoid;
+}
+h3 {
+  font-family: var(--serif); font-weight: 700; font-size: 11.5pt; line-height: 1.3; color: var(--ink);
+  margin: 0 0 1.5mm; break-after: avoid;
+}
+.lead {
+  font-family: var(--serif); font-size: 14pt; line-height: 1.36; color: var(--ink);
+  margin: 0 0 6mm; max-width: 150mm;
+}
+.para { max-width: 150mm; }
+.ref { color: var(--slate); font-size: 9pt; white-space: nowrap; }
+sup.fn { font-size: 7pt; color: var(--teal); font-weight: 700; margin-left: 0.4mm; line-height: 0; }
+.small-note { font-size: 8.5pt; color: var(--slate); max-width: 150mm; }
+.caption {
+  font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.12em; color: var(--slate);
+  font-weight: 700; margin: 6mm 0 2mm; break-after: avoid;
+}
+.table-note { font-size: 8pt; color: var(--slate); margin-top: 2mm; max-width: 150mm; }
+
+/* summary messages */
+.message { display: flex; gap: 6mm; padding: 4mm 0; border-top: 0.5pt solid var(--hair); break-inside: avoid; }
+.message:last-of-type { border-bottom: 0.5pt solid var(--hair); }
+.message-num { font-family: var(--serif); font-size: 22pt; line-height: 1; color: var(--teal); width: 9mm; margin: 0; }
+.message-body { flex: 1; max-width: 140mm; }
+.message-body h3 { font-size: 12.5pt; margin-bottom: 2mm; }
+.message-body p { margin: 0; }
+
+/* pull quotes */
+.pull { margin: 3.8mm 0 4.2mm; padding: 0.5mm 0 0.5mm 5.5mm; border-left: 1.2pt solid var(--teal); break-inside: avoid; max-width: 150mm; }
+.pull-label { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.12em; color: var(--slate); font-weight: 700; margin: 0 0 1.5mm; }
+.pull blockquote { margin: 0 0 1.2mm; font-family: var(--serif); font-size: 11pt; line-height: 1.4; color: var(--ink); }
+.pull figcaption { font-size: 8pt; color: var(--slate); }
+
+/* tables: hairline rules only */
+table.data { width: 100%; border-collapse: collapse; font-size: 9pt; line-height: 1.4; margin: 0 0 2mm; }
+table.data thead { display: table-header-group; }
+table.data th {
+  text-align: left; font-weight: 700; color: var(--slate); font-size: 7.5pt; text-transform: uppercase;
+  letter-spacing: 0.08em; padding: 0 2.5mm 2mm 0; border-bottom: 0.75pt solid var(--ink); vertical-align: bottom;
+}
+table.data td { padding: 2.3mm 2.5mm 2.3mm 0; border-bottom: 0.5pt solid var(--hair); vertical-align: top; }
+table.data tr { break-inside: avoid; }
+table.data .num { text-align: right; padding-right: 0; font-variant-numeric: tabular-nums; }
+table.data td.rowhead, table.data td.stage, table.data td.topic { font-weight: 700; color: var(--ink); }
+table.data td.stage { color: var(--slate); font-weight: 400; }
+table.uses col.c-stage { width: 22%; } table.uses col.c-use { width: 40%; }
+table.uses col.c-status { width: 16%; } table.uses col.c-market { width: 13%; } table.uses col.c-page { width: 9%; }
+table.hyp col.h-topic { width: 13%; } table.hyp col.h-text { width: 31%; } table.hyp col.h-how { width: 30%; } table.hyp col.h-refute { width: 26%; }
+table.hyp td.hyp-text { font-family: var(--serif); font-size: 10pt; line-height: 1.35; }
+table.hyp td { padding-top: 3mm; padding-bottom: 3mm; }
+table.hyp td.topic { font-family: var(--serif); font-size: 11pt; color: var(--teal); }
+.basis { display: block; font-size: 7.5pt; color: var(--slate); margin-top: 1.5mm; }
+table.open col.o-item { width: 24%; } table.open col.o-why { width: 44%; } table.open col.o-next { width: 32%; }
+table.sources col.s-doc { width: 80%; } table.sources col.s-pages { width: 20%; }
+table.sources td.pages { font-variant-numeric: tabular-nums; color: var(--ink); }
+.src-title { font-weight: 700; margin: 0 0 0.8mm; }
+.src-meta { margin: 0 0 0.8mm; color: var(--ink); }
+.src-url, .await-url { font-size: 7pt; color: var(--slate); margin: 0; overflow-wrap: anywhere; line-height: 1.35; }
+
+/* key figures */
+.figures { display: flex; gap: 8mm; margin: 2mm 0 7mm; break-inside: avoid; }
+.figure { flex: 1; border-top: 1.5pt solid var(--teal); padding-top: 3.5mm; }
+.figure-target { border-top-color: var(--slate); }
+.fig-tag { font-size: 7.5pt; letter-spacing: 0.14em; text-transform: uppercase; font-weight: 700; color: var(--teal); margin: 0 0 1mm; }
+.figure-target .fig-tag { color: var(--slate); }
+.fig-value { font-family: var(--serif); font-size: 40pt; line-height: 1.05; margin: 0 0 2mm; color: var(--teal); }
+.figure-target .fig-value { color: var(--slate); }
+.fig-label { font-family: var(--serif); font-size: 12pt; line-height: 1.3; margin: 0 0 2mm; }
+.fig-detail { font-size: 9pt; color: var(--ink); margin: 0 0 2mm; }
+.fig-source { font-size: 8pt; color: var(--slate); margin: 0; }
+
+/* panels */
+.callout, .method-box, .obs {
+  background: var(--panel); padding: 4.5mm 6mm 2.5mm; margin: 5mm 0 6mm; break-inside: avoid;
+}
+.callout { border-left: 1.5pt solid var(--teal); }
+.callout-amber { border-left-color: var(--amber); }
+.callout-amber .callout-head { color: var(--amber); }
+.callout p:last-child { margin-bottom: 2mm; }
+.callout-head { font-size: 7.5pt; text-transform: uppercase; letter-spacing: 0.12em; font-weight: 700; color: var(--teal); margin-bottom: 2mm; }
+.method-box { font-size: 9.5pt; }
+.method-box .terms { font-size: 8.5pt; color: var(--ink); line-height: 1.6; }
+.method-box .terms .sep { color: var(--slate); }
+.method-box .lim-head { font-weight: 700; margin: 3mm 0 1mm; }
+.method-box ul, .obs ul { margin: 0 0 2mm; padding-left: 4.5mm; }
+.method-box li, .obs li { margin-bottom: 1.2mm; }
+.obs { background: #fff; border-top: 0.75pt solid var(--ink); border-bottom: 0.5pt solid var(--hair); padding: 4mm 0 2mm; }
+.obs h3 { margin-bottom: 2mm; }
+
+/* hypotheses / questions */
+ol.questions { padding-left: 6mm; margin: 0 0 4mm; max-width: 150mm; }
+ol.questions li { margin-bottom: 2.6mm; break-inside: avoid; }
+ol.questions li::marker { color: var(--teal); font-weight: 700; }
+ol.questions li p { margin: 0; }
+.phases { display: flex; gap: 0; margin: 3mm 0 5mm; break-inside: avoid; }
+.phase { flex: 1; border-top: 1.5pt solid var(--teal); padding: 2.5mm 4mm 0 0; }
+.phase + .phase { border-top-color: var(--slate); }
+.phase-when { font-size: 7.5pt; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--teal); margin: 0 0 1mm; }
+.phase-what { font-family: var(--serif); font-size: 11pt; line-height: 1.3; margin: 0; }
+
+/* later developments section */
+.sec-awaiting .sec-head .kicker { color: var(--amber); }
+.await-list { margin: 0 0 4mm; }
+.await-item { padding: 0.8mm 0 0.8mm 5mm; border-left: 1.2pt solid var(--amber); margin-bottom: 3.2mm; break-inside: avoid; max-width: 152mm; }
+.await-text { margin: 0 0 0.8mm; }
+.await-meta { font-size: 8.5pt; color: var(--slate); margin: 0 0 0.8mm; }
+.await-tag {
+  font-size: 7pt; text-transform: uppercase; letter-spacing: 0.1em; font-weight: 700; color: var(--amber);
+  margin-right: 1.5mm;
+}
+
+/* method steps */
+.method-step { display: flex; gap: 5mm; padding: 3.5mm 0; border-top: 0.5pt solid var(--hair); break-inside: avoid; max-width: 155mm; }
+.method-num { font-family: var(--serif); font-size: 16pt; line-height: 1.1; color: var(--teal); width: 7mm; margin: 0; }
+.method-step h3 { font-size: 11pt; }
+.method-step p { margin: 0; }
+
+/* section notes */
+ol.notes {
+  margin: 8mm 0 0; padding: 2.5mm 0 0 5mm; border-top: 0.5pt solid var(--hair);
+  font-size: 8pt; color: var(--slate); max-width: 100mm; break-inside: avoid;
+}
+ol.notes li { margin-bottom: 0.6mm; }
+ol.notes li::marker { color: var(--teal); }
+
+.message + .para { margin-top: 5mm; }
+.message:has(+ .para) { border-bottom: 0.5pt solid var(--hair); }
+.sec.no-break { break-before: auto; margin-top: 12mm; }
+table.sources td { padding-top: 1.6mm; padding-bottom: 1.6mm; }
+table.sources .src-title { margin: 0 0 0.3mm; }
+.qbasis { font-size: 8pt; color: var(--slate); white-space: nowrap; }
+table.sources.compact td { padding-top: 1.2mm; padding-bottom: 1.2mm; }
+table.hyp td { padding-top: 2.4mm; padding-bottom: 2.4mm; }
+table.sens col.sv-scen { width: 46%; } table.sens col.sv-chg { width: 14%; } table.sens col.sv-val { width: 20%; }
+table.sens tr.hi td { font-weight: 700; color: var(--teal); background: var(--panel); }
+table.sens tr.hi td:first-child { padding-left: 2mm; }
+table.sens td:first-child { padding-left: 2mm; }
+table.plan { font-size: 8.5pt; }
+table.plan col.p-lane { width: 34%; }
+table.plan th.unit { text-align: center; padding-right: 0; }
+table.plan td { padding-top: 2mm; padding-bottom: 2mm; }
+table.plan td.cell { padding: 2.6mm 0 0; }
+table.plan .bar { display: block; height: 3mm; background: var(--teal); }
+table.plan .bar-start { margin-left: 1mm; } table.plan .bar-end { margin-right: 1mm; }
+
+/* compaction pass */
+.lead { font-size: 13pt; margin-bottom: 5mm; }
+.contents-title, .sec-head h1 { font-size: 23pt; margin-bottom: 4.5mm; }
+.fig-value { font-size: 32pt; }
+.figures { margin-bottom: 5mm; }
+.pull blockquote { font-size: 10.5pt; }
+.pull { margin: 3.2mm 0 3.6mm; }
+h2 { margin: 5.5mm 0 2.2mm; }
+table.data td { padding-top: 1.8mm; padding-bottom: 1.8mm; }
+.callout, .method-box { padding: 3.5mm 5mm 1.5mm; margin: 4mm 0 4mm; }
+.message { padding: 3.2mm 0; }
+ol.notes { margin-top: 5mm; max-width: none; columns: 2; column-gap: 8mm; font-size: 7.5pt; }
+table.plan td { padding-top: 1.4mm; padding-bottom: 1.4mm; }
+table.plan td.cell { padding-top: 2mm; }
+.await-item { margin-bottom: 2.6mm; padding-top: 0.4mm; padding-bottom: 0.4mm; }
+.await-text { line-height: 1.4; }
+.await-meta { font-size: 8pt; margin-bottom: 0.3mm; }
+.src-url, .await-url { font-size: 6.8pt; line-height: 1.3; }
+.sec-awaiting h2 { margin-top: 4.5mm; }
+.keep { break-inside: avoid; }
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="cover-band"></div>
+  <div class="cover-body">
+    <p class="cover-client">Great Eastern Holdings</p>
+    <h1 class="cover-title">AI at Great Eastern: deep-dive evidence report</h1>
+<p class="cover-sub">The evidence behind the executive pre-read: where AI is in use, what it has delivered, and how it is governed</p>  </div>
+  <div class="cover-meta">
+    <table>
+      <tr><th>Prepared for</th><td>The leadership team, Great Eastern Holdings Limited</td></tr>
+      <tr><th>Prepared by</th><td>PLUMB Advisory</td></tr>
+      <tr><th>Date</th><td>October 2026</td></tr>
+<tr><th>Status</th><td class="status">Discussion draft</td></tr>    </table>
+<p class="cover-basis">Prepared from Great Eastern Holdings’ Annual Report 2025, as at its publication in March 2026. It has not been reviewed by Great Eastern. Quotations are reproduced word for word; page references are to the page numbers printed in the annual report.</p>  </div>
+</section>
+
+<section class="contents">
+  <p class="kicker">Contents</p>
+  <h1 class="contents-title">Contents</h1>
+  <ol class="toc">
+    <li class="toc-row ">
+      <span class="toc-num">1</span>
+      <a class="toc-title" href="#summary">Summary</a>
+      <span class="toc-dots"></span>
+      <span class="toc-page">3</span>
+    </li>
+    <li class="toc-row ">
+      <span class="toc-num">2</span>
+      <a class="toc-title" href="#uses">Where AI is in use</a>
+      <span class="toc-dots"></span>
+      <span class="toc-page">4</span>
+    </li>
+    <li class="toc-row ">
+      <span class="toc-num">3</span>
+      <a class="toc-title" href="#outcomes">Reported outcomes</a>
+      <span class="toc-dots"></span>
+      <span class="toc-page">6</span>
+    </li>
+    <li class="toc-row ">
+      <span class="toc-num">4</span>
+      <a class="toc-title" href="#value">Where the value sits</a>
+      <span class="toc-dots"></span>
+      <span class="toc-page">7</span>
+    </li>
+    <li class="toc-row ">
+      <span class="toc-num">5</span>
+      <a class="toc-title" href="#governance">AI governance</a>
+      <span class="toc-dots"></span>
+      <span class="toc-page">9</span>
+    </li>
+    <li class="toc-row ">
+      <span class="toc-num">6</span>
+      <a class="toc-title" href="#hypotheses">Hypotheses and how an assessment would test them</a>
+      <span class="toc-dots"></span>
+      <span class="toc-page">11</span>
+    </li>
+    <li class="toc-row toc-appendix toc-first-appendix">
+      <span class="toc-num">A</span>
+      <a class="toc-title" href="#sources">Appendix A: Sources</a>
+      <span class="toc-dots"></span>
+      <span class="toc-page">13</span>
+    </li>
+    <li class="toc-row toc-appendix">
+      <span class="toc-num">B</span>
+      <a class="toc-title" href="#method">Appendix B: Method</a>
+      <span class="toc-dots"></span>
+      <span class="toc-page">14</span>
+    </li>
+    <li class="toc-row toc-appendix">
+      <span class="toc-num">C</span>
+      <a class="toc-title" href="#open-items">Appendix C: Open items</a>
+      <span class="toc-dots"></span>
+      <span class="toc-page">15</span>
+    </li>
+  </ol>
+<p class="contents-note">Every finding rests only on statements and tables checked against Great Eastern’s Annual Report 2025. Our own summary sentences are marked by their page references; the company’s words appear as quotations.</p></section>
+
+<section class="sec sec-body" id="summary">
+  <header class="sec-head">
+    <p class="kicker">Section 1</p>
+    <h1>Summary</h1>
+  </header>
+
+      <p class="lead">Great Eastern’s AI delivers speed, but no benefit is yet reported in dollars<sup class="fn">1</sup></p>
+
+      <div class="message">
+        <p class="message-num">1</p>
+        <div class="message-body">
+          <h3>AI is live from advice to claims, with complex underwriting still in testing</h3>
+          <p>The annual report names eight uses of AI, from an advisory platform for financial advisers to automated medical claims and compliance monitoring. AI for complex underwriting cases is still being tested.<sup class="fn">2</sup></p>
+        </div>
+      </div>
+
+      <div class="message">
+        <p class="message-num">2</p>
+        <div class="message-body">
+          <h3>Reported outcomes are speed, not yet dollars</h3>
+          <p>In 2025, 75% of medical claims were settled same day, and the advisory platform targets ~75% less preparation time for financial advisers. 0 of 8 AI uses are reported with a dollar benefit, and neither figure is given with a baseline.<sup class="fn">3</sup></p>
+        </div>
+      </div>
+
+      <div class="message">
+        <p class="message-num">3</p>
+        <div class="message-body">
+          <h3>10% better accident and health claims would add S$131m to a year’s profit</h3>
+          <p>On Great Eastern’s own assumption sensitivities, accident and health claims 10% better than assumed add S$31.8 million (Singapore) and S$99.3 million (Malaysia) to a year’s profit after tax. This is a sensitivity, not a forecast of AI benefit; contractual life benefits are excluded.<sup class="fn">4</sup></p>
+        </div>
+      </div>
+
+      <div class="message">
+        <p class="message-num">4</p>
+        <div class="message-body">
+          <h3>AI has board oversight and dedicated leadership; the annual report does not set out the AI framework</h3>
+          <p>Two named directors are paid for their data and AI work, and the Data &amp; AI operating model was restructured in 2025 under a Managing Director, Group Data and AI. AI policy, an AI inventory and model risk management for AI are not covered in the annual report.<sup class="fn">5</sup></p>
+        </div>
+      </div>
+
+      <p class="para">The sections that follow set out the evidence behind each message. Section 6 turns it into three hypotheses that an assessment would test.</p>
+
+
+  <ol class="notes">
+<li>Annual Report 2025, pp. 12 and 38.</li><li>Annual Report 2025, pp. 6, 12 and 38.</li><li>Annual Report 2025, pp. 12 and 38.</li><li>Annual Report 2025, Note 30, pp. 186 and 187.</li><li>Annual Report 2025, pp. 39, 65, 71 and 78.</li>  </ol>
+</section>
+<section class="sec sec-body" id="uses">
+  <header class="sec-head">
+    <p class="kicker">Section 2</p>
+    <h1>Where AI is in use</h1>
+  </header>
+
+      <p class="lead">AI is live from advice to claims, with complex underwriting still in testing</p>
+
+      <p class="para">The annual report names eight uses of AI. Three are described in the Letter to Shareholders, one on the key-figures page, two in the review of the Singapore business and two in the review of the Malaysia business. <span class="ref">(Annual Report 2025, pp. 6, 12, 38 and 41)</span></p>
+
+<p class="caption">Table 1. Uses of AI named in the Annual Report 2025</p>      <table class="data uses">
+        <colgroup><col class="c-stage"><col class="c-use"><col class="c-status"><col class="c-market"><col class="c-page"></colgroup>
+        <thead><tr><th>Stage</th><th>Use</th><th>Status</th><th>Market</th><th class="num">Page</th></tr></thead>
+        <tbody>
+          <tr><td class="stage">Advice and distribution</td><td>AI-enabled advisory platform for financial advisers</td><td>Deployed</td><td>Group</td><td class="num">12</td></tr>
+          <tr><td class="stage">Underwriting</td><td>In-house analytics and AI for underwriting and medical claims</td><td>Sharpened</td><td>Group</td><td class="num">6</td></tr>
+          <tr><td class="stage">Underwriting</td><td>AI solution for complex underwriting cases</td><td>Testing</td><td>Group</td><td class="num">12</td></tr>
+          <tr><td class="stage">Onboarding</td><td>AI in customer segmentation, enabling instant approvals for existing lower-risk Great CareShield customers</td><td>Leveraged</td><td>Singapore</td><td class="num">38</td></tr>
+          <tr><td class="stage">Claims</td><td>Proprietary platform that automates medical claims</td><td>Rolled out</td><td>Group</td><td class="num">12</td></tr>
+          <tr><td class="stage">Claims</td><td>Optical character recognition of medical bills to identify potential wastage and abuse</td><td>Developed</td><td>Malaysia</td><td class="num">41</td></tr>
+          <tr><td class="stage">Risk and conduct</td><td>Monitoring of transactions and sales patterns for compliance risks, including anti-money laundering</td><td>Continuously monitoring</td><td>Singapore</td><td class="num">38</td></tr>
+          <tr><td class="stage">Risk and conduct</td><td>AI-driven model to help identify potential misconduct cases</td><td>Developed</td><td>Malaysia</td><td class="num">41</td></tr>
+        </tbody>
+      </table>
+<p class="table-note">Status is the company’s own verb for each use. “Group” marks a use described without a market being named. Page numbers are those printed in the annual report.</p>
+      <h2>In the company’s words</h2>
+
+      <figure class="pull">
+<p class="pull-label">Advice and distribution</p>        <blockquote>“In 2025, we deployed an AI-enabled advisory platform that aims to reduce preparation time for financial advisors by approximately 75%, enabling them to focus more on customer engagement and advice.”</blockquote>
+        <figcaption>Annual Report 2025, p. 12</figcaption>
+      </figure>
+
+      <figure class="pull">
+<p class="pull-label">Underwriting and medical claims (key-figures page)</p>        <blockquote>“Sharpened in-house analytics and AI for underwriting and medical claims to enhance accuracy and consistency, empowering employees to drive continuous improvement through more agile workflows.”</blockquote>
+        <figcaption>Annual Report 2025, p. 6</figcaption>
+      </figure>
+
+      <figure class="pull">
+<p class="pull-label">Underwriting</p>        <blockquote>“We are also testing an AI solution for complex underwriting cases to further improve automation and associated efficiency.”</blockquote>
+        <figcaption>Annual Report 2025, p. 12</figcaption>
+      </figure>
+
+      <figure class="pull">
+<p class="pull-label">Onboarding</p>        <blockquote>“We further leveraged AI in our customer segmentation process for our supplementary long-term care insurance plan, Great CareShield, to enable instant approvals for existing lower-risk customers.”</blockquote>
+        <figcaption>Annual Report 2025, p. 38</figcaption>
+      </figure>
+
+      <figure class="pull">
+<p class="pull-label">Claims</p>        <blockquote>“We rolled out a proprietary AI-powered platform to automate medical claims, enhancing claim efficiency while improving customer experience.”</blockquote>
+        <figcaption>Annual Report 2025, p. 12</figcaption>
+      </figure>
+
+      <figure class="pull">
+<p class="pull-label">Claims, Malaysia</p>        <blockquote>“As AI accelerates transformation across the insurance industry, we have developed an Optical Character Recognition solution that extracts and analyses data from medical bills to identify potential wastage and abuse within medical claims.”</blockquote>
+        <figcaption>Annual Report 2025, p. 41</figcaption>
+      </figure>
+
+      <figure class="pull">
+<p class="pull-label">Risk and conduct</p>        <blockquote>“Complementing these, our proprietary risk management AI solutions strengthen governance by continuously monitoring transactions and sales patterns to proactively detect compliance risks, including anti-money laundering and potential misconduct.”</blockquote>
+        <figcaption>Annual Report 2025, p. 38</figcaption>
+      </figure>
+
+      <figure class="pull">
+<p class="pull-label">Risk and conduct, Malaysia</p>        <blockquote>“We have also developed an AI-driven model to help identify potential misconduct cases, significantly reducing the manual effort and time required for investigations.”</blockquote>
+        <figcaption>Annual Report 2025, p. 41</figcaption>
+      </figure>
+
+
+</section>
+<section class="sec sec-body" id="outcomes">
+  <header class="sec-head">
+    <p class="kicker">Section 3</p>
+    <h1>Reported outcomes</h1>
+  </header>
+
+      <p class="lead">Claims shows the clearest AI result; the adviser platform’s benefit is still a target, and no use is reported in dollars</p>
+
+      <div class="figures">
+        <div class="figure figure-result">
+          <p class="fig-tag">Result, 2025</p>
+          <p class="fig-value">75%</p>
+          <p class="fig-label">of medical claims settled same day in 2025</p>
+<p class="fig-detail">Described as one of the fastest among Singapore’s health insurers, based on Ministry of Health service indicators.</p>          <p class="fig-source">Annual Report 2025, p. 38</p>
+        </div>
+        <div class="figure figure-target">
+          <p class="fig-tag">Target</p>
+          <p class="fig-value">~75%</p>
+          <p class="fig-label">less preparation time for financial advisers, the aim of the AI-enabled advisory platform</p>
+<p class="fig-detail">No achieved figure is reported.</p>          <p class="fig-source">Annual Report 2025, p. 12</p>
+        </div>
+        <div class="figure figure-neutral">
+          <p class="fig-tag">Dollar benefit</p>
+          <p class="fig-value">0 of 8</p>
+          <p class="fig-label">AI uses reported with a dollar benefit</p>
+<p class="fig-detail">None of the eight uses in section 2 is reported with a financial value.</p>          <p class="fig-source">Search of the uses in Annual Report 2025, pp. 6, 12, 38 and 41</p>
+        </div>
+      </div>
+
+      <p class="para">The two 75% figures are the same number but not the same kind of evidence. The claims figure is a result the company reports for 2025. The adviser figure is what a platform deployed in 2025 “aims to” achieve; the report gives no achieved value. <span class="ref">(Annual Report 2025, pp. 12 and 38)</span></p>
+
+<p class="caption">Table 2. What is reported, and what is not</p>      <table class="data generic">
+<colgroup><col style="width:24%"><col style="width:38%"><col style="width:38%"></colgroup>        <thead><tr><th></th><th>Medical claims turnaround</th><th>Adviser preparation time</th></tr></thead>
+        <tbody>
+          <tr><td class="rowhead">Kind of figure</td><td>Achieved result</td><td>Target</td></tr>
+          <tr><td class="rowhead">Period</td><td>2025</td><td>Platform deployed in 2025; period of measurement not stated</td></tr>
+          <tr><td class="rowhead">Comparison offered</td><td>Among the fastest of Singapore’s health insurers, on Ministry of Health service indicators</td><td>None</td></tr>
+          <tr><td class="rowhead">Baseline</td><td>Not stated</td><td>Not stated</td></tr>
+          <tr><td class="rowhead">Population measured</td><td>Medical claims; claim types and volumes not stated</td><td>Financial advisers; number of advisers not stated</td></tr>
+          <tr><td class="rowhead">Financial value</td><td>Not stated</td><td>Not stated</td></tr>
+        </tbody>
+      </table>
+<p class="table-note">Source: Annual Report 2025, pp. 12 and 38.</p>
+      <h2>Outcomes described without figures</h2>
+
+      <p class="para">The two Malaysia uses are reported with qualitative outcomes, and the medical-bill solution with an industry award. Neither carries a figure. <span class="ref">(Annual Report 2025, p. 41)</span></p>
+
+      <figure class="pull">
+<p class="pull-label">Medical-bill recognition, Malaysia</p>        <blockquote>“This capability has significantly strengthened our claims oversight and operational efficiency. The initiative was awarded the Best Claims Initiative in Malaysia at the Insurance Asia Awards 2025.”</blockquote>
+        <figcaption>Annual Report 2025, p. 41</figcaption>
+      </figure>
+
+      <aside class="callout callout-teal">
+<p class="callout-head">Why it matters</p>        <p>Without a baseline or a dollar value, neither figure can be weighed against the cost of the next wave of AI. Section 4 uses Great Eastern’s own numbers to show where that value could sit.</p>
+      </aside>
+
+
+</section>
+<section class="sec sec-body no-break" id="value">
+  <header class="sec-head">
+    <p class="kicker">Section 4</p>
+    <h1>Where the value sits</h1>
+  </header>
+
+      <p class="lead">10% better accident and health claims would add S$131m to a year’s profit</p>
+
+      <div class="figures">
+        <div class="figure figure-result">
+          <p class="fig-tag">Singapore</p>
+          <p class="fig-value">S$31.8m</p>
+          <p class="fig-label">one-year profit after tax, net of reinsurance</p>
+          <p class="fig-source">Annual Report 2025, Note 30, p. 186</p>
+        </div>
+        <div class="figure figure-result">
+          <p class="fig-tag">Malaysia</p>
+          <p class="fig-value">S$99.3m</p>
+          <p class="fig-label">one-year profit after tax, net of reinsurance</p>
+          <p class="fig-source">Annual Report 2025, Note 30, p. 187</p>
+        </div>
+        <div class="figure figure-target">
+          <p class="fig-tag">Total</p>
+          <p class="fig-value">S$131m</p>
+          <p class="fig-label">one-year profit effect of 10% better accident and health claims</p>
+          <p class="fig-source">Annual Report 2025, Note 30, pp. 186 and 187</p>
+        </div>
+      </div>
+
+      <p class="para">Great Eastern discloses how its profit would change if each of its main actuarial assumptions moved on its own. In scenario 4, accident and health claims are 10% lower than assumed. On the 2025 figures, one year’s profit after tax would rise by S$31.8 million in Singapore and S$99.3 million in Malaysia, net of reinsurance: S$131.1 million in total. <span class="ref">(Annual Report 2025, Note 30, pp. 186 and 187)</span></p>
+
+      <aside class="callout callout-teal">
+<p class="callout-head">How to read this</p>        <p>This is Great Eastern’s own assumption sensitivity, not a forecast of AI benefit. It shows the scale of profit that moves with accident and health claims experience, which is where claims AI acts. Contractual life benefits, such as maturities, death benefits and surrenders, are excluded: they are obligations to policyholders, not costs for AI to reduce.</p>
+      </aside>
+
+      <div class="keep">
+<p class="caption">Table 3. Great Eastern’s assumption sensitivities, 2025: impact on one year’s profit after tax, net of reinsurance</p>      <table class="data sens">
+        <colgroup><col class="sv-scen"><col class="sv-chg"><col class="sv-val"><col class="sv-val"></colgroup>
+        <thead>
+          <tr><th>Assumption</th><th class="num">Change</th><th class="num">Singapore</th><th class="num">Malaysia</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>1. Mortality and Morbidity</td><td class="num">+ 10%</td><td class="num">(102.1)</td><td class="num">(58.6)</td></tr>
+          <tr><td>2. Mortality and Morbidity</td><td class="num">– 10%</td><td class="num">34.4</td><td class="num">53.7</td></tr>
+          <tr><td>3. Accident and Health</td><td class="num">+ 10%</td><td class="num">(32.1)</td><td class="num">(109.5)</td></tr>
+          <tr class="hi"><td>4. Accident and Health</td><td class="num">– 10%</td><td class="num">31.8</td><td class="num">99.3</td></tr>
+          <tr><td>5. Persistency</td><td class="num">+ 25%</td><td class="num">(21.2)</td><td class="num">28.4</td></tr>
+          <tr><td>6. Persistency</td><td class="num">– 25%</td><td class="num">(8.5)</td><td class="num">(26.6)</td></tr>
+          <tr><td>7. Renewal Expenses</td><td class="num">+ 10%</td><td class="num">(16.7)</td><td class="num">(16.2)</td></tr>
+        </tbody>
+      </table>
+      <p class="table-note">S$ million; figures in brackets are reductions in profit. Each scenario changes one assumption, with all other variables held constant. Scenario 4, Singapore and Malaysia combined: S$131.1 million. Source: Annual Report 2025, Note 30, tables 30(B1) and 30(B2), pp. 186 and 187.</p>
+      </div>
+
+      <p class="para">AI already works on accident and health claims. Medical claims are automated, and in Malaysia an optical character recognition solution checks medical bills for potential wastage and abuse. Three levers are open to test: claims leakage and fraud, medical cost management, and faster, cleaner adjudication. Section 6 states the value hypothesis in a form an assessment could confirm or reject. <span class="ref">(Annual Report 2025, pp. 12 and 41)</span></p>
+
+
+</section>
+<section class="sec sec-body" id="governance">
+  <header class="sec-head">
+    <p class="kicker">Section 5</p>
+    <h1>AI governance</h1>
+  </header>
+
+      <p class="lead">AI has board oversight and dedicated leadership; the annual report does not set out the AI framework</p>
+
+<p class="caption">Table 4. AI governance in the 2025 annual report</p>      <table class="data generic">
+<colgroup><col style="width:36%"><col style="width:34%"><col style="width:30%"></colgroup>        <thead><tr><th>Element</th><th>In the 2025 annual report</th><th>Where</th></tr></thead>
+        <tbody>
+          <tr><td class="rowhead">Board-level AI oversight</td><td>Described</td><td>Directors’ fees and board competencies, pp. 71 and 78</td></tr>
+          <tr><td class="rowhead">Data &amp; AI leadership and operating model</td><td>Described</td><td>Operating model restructured in 2025, p. 39; Managing Director, Group Data and AI, p. 65</td></tr>
+          <tr><td class="rowhead">AI policy or principles</td><td>Not covered in the report</td><td>Search of the full report; see below</td></tr>
+          <tr><td class="rowhead">AI inventory and risk tiers</td><td>Not covered in the report</td><td>Search of the full report; see below</td></tr>
+          <tr><td class="rowhead">Model risk management for AI</td><td>Not covered in the report</td><td>Search of the full report; see below</td></tr>
+        </tbody>
+      </table>
+<p class="table-note">Source: Annual Report 2025, pp. 39, 65, 71 and 78.</p>
+      <h2>What the annual report describes</h2>
+
+      <p class="para">AI reaches the board in two places: two named directors are to receive fees for their contributions to IT infrastructure, data and AI initiatives, and the board’s collective competencies include artificial intelligence. <span class="ref">(Annual Report 2025, pp. 71 and 78)</span></p>
+
+      <figure class="pull">
+<p class="pull-label">Directors’ fees, note 4 to the remuneration table</p>        <blockquote>“(4) Dr Chong Yoke Sin and Mr Lee Fook Sun will each receive a fixed amount of $20,000 and $5,699 respectively for their contributions in respect of Great Eastern Group’s information technology infrastructure, data and artificial intelligence initiatives for FY2025.”</blockquote>
+        <figcaption>Annual Report 2025, p. 78</figcaption>
+      </figure>
+
+      <figure class="pull">
+<p class="pull-label">Board competencies</p>        <blockquote>“Collectively, they provide the necessary business acumen, knowledge, capabilities and core competencies to the Company and the Group, including … regulatory requirements, risk management, law, cyber risk, ESG and sustainability, taxation and artificial intelligence.”</blockquote>
+        <figcaption>Annual Report 2025, p. 71</figcaption>
+      </figure>
+
+      <p class="para">AI also has dedicated leadership. The Data &amp; AI operating model was restructured in 2025, and a Managing Director, Group Data and Artificial Intelligence, led the function. The report records that she was expected to join OCBC as Head of the Group Data Office in March 2026, with a successor to be named. <span class="ref">(Annual Report 2025, pp. 39 and 65)</span></p>
+
+      <figure class="pull">
+<p class="pull-label">Data and AI operating model</p>        <blockquote>“In 2025, we restructured our Data &amp; AI operating model to accelerate transformation.”</blockquote>
+        <figcaption>Annual Report 2025, p. 39</figcaption>
+      </figure>
+
+      <figure class="pull">
+<p class="pull-label">Leadership changes</p>        <blockquote>“Ms Zhao Jingyuan (Managing Director, Group Data and Artificial Intelligence) is expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”) as the Head of the Group Data Office in March 2026. … The successors to Ms Zhao Jingyuan and Mr Jimmy Tong will be named in due course.”</blockquote>
+        <figcaption>Annual Report 2025, p. 65</figcaption>
+      </figure>
+
+      <p class="para">Where the report pairs AI with governance, the mechanisms it cites are a Quality Assurance Scorecard, introduced to strengthen accountability and service quality, and the Cyber Trust Mark. <span class="ref">(Annual Report 2025, p. 12)</span></p>
+
+      <figure class="pull">
+<p class="pull-label">Letter to Shareholders</p>        <blockquote>“As we expanded the use of digital and AI capabilities, we did so with discipline and robust governance. In 2025, we introduced a Quality Assurance Scorecard to strengthen accountability and service quality and became the first insurer in the industry to attain the Cyber Trust Mark in Singapore, reflecting the strength of our cyber governance and commitment to safeguarding customer trust.”</blockquote>
+        <figcaption>Annual Report 2025, p. 12</figcaption>
+      </figure>
+
+      <h2>What the annual report does not cover</h2>
+
+      <p class="para">An AI policy or principles, an inventory of AI systems with risk tiers, and model risk management for AI are not covered in the annual report. This describes public disclosure only, not an assessment of practice; such frameworks may exist internally or at OCBC group level, which we did not review.</p>
+
+      <aside class="method-box">
+        <p class="callout-head">How we searched</p>
+        <p>We searched the full text of all 1–244 pages of the Annual Report 2025 (counted as pages of the PDF file) for 17 terms that usually accompany a description of how AI itself is governed. Matching ignored capitalisation, except for the acronyms.</p>
+        <p class="terms"><span>responsible AI</span><span class="sep"> · </span><span>AI governance</span><span class="sep"> · </span><span>AI risk</span><span class="sep"> · </span><span>artificial intelligence risk</span><span class="sep"> · </span><span>model risk</span><span class="sep"> · </span><span>model validation</span><span class="sep"> · </span><span>AI policy / principles / framework</span><span class="sep"> · </span><span>AI ethics</span><span class="sep"> · </span><span>FEAT</span><span class="sep"> · </span><span>Veritas</span><span class="sep"> · </span><span>fairness</span><span class="sep"> · </span><span>explainability</span><span class="sep"> · </span><span>human oversight / human-in-the-loop</span><span class="sep"> · </span><span>algorithm</span><span class="sep"> · </span><span>ISO/IEC 42001</span><span class="sep"> · </span><span>NIST AI RMF</span><span class="sep"> · </span><span>MAS AI guidelines (AIRM)</span></p>
+        <p><strong>Result.</strong> None of the 17 terms appears anywhere in the report.</p>
+        <p class="lim-head">What this search cannot show</p>
+        <ul><li>Only the annual report was searched. The sustainability report, the company website, results materials and regulatory filings were not.</li><li>The search looks for exact terms. A framework described in other words would not be found.</li><li>Frameworks set by OCBC at group level may apply to Great Eastern; they were not reviewed.</li><li>Text taken from a PDF can split a phrase across columns, so a term could be missed. The governance and risk sections have not yet been read in full by a second reviewer.</li></ul>
+      </aside>
+
+
+</section>
+<section class="sec sec-body" id="hypotheses">
+  <header class="sec-head">
+    <p class="kicker">Section 6</p>
+    <h1>Hypotheses and how an assessment would test them</h1>
+  </header>
+
+      <p class="lead">Three testable hypotheses would turn this outside-in view into decisions</p>
+
+      <p class="para">The public record shows where AI is in use, but not what it is worth or how it is governed. Each hypothesis below is stated so that it can be shown to be wrong. For each, we set out how the assessment would test it and what result would reject it.</p>
+
+      <table class="data hyp">
+        <colgroup><col class="h-topic"><col class="h-text"><col class="h-how"><col class="h-refute"></colgroup>
+        <thead><tr><th></th><th>Hypothesis</th><th>How the assessment would test it</th><th>What would reject it</th></tr></thead>
+        <tbody>
+          <tr><td class="topic">Value</td><td class="hyp-text">Medical-claims AI can improve accident and health claims 2–5% in 18 months<span class="basis">Starting evidence: Annual Report 2025, pp. 12 and 41; Annual Report 2025, Note 30, pp. 186 and 187</span></td><td>Measure leakage, fraud and adjudication outcomes on accident and health claims before and after the claims AI, and size them against the scenario 4 sensitivity.</td><td>Measured improvement attributable to AI below 2% of accident and health claims, or not reachable within 18 months.</td></tr>
+          <tr><td class="topic">Governance</td><td class="hyp-text">Most MAS AI expectations can reuse OCBC group frameworks<span class="basis">Starting evidence: Annual Report 2025, pp. 12 and 65</span></td><td>Map Great Eastern’s AI uses to a risk-tiered inventory and test each MAS expectation against the controls OCBC group frameworks already provide.</td><td>Most expectations need controls that group frameworks do not provide.</td></tr>
+          <tr><td class="topic">Scale</td><td class="hyp-text">Production criteria, not model accuracy, hold back complex underwriting AI<span class="basis">Starting evidence: Annual Report 2025, p. 12</span></td><td>Review the complex-underwriting AI’s test evidence, the criteria for production and who decides, in interviews with underwriting, risk and Data &amp; AI leads.</td><td>The model has not yet met its accuracy target, while production criteria and decision rights are already defined.</td></tr>
+        </tbody>
+      </table>
+
+<h2>Questions we would put to management</h2>      <ol class="questions">
+<li><p>How are the reported 75% figures measured: baseline, period and population; which are outcomes and which aims? <span class="qbasis">(Annual Report 2025, pp. 12 and 38)</span></p></li><li><p>What evidence would move the underwriting AI from testing to production, and who approves it? <span class="qbasis">(Annual Report 2025, p. 12)</span></p></li><li><p>Where is the framework behind Great Eastern’s AI governance statements documented, and who owns it? <span class="qbasis">(Annual Report 2025, pp. 12 and 38)</span></p></li><li><p>Which AI risk policies does Great Eastern set itself, and which does it adopt from OCBC group? <span class="qbasis">(Annual Report 2025, p. 65)</span></p></li><li><p>What changed in the 2025 Data &amp; AI operating-model restructure, and where does AI risk ownership sit? <span class="qbasis">(Annual Report 2025, p. 39)</span></p></li><li><p>Has a successor for the Group Data and AI seat been named since the report, with the same scope? <span class="qbasis">(Annual Report 2025, p. 65)</span></p></li>      </ol>
+
+<h2>How the assessment would run</h2><p class="para">A six-week assessment would test these hypotheses with the leadership team.</p>      <table class="data plan">
+        <colgroup><col class="p-lane"><col class="p-unit"><col class="p-unit"><col class="p-unit"><col class="p-unit"><col class="p-unit"><col class="p-unit"></colgroup>
+        <thead><tr><th>Workstream</th><th class="unit">Week 1</th><th class="unit">Week 2</th><th class="unit">Week 3</th><th class="unit">Week 4</th><th class="unit">Week 5</th><th class="unit">Week 6</th></tr></thead>
+        <tbody>
+          <tr><td>Public evidence and peer benchmark</td><td class="cell"><span class="bar bar-start"></span></td><td class="cell"><span class="bar bar-end"></span></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td></tr>
+          <tr><td>Leadership questionnaire</td><td class="cell"><span class="bar bar-start"></span></td><td class="cell"><span class="bar bar-end"></span></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td></tr>
+          <tr><td>10–12 leadership interviews</td><td class="cell"></td><td class="cell"><span class="bar bar-start"></span></td><td class="cell"><span class="bar"></span></td><td class="cell"><span class="bar bar-end"></span></td><td class="cell"></td><td class="cell"></td></tr>
+          <tr><td>AI inventory and value sizing</td><td class="cell"></td><td class="cell"></td><td class="cell"><span class="bar bar-start"></span></td><td class="cell"><span class="bar"></span></td><td class="cell"><span class="bar bar-end"></span></td><td class="cell"></td></tr>
+          <tr><td>Synthesis and read-out</td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"></td><td class="cell"><span class="bar bar-start"></span></td><td class="cell"><span class="bar bar-end"></span></td></tr>
+        </tbody>
+      </table>
+<p class="para"><strong>Outputs.</strong> Sized AI value pools; AI inventory and risk tiers; production path for next use cases.</p><p class="para">Proposed next step: a 45-minute working session with the Group CEO, COO, CRO and Data &amp; AI lead.</p>
+
+</section>
+<section class="sec sec-appendix" id="sources">
+  <header class="sec-head">
+    <p class="kicker">Appendix A</p>
+    <h1>Sources</h1>
+  </header>
+
+      <h2>Documents relied on in this report</h2>
+      <table class="data sources">
+        <colgroup><col class="s-doc"><col class="s-pages"></colgroup>
+        <thead><tr><th>Document</th><th>Pages cited</th></tr></thead>
+        <tbody>
+          <tr><td><p class="src-title">Great Eastern Holdings Limited, Annual Report 2025</p>
+            <p class="src-meta">Great Eastern Holdings Limited, published March 2026. 244 pages; page numbers printed on PDF pages 6 to 239.</p>
+            <p class="src-url"><a href="https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf">www.​greateasternlife.​com/​content/​dam/​corp-​site/​group/​gels-​au-​corpcomms/​english-​website/​annual-​report/​great-​eastern-​holdings-​limited-​ar-​2025.​pdf</a></p></td>
+            <td class="pages">6, 12, 38, 39, 41, 65, 71, 78, 186 and 187</td></tr>
+        </tbody>
+      </table>
+      <p class="table-note">Page numbers are those printed on the pages of the annual report. A page without a printed number would be cited by its position in the PDF file.</p>
+
+
+</section>
+<section class="sec sec-appendix" id="method">
+  <header class="sec-head">
+    <p class="kicker">Appendix B</p>
+    <h1>Method</h1>
+  </header>
+
+      <p class="para">This report is built so that every statement can be traced to the page it comes from. The steps below apply to every quotation and every summary sentence in it.</p>
+
+      <div class="method">
+        <div class="method-step"><p class="method-num">1</p><div><h3>Statements start from a stored copy of the source</h3><p>Each statement is drawn from a document we hold a stored copy of. For this report that is Great Eastern’s Annual Report 2025, as published in March 2026. We record the page on which each statement appears.</p></div></div>
+        <div class="method-step"><p class="method-num">2</p><div><h3>Quotations are matched word for word</h3><p>Every quotation is compared with the text of the stored copy, on the page cited, and is printed only if it matches word for word. Where a quotation is shortened, an ellipsis marks the gap and each remaining part is matched in order.</p></div></div>
+        <div class="method-step"><p class="method-num">3</p><div><h3>Status uses the company’s own wording</h3><p>Where we say how far a use of AI has progressed, we use the company’s verb, such as “deployed”, “testing” or “developed”. A stated aim is never presented as a result.</p></div></div>
+        <div class="method-step"><p class="method-num">4</p><div><h3>Figures from tables are read from the stored copy</h3><p>Figures taken from tables, such as the assumption sensitivities in section 4, are read from the stored copy each time the report is produced and checked against the values we expect; any total is recalculated from them.</p></div></div>
+        <div class="method-step"><p class="method-num">5</p><div><h3>Our sentences are kept apart from the company’s</h3><p>Summary sentences, observations and hypotheses are ours. Each cites the pages it rests on and is checked against those pages for dropped qualifiers, such as “aims to”, before release.</p></div></div>
+        <div class="method-step"><p class="method-num">6</p><div><h3>Absence is reported as a search, not a finding</h3><p>Where we say the report does not describe something, we state what we searched for, where, and what the search cannot show (section 5).</p></div></div>
+        <div class="method-step"><p class="method-num">7</p><div><h3>Independent review before release</h3><p>Before a report is final, its findings are reviewed by an advisor who did not produce them. This discussion draft has not yet completed that review.</p></div></div>
+      </div>
+
+
+</section>
+<section class="sec sec-appendix" id="open-items">
+  <header class="sec-head">
+    <p class="kicker">Appendix C</p>
+    <h1>Open items</h1>
+  </header>
+
+      <p class="para">The items below could not be confirmed for this draft. None of them is relied on in the body of the report.</p>
+
+      <table class="data generic open">
+        <colgroup><col class="o-item"><col class="o-why"><col class="o-next"></colgroup>
+        <thead><tr><th>Item</th><th>Why it is open</th><th>How it will be closed</th></tr></thead>
+        <tbody>
+          <tr><td class="rowhead">Peer size comparison</td><td>Total-asset figures for four peers (AIA Group, Prudential Assurance Company Singapore, Income Insurance and Singlife) could not be checked, because the published files could not be retrieved when we checked.</td><td>Retrieve the regulator’s insurer returns and the peers’ annual reports, then check each figure.</td></tr>
+          <tr><td class="rowhead">Regulatory developments</td><td>Regulatory guidance on AI risk management issued after March 2026 has not yet been checked against a stored copy and is not covered in this edition.</td><td>Store the regulator’s documents and check them before discussion.</td></tr>
+          <tr><td class="rowhead">Current data and AI leadership</td><td>The annual report says a successor to the Managing Director, Group Data and Artificial Intelligence, will be named in due course. We have not located an announcement since.</td><td>Confirm with management, or from the company’s management-team page.</td></tr>
+          <tr><td class="rowhead">Developments since March 2026</td><td>Half-year results, annual general meeting materials and board announcements published since the annual report have not yet been checked against stored copies.</td><td>Store each document and re-read the passages concerned.</td></tr>
+          <tr><td class="rowhead">Copy of the annual report</td><td>The copy of the annual report used was supplied as a file. It has not yet been matched against the copy on Great Eastern’s website. Every quotation in this report has been matched against the supplied copy.</td><td>Compare the supplied file with the publisher’s copy; any difference will be reported.</td></tr>
+          <tr><td class="rowhead">Baselines and value of outcomes</td><td>The annual report gives no baseline or financial value for either reported 75% figure.</td><td>Request from management (section 6).</td></tr>
+          <tr><td class="rowhead">Earlier-year comparison</td><td>The FY2024 annual report and the FY2025 results release are not yet in the evidence base, so the report makes no year-on-year statement about AI.</td><td>Store both documents and extend the review.</td></tr>
+          <tr><td class="rowhead">Hiring, patents and spend</td><td>Job-posting history, patent filings and a structured extract of the financial statements have not yet been collected. The report therefore makes no statement about AI hiring, patents or technology spend.</td><td>Collect in the first phase of the assessment.</td></tr>
+          <tr><td class="rowhead">Independent review</td><td>The summary sentences and observations have not yet completed independent review.</td><td>Complete before the report is issued as final.</td></tr>
+        </tbody>
+      </table>
+
+</section>
+
+</body>
+</html>

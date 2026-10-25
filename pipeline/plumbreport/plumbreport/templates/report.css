@@ -151,7 +151,8 @@ table.data td.rowhead, table.data td.stage, table.data td.topic { font-weight: 7
 table.data td.stage { color: var(--slate); font-weight: 400; }
 table.uses col.c-stage { width: 22%; } table.uses col.c-use { width: 40%; }
 table.uses col.c-status { width: 16%; } table.uses col.c-market { width: 13%; } table.uses col.c-page { width: 9%; }
-table.hyp col.h-topic { width: 15%; } table.hyp col.h-text { width: 45%; } table.hyp col.h-how { width: 40%; }
+table.hyp col.h-topic { width: 13%; } table.hyp col.h-text { width: 31%; } table.hyp col.h-how { width: 30%; } table.hyp col.h-refute { width: 26%; }
+table.hyp td.hyp-text { font-family: var(--serif); font-size: 10pt; line-height: 1.35; }
 table.hyp td { padding-top: 3mm; padding-bottom: 3mm; }
 table.hyp td.topic { font-family: var(--serif); font-size: 11pt; color: var(--teal); }
 .basis { display: block; font-size: 7.5pt; color: var(--slate); margin-top: 1.5mm; }
@@ -203,7 +204,7 @@ ol.questions li p { margin: 0; }
 .phase-when { font-size: 7.5pt; letter-spacing: 0.12em; text-transform: uppercase; font-weight: 700; color: var(--teal); margin: 0 0 1mm; }
 .phase-what { font-family: var(--serif); font-size: 11pt; line-height: 1.3; margin: 0; }
 
-/* awaiting source check */
+/* later developments section */
 .sec-awaiting .sec-head .kicker { color: var(--amber); }
 .await-list { margin: 0 0 4mm; }
 .await-item { padding: 0.8mm 0 0.8mm 5mm; border-left: 1.2pt solid var(--amber); margin-bottom: 3.2mm; break-inside: avoid; max-width: 152mm; }
@@ -236,3 +237,35 @@ table.sources .src-title { margin: 0 0 0.3mm; }
 .qbasis { font-size: 8pt; color: var(--slate); white-space: nowrap; }
 table.sources.compact td { padding-top: 1.2mm; padding-bottom: 1.2mm; }
 table.hyp td { padding-top: 2.4mm; padding-bottom: 2.4mm; }
+table.sens col.sv-scen { width: 46%; } table.sens col.sv-chg { width: 14%; } table.sens col.sv-val { width: 20%; }
+table.sens tr.hi td { font-weight: 700; color: var(--teal); background: var(--panel); }
+table.sens tr.hi td:first-child { padding-left: 2mm; }
+table.sens td:first-child { padding-left: 2mm; }
+table.plan { font-size: 8.5pt; }
+table.plan col.p-lane { width: 34%; }
+table.plan th.unit { text-align: center; padding-right: 0; }
+table.plan td { padding-top: 2mm; padding-bottom: 2mm; }
+table.plan td.cell { padding: 2.6mm 0 0; }
+table.plan .bar { display: block; height: 3mm; background: var(--teal); }
+table.plan .bar-start { margin-left: 1mm; } table.plan .bar-end { margin-right: 1mm; }
+
+/* compaction pass */
+.lead { font-size: 13pt; margin-bottom: 5mm; }
+.contents-title, .sec-head h1 { font-size: 23pt; margin-bottom: 4.5mm; }
+.fig-value { font-size: 32pt; }
+.figures { margin-bottom: 5mm; }
+.pull blockquote { font-size: 10.5pt; }
+.pull { margin: 3.2mm 0 3.6mm; }
+h2 { margin: 5.5mm 0 2.2mm; }
+table.data td { padding-top: 1.8mm; padding-bottom: 1.8mm; }
+.callout, .method-box { padding: 3.5mm 5mm 1.5mm; margin: 4mm 0 4mm; }
+.message { padding: 3.2mm 0; }
+ol.notes { margin-top: 5mm; max-width: none; columns: 2; column-gap: 8mm; font-size: 7.5pt; }
+table.plan td { padding-top: 1.4mm; padding-bottom: 1.4mm; }
+table.plan td.cell { padding-top: 2mm; }
+.await-item { margin-bottom: 2.6mm; padding-top: 0.4mm; padding-bottom: 0.4mm; }
+.await-text { line-height: 1.4; }
+.await-meta { font-size: 8pt; margin-bottom: 0.3mm; }
+.src-url, .await-url { font-size: 6.8pt; line-height: 1.3; }
+.sec-awaiting h2 { margin-top: 4.5mm; }
+.keep { break-inside: avoid; }

@@ -33,7 +33,7 @@ def build(spec_path, run_dir, storyline_path, research_path, out_dir, *, strict=
     story = load_storyline(storyline_path)
     research = load_research(research_path) if research_path else None
 
-    model = bind(spec, run, story, research, strict=strict)     # raises BindingError
+    model = bind(spec, run, story, research, strict=strict, source_pdf=source_pdf)     # raises BindingError
 
     quote_errors = check_quotes(model["quotes"], Path(source_pdf)) if source_pdf else []
     if quote_errors:

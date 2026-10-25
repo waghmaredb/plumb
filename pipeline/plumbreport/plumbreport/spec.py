@@ -61,6 +61,7 @@ class Context:
     notes: list[str] | None = None            # footnote texts for the current section
     quotes: list[dict] = field(default_factory=list)       # for word-for-word re-check
     awaiting_sources: list[AwaitingSource] = field(default_factory=list)
+    table_figures: dict | None = None
     accounted: set[str] = field(default_factory=set)       # non-verified ids accounted for
     bound: set[str] = field(default_factory=set)
 
@@ -136,34 +137,64 @@ def _text_of(node: Any) -> str:
     return node.get("text", "") if isinstance(node, dict) else str(node)
 
 
-def _citation(ctx: Context, cids: list[str], where: str) -> dict | None:
+def _citation_text(ctx: Context, cids: list[str], where: str, figs: list[str] | None = None) -> str:
+    parts = []
+    if cids:
+        parts.append(cite(ctx, cids, where)["text"])
+    if figs:
+        tf = ctx.table_figures or {}
+        known = tf.get("figures", {})
+        missing = [f for f in figs if f not in known]
+        if missing:
+            raise BindingError(f"[{ctx.section_id}] {where}: figures {missing} were not read from the source")
+        doc = ctx.documents[tf["document"]]
+        pages = sorted({known[f]["pdf_page"] for f in figs})
+        for p in pages:
+            doc.used_pdf_pages.add(p)
+        parts.append(f"{doc.short}, Note 30, {doc.folio.labels(pages)}")
+    return "; ".join(parts)
+
+
+def _citation(ctx: Context, cids: list[str], where: str, figs: list[str] | None = None) -> dict | None:
     """Return {'note': n} (footnote mode) or {'inline': text}."""
-    if not cids:
+    if not cids and not figs:
         return None
-    c = cite(ctx, cids, where)
+    text = _citation_text(ctx, cids, where, figs)
     if ctx.notes is not None:
-        ctx.notes.append(c["text"] + ".")
+        ctx.notes.append(text + ".")
         return {"note": len(ctx.notes)}
-    return {"inline": c["text"]}
+    return {"inline": text}
 
 
 # ------------------------------------------------------------------------ blocks
 
 def _text_block(ctx, b, where):
+    figs = list(b.get("figures", []))
     if "storyline" in b:
         node = ctx.storyline.get(b["storyline"])
+        check_figures(ctx, node, where)
         text, support = _text_of(node), _support_of(node)
+        if isinstance(node, dict):
+            figs += list(node.get("figures", [])) + list((node.get("derived") or {}).get("sum", []))
     else:
         text, support = b["text"], list(b.get("support", []))
-    return {"type": b["type"], "text": text, "cite": _citation(ctx, support, where)}
+    return {"type": b["type"], "text": text, "cite": _citation(ctx, support, where, figs or None)}
 
 
 def _message(ctx, b, where):
-    node = ctx.storyline.get(b["storyline"])          # a point: {head, body}
-    head, body = node["head"], node["body"]
-    support = list(dict.fromkeys(_support_of(head) + _support_of(body)))
-    return {"type": "message", "head": _text_of(head), "text": _text_of(body),
-            "cite": _citation(ctx, support, where)}
+    """A summary message: head and body, each a storyline ref or authored text with support."""
+    def part(ref_key, text_key):
+        if ref_key in b:
+            node = ctx.storyline.get(b[ref_key])
+            check_figures(ctx, node, where)
+            return _text_of(node), _support_of(node), list(node.get("figures", []) if isinstance(node, dict) else [])
+        return b.get(text_key, ""), [], []
+    head, hs, hf = part("head_storyline", "head")
+    body, bs, bf = part("storyline", "text")
+    support = list(dict.fromkeys(hs + bs + list(b.get("support", []))))
+    figs = list(dict.fromkeys(hf + bf + list(b.get("figures", []))))
+    return {"type": "message", "head": head, "text": body,
+            "cite": _citation(ctx, support, where, figs)}
 
 
 def _quote(ctx, b, where):
@@ -235,6 +266,33 @@ def _uses_table(ctx, b, where):
 def _figures(ctx, b, where):
     items = []
     for i, f in enumerate(b["items"]):
+        if "table_figure" in f or "table_sum" in f:
+            ids = [f["table_figure"]] if "table_figure" in f else list(f["table_sum"])
+            tf = ctx.table_figures or {}
+            if any(x not in tf.get("figures", {}) for x in ids):
+                raise BindingError(f"[{ctx.section_id}] {where} figure {i + 1}: not read from the source")
+            total = sum(_num(tf["figures"][x]["value"]) for x in ids)
+            m = re.search(r"([\d.]+)", f["value"])
+            if not m or abs(float(m.group(1)) - total) > (0.05 if "." in m.group(1) else 0.5):
+                raise BindingError(f"[{ctx.section_id}] {where} figure {i + 1}: {f['value']} does not match "
+                                   f"{total:.1f} read from the source")
+            doc = ctx.documents[tf["document"]]
+            pages = sorted({tf["figures"][x]["pdf_page"] for x in ids})
+            for p in pages:
+                doc.used_pdf_pages.add(p)
+            items.append({**{k: f.get(k, "") for k in ("value", "tag", "label", "detail", "tone")},
+                          "source": f"{doc.short}, Note 30, {doc.folio.labels(pages)}"})
+            continue
+        if "observation_support" in f:
+            if "label_storyline" in f:
+                f = {**f, "label": _text_of(ctx.storyline.get(f["label_storyline"]))}
+            src = cite(ctx, list(f["observation_support"]), f"{where} figure {i + 1}")["text"]
+            items.append({**{k: f.get(k, "") for k in ("value", "tag", "label", "detail", "tone")},
+                          "source": "Search of the uses in " + src})
+            continue
+        if "label_storyline" in f:
+            node = ctx.storyline.get(f["label_storyline"])
+            f = {**f, "label": _text_of(node)}
         c = use_claim(ctx, f["claim"], f"{where} figure {i + 1}")
         if f["figure"] not in c.text:
             raise BindingError(f"[{ctx.section_id}] {where} figure {i + 1}: '{f['figure']}' is not in "
@@ -273,12 +331,160 @@ def _search_method(ctx, b, where):
 
 
 def _hypotheses(ctx, b, where):
-    node = ctx.storyline.get(b["storyline"])
+    """Falsifiable hypotheses: statement from the storyline card; test and refutation authored."""
     rows = []
-    for i, r in enumerate(node["rows"]):
-        c = cite(ctx, r.get("support", []), f"{where} row {i + 1}")
-        rows.append({"topic": r["topic"], "text": r["text"], "how": r["how"], "basis": c["text"]})
-    return {"type": "hypotheses", "head": b.get("head") or node.get("col_heads"), "rows": rows}
+    for i, r in enumerate(b["rows"]):
+        node = ctx.storyline.get(r["storyline"])
+        c = _citation_text(ctx, list(r.get("support", [])), f"{where} row {i + 1}", list(r.get("figures", [])))
+        rows.append({"topic": node.get("head", ""), "text": _text_of(node), "how": r["how"],
+                     "refute": r.get("refute", ""), "basis": c})
+    return {"type": "hypotheses", "head": b["head"], "rows": rows}
+
+
+def _plan(ctx, b, where):
+    node = ctx.storyline.get(b["storyline"])
+    units = int(node.get("units", 0))
+    lanes = [{"name": l["name"], "from": int(l["from"]), "to": int(l["to"])} for l in node.get("lanes", [])]
+    for l in lanes:
+        if not (1 <= l["from"] <= l["to"] <= units):
+            raise BindingError(f"[{ctx.section_id}] {where}: lane {l['name']!r} is outside the plan")
+    return {"type": "plan", "head": b.get("head", ""), "intro": b.get("intro", ""), "title": _text_of(node.get("title", "")),
+            "unit_label": node.get("unit_label", "Week"), "units": units, "lanes": lanes,
+            "outputs": [o["text"] if i == 0 or o["text"][:2].isupper() else o["text"][0].lower() + o["text"][1:]
+                        for i, o in enumerate(node.get("outputs", []))], "close": b.get("close", "")}
+
+
+def _sensitivity(ctx, b, where):
+    """The full assumption-sensitivity table, every value read from the stored copy."""
+    tf = ctx.table_figures
+    if not tf:
+        raise BindingError(f"[{ctx.section_id}] {where}: no table figures were read from the source")
+    cols = b["columns"]                      # [{table: sg, label: Singapore}, ...]
+    scen = None
+    for c in cols:
+        rows = tf["tables"][c["table"]]["rows"]
+        names = [r["scenario"] + " " + r["change"] for r in rows]
+        if scen is None:
+            scen = names
+        elif names != scen:
+            raise BindingError(f"[{ctx.section_id}] {where}: the segment tables list different scenarios")
+    out_rows = []
+    for i, name in enumerate(scen):
+        cells = [tf["tables"][c["table"]]["rows"][i] for c in cols]
+        out_rows.append({"scenario": cells[0]["scenario"], "change": cells[0]["change"],
+                         "values": [x[b.get("column", "net_pat")] for x in cells],
+                         "highlight": _is_row(cells[0], b.get("highlight"))})
+    total = None
+    if b.get("highlight"):
+        hi = next(r for r in out_rows if r["highlight"])
+        tsum = sum(_num(v) for v in hi["values"])
+        total = f"{tsum:,.1f}"
+        if b.get("expect_total") and total != b["expect_total"]:
+            raise BindingError(f"[{ctx.section_id}] {where}: total {total} does not match expected {b['expect_total']}")
+    doc = ctx.documents[tf["document"]]
+    pages = [tf["tables"][c["table"]]["pdf_page"] for c in cols]
+    for p in pages:
+        doc.used_pdf_pages.add(p)
+    return {"type": "sensitivity", "caption": b.get("caption", ""), "unit": b.get("unit", ""),
+            "columns": [c["label"] for c in cols], "rows": out_rows, "total": total,
+            "total_label": b.get("total_label", "Total"), "note": b.get("note", ""),
+            "source": f"{doc.short}, Note 30, tables 30(B1) and 30(B2), {doc.folio.labels(pages)}"}
+
+
+def _is_row(row: dict, sel: dict | None) -> bool:
+    if not sel:
+        return False
+    norm = lambda x: x.replace("\u2009", "").replace(" ", "")
+    return row["scenario"] == sel["row"] and norm(row["change"]) == norm(sel["change"])
+
+
+def _num(v: str) -> float:
+    v = v.strip()
+    neg = v.startswith("(") and v.endswith(")")
+    x = float(v.strip("()").replace(",", ""))
+    return -x if neg else x
+
+
+# ------------------------------------------------------------- table figures
+
+_ROW = re.compile(r"^\s*(Scenario \d+ \u2013 [A-Za-z ]+?)\s+([+\u2013-] ?\d+%)\s+(.*)$")
+_NUM = re.compile(r"\(?[\d,]+\.\d\)?")
+_COLS = ["gross_pat", "reins_pat", "net_pat", "gross_equity", "reins_equity", "net_equity"]
+
+
+def parse_sensitivity_page(text: str, year: str) -> list[dict]:
+    """Rows of a Note 30(B) sensitivity table for one year, from `pdftotext -layout` text."""
+    rows, on = [], False
+    for line in text.splitlines():
+        t = line.strip()
+        if re.fullmatch(r"\d{4}", t):
+            on = t == year
+            continue
+        if not on:
+            continue
+        m = _ROW.match(line)
+        if not m:
+            continue
+        nums = _NUM.findall(m.group(3))
+        if len(nums) != 6:
+            raise BindingError(f"sensitivity row {m.group(1)!r}: expected 6 values, read {len(nums)}")
+        rows.append({"scenario": re.sub(r"\s+", " ", m.group(1)).strip(),
+                     "change": m.group(2).replace(" ", "").replace("+", "+\u2009").replace("\u2013", "\u2013\u2009"),
+                     **dict(zip(_COLS, nums))})
+    return rows
+
+
+def read_table_figures(spec_tf: dict, documents: dict, source_pdf) -> dict:
+    """Read every declared table from the stored copy and check every declared figure."""
+    import subprocess
+    if source_pdf is None:
+        raise BindingError("the spec prints figures read from tables in the source document; they can "
+                           "only be printed after being read from the stored copy (pass --source-pdf)")
+    doc = documents[spec_tf["document"]]
+    tables = {}
+    for key, t in spec_tf["tables"].items():
+        text = subprocess.run(["pdftotext", "-layout", "-f", str(t["pdf_page"]), "-l", str(t["pdf_page"]),
+                               str(source_pdf), "-"], capture_output=True, text=True, check=True).stdout
+        if t["table"] not in text:
+            raise BindingError(f"table {t['table']} is not on PDF page {t['pdf_page']} of {doc.short}")
+        rows = parse_sensitivity_page(text, str(t.get("year", "2025")))
+        if not rows:
+            raise BindingError(f"no rows read for {t['table']} ({t.get('year', '2025')})")
+        tables[key] = {"pdf_page": int(t["pdf_page"]), "rows": rows, "segment": t.get("segment", "")}
+    figures = {}
+    for fid, f in spec_tf.get("figures", {}).items():
+        rows = tables[f["table"]]["rows"]
+        row = next((r for r in rows if r["scenario"] == f["row"] and
+                    r["change"].replace("\u2009", "") == f["change"].replace(" ", "")), None)
+        if row is None:
+            raise BindingError(f"figure {fid}: row {f['row']} {f['change']} not found")
+        val = row[f.get("column", "net_pat")]
+        if f.get("expect") and val != f["expect"]:
+            raise BindingError(f"figure {fid}: read {val} from the source, spec expects {f['expect']}")
+        figures[fid] = {"value": val, "table": f["table"], "pdf_page": tables[f["table"]]["pdf_page"]}
+    return {"document": spec_tf["document"], "tables": tables, "figures": figures}
+
+
+def check_figures(ctx, node, where):
+    """A storyline sentence that carries table figures (or a derived sum) may be printed only
+    if those figures were read from the stored copy, and a derived display must match."""
+    if not isinstance(node, dict):
+        return
+    ids = list(node.get("figures", []))
+    der = node.get("derived") or {}
+    ids += list(der.get("sum", []))
+    if not ids:
+        return
+    figs = (ctx.table_figures or {}).get("figures", {})
+    missing = [i for i in ids if i not in figs]
+    if missing:
+        raise BindingError(f"[{ctx.section_id}] {where}: figures {missing} were not read from the source")
+    if der.get("sum"):
+        total = sum(_num(figs[i]["value"]) for i in der["sum"])
+        disp = der.get("display", "")
+        m = re.search(r"([\d.]+)", disp)
+        if not m or round(total) != round(float(m.group(1))):
+            raise BindingError(f"[{ctx.section_id}] {where}: display {disp!r} does not match the sum {total:.1f}")
 
 
 def _questions(ctx, b, where):
@@ -322,11 +528,19 @@ def _awaiting(ctx, b, where):
             raise BindingError(f"[{ctx.section_id}] {w}: every item needs a source address")
         if not it.get("source_type"):
             raise BindingError(f"[{ctx.section_id}] {w}: every item needs a source_type")
-        ctx.awaiting_sources.append(AwaitingSource(it.get("source_label", it["source_type"]), url,
+        ctx.awaiting_sources.append(AwaitingSource(it.get("source_label") or _doc_label(it["source_type"]), url,
                                                    it.get("date", "")))
         items.append({"text": it["text"], "source_type": it["source_type"], "date": it.get("date", ""),
                       "url": url, "status": it.get("status", "To be confirmed")})
     return {"type": "awaiting", "head": b.get("head", ""), "intro": b.get("intro", ""), "items": items}
+
+
+def _doc_label(source_type: str) -> str:
+    """'the trade press (Reinsurance Asia)' -> 'Trade press (Reinsurance Asia)';
+    'AIA Group, in its Annual Report 2025 (p. 17)' -> 'AIA Group, Annual Report 2025 (p. 17)'."""
+    t = re.sub(r"^(the|a|an) ", "", source_type.strip())
+    t = re.sub(r", in (its|the) ", ", ", t)
+    return t[:1].upper() + t[1:]
 
 
 def _traceable(url: str, ctx: Context, urls: list[str]) -> bool:
@@ -361,6 +575,7 @@ BLOCKS = {
     "uses_table": _uses_table, "figures": _figures, "table": _table,
     "search_method": _search_method, "hypotheses": _hypotheses, "questions": _questions,
     "phases": _phases, "awaiting": _awaiting, "open_items": _open_items,
+    "plan": _plan, "sensitivity": _sensitivity,
     "subhead": _plain, "note": _text_block, "observations": _plain, "callout": _callout,
     "method": _plain, "sources": _plain,
 }
@@ -399,7 +614,8 @@ def _sub_labels(node: Any, labels: dict[str, str], sid: str) -> Any:
     return node
 
 
-def bind(spec: dict, run: Run, storyline: Storyline, research: Research | None, *, strict: bool) -> dict:
+def bind(spec: dict, run: Run, storyline: Storyline, research: Research | None, *, strict: bool,
+         source_pdf=None) -> dict:
     documents = {}
     for key, d in spec["documents"].items():
         f = d.get("folio") or {}
@@ -411,6 +627,8 @@ def bind(spec: dict, run: Run, storyline: Storyline, research: Research | None, 
             page_overrides={k: int(v) for k, v in (d.get("pages") or {}).items()},
         )
     ctx = Context(run=run, storyline=storyline, research=research, documents=documents, strict=strict)
+    if spec.get("table_figures"):
+        ctx.table_figures = read_table_figures(spec["table_figures"], documents, source_pdf)
 
     mode = "strict" if strict else "full"
     spec_sections = _prune(spec["sections"], mode)
