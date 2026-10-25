@@ -19,7 +19,7 @@ def _story():
 def test_storyline_resolves_and_is_draft_without_signoff():
     story, rows, lock = resolve(_story(), RUN, None, None)
     assert story["_status"]["final"] is False
-    assert story["_status"]["marker"] == "DRAFT FOR DISCUSSION"
+    assert story["_status"]["marker"] == "Discussion draft"
     assert all(s.get("_source", "").startswith("Source: ") for s in story["slides"] if s["id"] in ("exec-summary", "value-chain", "outcomes"))
 
 
