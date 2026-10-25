@@ -1,0 +1,502 @@
+# PLUMB alpha — Great Eastern Holdings data pack manifest
+# Scouted 2026-10-25 from a sandbox with blocked egress: every URL below was located by
+# WebSearch and probed with WebFetch (a model summary of the page, NOT evidence). Nothing here
+# has been hashed. `fetch-datapack.sh` downloads each item on a laptop with normal egress, writes
+# SHA-256 sums, and the pipeline then serves the local file under the declared URL
+# (LocalDocTransport) so the citation of record stays the URL.
+#
+# verify flags:
+#   url_confirmed  — WebFetch returned the document's own content (text or "[binary data]" for a PDF/XLSX)
+#   url_inferred   — URL built from a sibling's pattern; WebFetch could not reach it (MAS rate-limited)
+#   figure_verify  — figure read from a WebFetch summary; must be re-read from the hashed file
+#   proxy_by_parent — OCBC material standing in for GEH (must be labelled in every output)
+subject: great-eastern
+scouted: 2026-10-25
+data_dir: data/great-eastern            # relative to pipeline/plumbresearch, matches `--data-dir data`
+sandbox_note: "curl to greateasternlife.com, mas.gov.sg, links.sgx.com → CONNECT 403 from the sandbox proxy; all fetching happens on the laptop."
+
+items:
+  # ------------------------------------------------------------------ subject primary documents (D1.1)
+  - id: geh-ar-fy2025
+    local_file: geh-annual-report-fy2025.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+    content_type: application/pdf
+    purpose: "annual-report module, FY2025 (AI paragraph count, governance wording, tech expense lines); subject size"
+    module: annual-report
+    instrument_items: [D1.1, D8.3]
+    verify: url_confirmed
+    notes: "WebFetch returned full text: 'Annual Report 2025', ≥232 pages (Notice of AGM at p.232), total assets S$122,639.1m, profit attributable S$1,207.1m, ~19 'AI' mentions (approximate). Replaces the links.sgx.com URL (403 from sandbox) and the 20260327-ar-fy2025-announcement.pdf wrapper."
+    alternates:
+      - "https://links.sgx.com/1.0.0/corporate-announcements/LNEPNAAMA9G4OO20/880681_GEH%20Annual%20Report%20FY2025.pdf"
+  - id: geh-ar-fy2024
+    local_file: geh-annual-report-fy2024.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/Great%20Eastern%20Holdings%20Limited%20AR%202024.pdf"
+    content_type: application/pdf
+    purpose: "annual-report module, FY2024 baseline for year-on-year AI disclosure delta"
+    module: annual-report
+    instrument_items: [D1.1]
+    verify: url_confirmed
+    notes: "WebFetch returned '[binary data]' (PDF served, not text-extracted). Listed on the IR annual-reports page as the FY2024 report. Replaces the 20250328-annual-report-fy2024-sgx.pdf URL."
+    alternates:
+      - "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20250328-annual-report-fy2024-sgx.pdf"
+  - id: geh-fy25-sgx-announcement
+    local_file: geh-fy2025-results-sgx-announcement.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/2025-fy25-sgx-announcement%20(SGX).pdf"
+    content_type: application/pdf
+    purpose: "FY2025 full-year results announcement (condensed financial statements, 24 Feb 2026): total assets, equity, insurance revenue, NPAT for financials.csv subject row"
+    module: financials
+    instrument_items: [V1, D8.3, KPI]
+    verify: url_confirmed
+    notes: "WebFetch returned text: 'financial statements for the second half and year ended 31 December 2025', 24 Feb 2026, ~45 pages. Total assets 122,639.1; profit attributable 1,207.1; Group shareholders' equity 9,710.1; insurance revenue 7,032.6 (S$m)."
+  - id: geh-fy25-media-release
+    local_file: geh-fy2025-media-release.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/2025-fy25_media-release%20(SGX).pdf"
+    content_type: application/pdf
+    purpose: "FY-25 results release (PDF of the HTML release the pipeline marked DEAD): AI advisory platform (~75% prep-time cut), AI medical-claims automation, AI underwriting pilot; TWNS S$1,535.4m; NBEV S$739.7m"
+    module: annual-report
+    instrument_items: [D1.1, D2]
+    verify: url_confirmed
+    notes: "4 pages. Dated Singapore, 24 February 2026. 'over S$122 billion in assets' is boilerplate; the labelled figure is in the SGX announcement above."
+    alternates:
+      - "https://www.greateasternlife.com/sg/en/about-us/media-centre/media-releases/fy-25-financial-results.html"
+  - id: geh-fy25-financial-summary
+    local_file: geh-fy2025-financial-summary.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/2025-fy25-financial-summary%20(SGX).pdf"
+    content_type: application/pdf
+    purpose: "FY-25 financial summary slides (GEH publishes a summary deck instead of holding a call)"
+    module: earnings-calls
+    instrument_items: [D1.1]
+    verify: url_confirmed
+    notes: "Search-result title '24 Feb 2026 - Great Eastern'; not opened. Optional."
+
+  # ------------------------------------------------------------------ OCBC shareholding (regulator_status [VERIFY])
+  - id: geh-form3-ocbc-20250819
+    local_file: geh-20250819-form3-ocbc.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20250819-form-3.pdf"
+    content_type: application/pdf
+    purpose: "Notice of change in percentage level of substantial shareholder's interest (OCBC), 19 Aug 2025 — resolves 88.19% vs 88.44%"
+    module: subject
+    instrument_items: [C6]
+    verify: url_confirmed
+    notes: "WebFetch returned the SGXNet wrapper text (ref SG250819OTHR3KES, broadcast 19-Aug-2025 17:18) with 'refer to the attachment'; the attachment '20250819 - Form 3 - OCBC.pdf' is what this URL should serve — check the downloaded file is the Form 3 itself, not the wrapper. Resolution from the companion documents: 88.44% = OCBC's holding BEFORE the May 2024 VGO; 93.72% = after it (Oct 2024); 88.19% = ordinary (voting) shares after the 1-for-1 bonus issue completed 19 Aug 2025 (443,608,028 / 503,030,110 = 88.19%), economic interest still 93.72% via Class C non-voting shares."
+  - id: geh-bonus-issue-completion-20250819
+    local_file: geh-20250819-completion-of-bonus-issue.pdf
+    url: "https://www.greateasternlife.com/content/dam/corp-site/great-eastern/sg/gels-au-group-mgmt/investor-relations/20250819-completion-of-bonus-issue-announcement.pdf"
+    content_type: application/pdf
+    purpose: "Completion of bonus issue: 29,711,041 bonus ordinary shares; 443,608,028 Class C non-voting shares; 503,030,110 ordinary shares in issue; public float ≈11.76%; trading resumed 9am 21 Aug 2025"
+    module: subject
+    instrument_items: [C6]
+    verify: url_confirmed
+  - id: ocbc-delisting-offer-release-20250606
+    local_file: ocbc-20250606-backs-geh-delisting-proposal.html
+    url: "https://www.ocbc.com/group/media/release/2025/ocbc-backs-great-eastern-delisting-proposal"
+    content_type: text/html
+    purpose: "OCBC release 6 Jun 2025: holds 93.72%; bonus issue would reduce voting shares to 88.19% while keeping 93.72% economic interest"
+    module: subject
+    instrument_items: [C6]
+    verify: url_confirmed
+
+  # ------------------------------------------------------------------ MAS insurance company returns (peer sizes, 0.3x–3x band)
+  # Pattern A (composite, 'Life and General Business', 2019+):
+  #   https://www.mas.gov.sg/-/media/mas/statistics/insurance-returns/life-and-general-business/{code}/{year}/{year}.xlsx
+  # Pattern B (life-only, 'Life Business', 2019+):
+  #   https://www.mas.gov.sg/-/media/mas-media-library/statistics/insurance-statistics/insurance-company-returns/annual_l/{code}/{year}/{year}.xlsx
+  # Pattern C (general-only, assumed by analogy, unverified): .../insurance-company-returns/annual_g/{code}/{year}/{year}.xlsx
+  # Index page per insurer: https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/{code}
+  # Total assets live in Form 1 (fund balance sheet) per fund: SIF (par / non-par / ILP), OIF, Shareholders' Fund. The row the
+  # pipeline should take is the sum printed as total assets for the company (all funds); record the label exactly as the sheet prints it.
+  - id: mas-i516l-2025
+    local_file: mas-return-i516l-great-eastern-life-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas-media-library/statistics/insurance-statistics/insurance-company-returns/annual_l/i516l/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "The Great Eastern Life Assurance Co Ltd (I516L) 2025 return — regulated-entity total assets"
+    module: peer-set
+    entity: "The Great Eastern Life Assurance Company Limited"
+    mas_code: I516L
+    year: 2025
+    verify: url_inferred
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i516l"
+    notes: "Index page could not be fetched (MAS client_error after repeated hits). Life-only → Pattern B assumed; script probes A as fallback."
+  - id: mas-i703c-2025
+    local_file: mas-return-i703c-great-eastern-general-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas-media-library/statistics/insurance-statistics/insurance-company-returns/annual_g/i703c/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "Great Eastern General Insurance Limited (I703C) 2025 return — resolves 'GE General MAS code [VERIFY]' (code confirmed I703C from the MAS index list) and gives general-business total assets"
+    module: peer-set
+    entity: "Great Eastern General Insurance Limited"
+    mas_code: I703C
+    year: 2025
+    verify: url_inferred
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i703c"
+    notes: "General-only path segment is a guess ('annual_g'); script probes A and B too. If all fail, open the index page and copy the link."
+  - id: mas-i566c-2025
+    local_file: mas-return-i566c-aia-singapore-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas/statistics/insurance-returns/life-and-general-business/i566c/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "AIA Singapore Private Limited (I566C) 2025 return — total assets"
+    module: peer-set
+    entity: "AIA Singapore Private Limited"
+    mas_code: I566C
+    year: 2025
+    verify: url_confirmed
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i566c"
+  - id: mas-i527l-2025
+    local_file: mas-return-i527l-prudential-singapore-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas-media-library/statistics/insurance-statistics/insurance-company-returns/annual_l/i527l/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "Prudential Assurance Co. Singapore (Pte) Ltd (I527L) 2025 return — total assets"
+    module: peer-set
+    entity: "Prudential Assurance Company Singapore (Pte) Limited"
+    mas_code: I527L
+    year: 2025
+    verify: url_confirmed
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i527l"
+  - id: mas-i585c-2025
+    local_file: mas-return-i585c-income-insurance-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas/statistics/insurance-returns/life-and-general-business/i585c/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "Income Insurance Limited (I585C) 2025 return — total assets (cross-check vs AR2025 S$44.7bn)"
+    module: peer-set
+    entity: "Income Insurance Limited"
+    mas_code: I585C
+    year: 2025
+    verify: url_confirmed
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i585c"
+  - id: mas-i518c-2025
+    local_file: mas-return-i518c-singapore-life-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas/statistics/insurance-returns/life-and-general-business/i518c/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "Singapore Life Ltd (I518C, formerly Aviva Ltd) 2025 return — total assets"
+    module: peer-set
+    entity: "Singapore Life Ltd"
+    mas_code: I518C
+    year: 2025
+    verify: url_confirmed
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i518c"
+  - id: mas-i522l-2025
+    local_file: mas-return-i522l-manulife-singapore-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas-media-library/statistics/insurance-statistics/insurance-company-returns/annual_l/i522l/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "Manulife (Singapore) Pte. Ltd. (I522L) 2025 return — total assets"
+    module: peer-set
+    entity: "Manulife (Singapore) Pte. Ltd."
+    mas_code: I522L
+    year: 2025
+    verify: url_confirmed
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i522l"
+  - id: mas-i544c-2025
+    local_file: mas-return-i544c-hsbc-life-singapore-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas-media-library/statistics/insurance-statistics/insurance-company-returns/annual_l/i544c/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "HSBC Life (Singapore) Pte. Ltd. (I544C) 2025 return — total assets"
+    module: peer-set
+    entity: "HSBC Life (Singapore) Pte. Ltd."
+    mas_code: I544C
+    year: 2025
+    verify: url_inferred
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i544c"
+    notes: "Index page could not be fetched. Life-only assumed (Pattern B); script probes A as fallback (ex-AXA composite licence)."
+  - id: mas-i517l-2025
+    local_file: mas-return-i517l-tokio-marine-life-singapore-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas-media-library/statistics/insurance-statistics/insurance-company-returns/annual_l/i517l/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "Tokio Marine Life Insurance Singapore Pte. Ltd. (I517L) 2025 return — total assets"
+    module: peer-set
+    entity: "Tokio Marine Life Insurance Singapore Pte. Ltd."
+    mas_code: I517L
+    year: 2025
+    verify: url_confirmed
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i517l"
+  - id: mas-i570c-2025
+    local_file: mas-return-i570c-etiqa-singapore-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas/statistics/insurance-returns/life-and-general-business/i570c/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "Etiqa Insurance Pte. Ltd. (I570C) 2025 return — total assets"
+    module: peer-set
+    entity: "Etiqa Insurance Pte. Ltd."
+    mas_code: I570C
+    year: 2025
+    verify: url_confirmed
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i570c"
+  - id: mas-i579c-2025
+    local_file: mas-return-i579c-china-taiping-singapore-2025.xlsx
+    url: "https://www.mas.gov.sg/-/media/mas/statistics/insurance-returns/life-and-general-business/i579c/2025/2025.xlsx"
+    content_type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+    purpose: "China Taiping Insurance (Singapore) Pte. Ltd. (I579C) 2025 return — total assets"
+    module: peer-set
+    entity: "China Taiping Insurance (Singapore) Pte. Ltd."
+    mas_code: I579C
+    year: 2025
+    verify: url_inferred
+    index_page: "https://www.mas.gov.sg/statistics/insurance-statistics/insurance-company-returns/i579c"
+    notes: "Index page could not be fetched. Composite → Pattern A assumed; script probes B as fallback."
+
+  # ------------------------------------------------------------------ peer-size corroboration (second upstream, where one exists)
+  - id: income-ar-2025
+    local_file: income-insurance-annual-report-2025.pdf
+    url: "https://www.income.com.sg/getContentAsset/f39850fb-3691-42e4-b8b9-bfb476d651f8/05c6012c-3879-4f1c-b994-00e61e65c363/Income-Insurance-%E2%80%93-Annual-Report-2025.pdf?language=en"
+    content_type: application/pdf
+    purpose: "Income Insurance AR2025: 'Total Assets' S$44.7bn (PY24 S$43.4bn); Profit After Tax S$118.9m (PY24 S$44.8m)"
+    module: peer-set
+    entity: "Income Insurance Limited"
+    year: 2025
+    verify: figure_verify
+    notes: "Supersedes the Wikipedia S$47.2bn figure in the subject YAML."
+  - id: singlife-fs-fy2025
+    local_file: singapore-life-holdings-financial-statements-fy2025.pdf
+    url: "https://singlife.com/content/dam/public/sg/documents/merger/singapore-life-holdings-financial-statements-fy2025.pdf"
+    content_type: application/pdf
+    purpose: "Singapore Life Holdings FY2025 audited financial statements (7.8 MB) — consolidated total assets; the newsroom says 'over S$16 billion' (undated)"
+    module: peer-set
+    entity: "Singapore Life Ltd"
+    year: 2025
+    verify: url_confirmed
+    notes: "WebFetch returned '[binary data]'; figure to be read locally. Holding-company consolidation, not the I518C entity: use MAS return for the band, this for corroboration."
+  - id: singlife-public-disclosure-fy2025
+    local_file: singapore-life-ltd-public-disclosure-fy2025.pdf
+    url: "https://singlife.com/content/dam/public/sg/documents/merger/fy25-public-disclosure.pdf"
+    content_type: application/pdf
+    purpose: "Singapore Life Ltd MAS Notice 124 public disclosure FY2025 (net income $45,663k 'per MAS returns'; no balance sheet)"
+    module: peer-set
+    entity: "Singapore Life Ltd"
+    year: 2025
+    verify: url_confirmed
+  - id: singlife-ratings-release-20260608
+    local_file: singlife-20260608-credit-ratings.html
+    url: "https://singlife.com/en/about-us/newsroom/2026/singlifes-credit-ratings-maintained-with-stable-outlook"
+    content_type: text/html
+    purpose: "'over S$16 billion' total assets; ~9.5% gross-premium share at 31 Dec 2024; fifth-largest life insurer"
+    module: peer-set
+    entity: "Singapore Life Ltd"
+    verify: figure_verify
+  - id: prudential-sg-factsheet-2025
+    local_file: prudential-singapore-factsheet-2025.pdf
+    url: "https://www.prudential.com.sg/content/dam/prudential-aem-lbu/pacs/en/project/prudential/pdf/annual-reports/factsheet-2025.pdf"
+    content_type: application/pdf
+    purpose: "Prudential Singapore 2025 factsheet: 'S$66.3 billion under management as at 31 December 2025' (AUM, NOT total assets — label as such)"
+    module: peer-set
+    entity: "Prudential Assurance Company Singapore (Pte) Limited"
+    year: 2025
+    verify: figure_verify
+  - id: prudential-sg-ar-2024
+    local_file: prudential-singapore-annual-report-2024.pdf
+    url: "https://www.prudential.com.sg/content/dam/prudential-aem-lbu/pacs/en/project/prudential/pdf/annual-reports/annual-report-2024.pdf"
+    content_type: application/pdf
+    purpose: "Prudential Singapore AR2024 (latest full AR published; FY2025 is factsheet-only) — total assets 2024 as second upstream"
+    module: peer-set
+    entity: "Prudential Assurance Company Singapore (Pte) Limited"
+    year: 2024
+    verify: url_confirmed
+  - id: aia-group-ar-2025
+    local_file: aia-group-annual-report-2025.pdf
+    url: "https://www.aia.com/content/dam/group-wise/en/docs/investor-relations/2025/AIA%202025%20annual%20report_EN.pdf"
+    content_type: application/pdf
+    purpose: "AIA Group AR2025: total assets US$345,423m (31 Dec 2025); Singapore segment VONB US$530m (+14%), OPAT US$721m (+5%); segment note may carry Singapore total assets — extract locally"
+    module: peer-set
+    entity: "AIA Group (whole)"
+    year: 2025
+    verify: figure_verify
+    notes: "≥347 pages. Live replacement for the DEAD aia.com.sg PDF that blocked claim great-eastern.peer.size.aia-group-whole."
+  - id: aia-sg-results-release-2025
+    local_file: aia-delivers-record-results-in-2025.html
+    url: "https://www.aia.com.sg/en/about-aia/media-centre/press-releases/2026/aia-delivers-record-results-in-2025"
+    content_type: text/html
+    purpose: "AIA Singapore press release 19 Mar 2026 (HTML; the PDF the pipeline marked DEAD is linked from it): Group total assets US$345bn; Singapore VONB +14%, OPAT +5%, ANP US$1,128m"
+    module: peer-set
+    entity: "AIA Singapore Private Limited"
+    year: 2025
+    verify: figure_verify
+    alternates:
+      - "https://www.aia.com.sg/content/dam/sg-wise/en/docs/about-aia/press-release/2026/aia-delivers-record-results-in-2025.pdf"
+  - id: allianz-hsbc-life-sg-release-20260724
+    local_file: allianz-20260724-acquire-hsbc-life-singapore.html
+    url: "https://www.allianz.com/en/mediacenter/news/media-releases/financials/260724-allianz-to-acquire-hsbc-life-singapore-and-enter-a-new-long-term-distribution-partnership-with-hsbc-singapore.html"
+    content_type: text/html
+    purpose: "Primary source for the HSBC Life Singapore → Allianz exit row: €2.0bn / S$2.9bn total (S$2.7bn for 100% of HSBC Life Singapore), announced 24 Jul 2026, close 1H2027; HSBC Life SG operating profit €80m (2025), comprehensive equity €1.2bn. No total assets."
+    module: peer-set
+    entity: "HSBC Life (Singapore) Pte. Ltd."
+    verify: figure_verify
+    notes: "Replaces the atlas-mag.net secondary source."
+  - id: etiqa-sg-supplementary-info-2025
+    local_file: etiqa-singapore-supplementary-info-dec-2025.pdf
+    url: "https://www.etiqa.com.sg/wp-content/uploads/2026/05/Etiqa-Insurance-Pte-Ltd-Dec-2025-Supplementary-Info.pdf"
+    content_type: application/pdf
+    purpose: "Etiqa Insurance Pte Ltd MAS Notice 124 supplementary information FY2025 (no total-assets line; credit-risk exposure SGD 4,173,105k is NOT total assets)"
+    module: peer-set
+    entity: "Etiqa Insurance Pte. Ltd."
+    year: 2025
+    verify: url_confirmed
+  - id: china-taiping-sg-public-disclosure-2025
+    local_file: china-taiping-singapore-public-disclosure-ye2025.pdf
+    url: "https://www.sg.cntaiping.com/wp-content/uploads/2026/06/Public-Disclosure_YE-2025_clean_03.06.2026.pdf"
+    content_type: application/pdf
+    purpose: "China Taiping Insurance (Singapore) public disclosure FY2025 (capital available S$480m; points to MAS returns for balance sheet)"
+    module: peer-set
+    entity: "China Taiping Insurance (Singapore) Pte. Ltd."
+    year: 2025
+    verify: url_confirmed
+  - id: manulife-sg-factsheet
+    local_file: manulife-singapore-company-factsheet.pdf
+    url: "https://www.manulife.com.sg/content/dam/insurance/sg/about-us/our-story/manulife_sg_company_brochure_en.pdf"
+    content_type: application/pdf
+    purpose: "Manulife Singapore company fact sheet (Jul 2026): no Singapore total assets; states Tier 1 insurer threshold ≥S$5bn total assets (floor only)"
+    module: peer-set
+    entity: "Manulife (Singapore) Pte. Ltd."
+    verify: url_confirmed
+
+  # ------------------------------------------------------------------ earnings calls: proxy-by-parent (OCBC) — GEH holds none
+  # GEH financial calendar lists only results announcements, AGM/EGM and dividends — no briefing, webcast or call.
+  # OCBC posts a results presentation + CEO presentation + YouTube briefing recording; NO transcript on ocbc.com.
+  - id: ocbc-fy25-results-presentation
+    local_file: transcripts/ocbc-fy2025-results-presentation.pdf
+    url: "https://www.ocbc.com/iwov-resources/sg/ocbc/gbc/pdf/investors/quarterly-results/2025/ocbc%20fy25%20results%20presentation.pdf"
+    content_type: application/pdf
+    purpose: "OCBC FY2025 results presentation, 25 Feb 2026, 21 slides: GEH profit contribution S$882m → S$1,125m (+28%); NBEV S$622m → S$740m; TWNS S$1,796m → S$1,535m"
+    module: earnings-calls
+    instrument_items: [D1.1, D8.6]
+    verify: proxy_by_parent
+    label: "proxy-by-parent: OCBC"
+    quarter: FY2025
+    date: 2026-02-25
+  - id: ocbc-fy25-ceo-presentation
+    local_file: transcripts/ocbc-fy2025-ceo-presentation.pdf
+    url: "https://www.ocbc.com/iwov-resources/sg/ocbc/gbc/pdf/investors/quarterly-results/2025/OCBC%20FY25%20CEO%20Presentation.pdf"
+    content_type: application/pdf
+    purpose: "OCBC FY2025 CEO presentation (strategy / AI narrative at group level)"
+    module: earnings-calls
+    verify: proxy_by_parent
+    label: "proxy-by-parent: OCBC"
+    quarter: FY2025
+    date: 2026-02-25
+    notes: "URL casing as listed on financials.page; the results-presentation URL above was indexed lower-case — ocbc.com served both forms in search results."
+  - id: ocbc-1h26-results-presentation
+    local_file: transcripts/ocbc-1h2026-results-presentation.pdf
+    url: "https://www.ocbc.com/iwov-resources/sg/ocbc/gbc/pdf/investors/quarterly-results/2026/ocbc%201h26%20results%20presentation.pdf"
+    content_type: application/pdf
+    purpose: "OCBC 1H2026 results presentation, 7 Aug 2026, ~21 slides: GEH profit contribution +44% (≈S$553m → S$794m, inferred from chart); insurance income +68%"
+    module: earnings-calls
+    instrument_items: [D1.1, D8.6]
+    verify: proxy_by_parent
+    label: "proxy-by-parent: OCBC"
+    quarter: 1H2026
+    date: 2026-08-07
+    alternates:
+      - "https://links.sgx.com/FileOpen/OCBC_1H2026_Results_Presentation.ashx?App=Announcement&FileID=898996"
+  - id: ocbc-1h26-ceo-presentation
+    local_file: transcripts/ocbc-1h2026-ceo-presentation.pdf
+    url: "https://www.ocbc.com/iwov-resources/sg/ocbc/gbc/pdf/investors/quarterly-results/2026/OCBC%201H26%20CEO%20Presentation.pdf"
+    content_type: application/pdf
+    purpose: "OCBC 1H2026 CEO presentation"
+    module: earnings-calls
+    verify: proxy_by_parent
+    label: "proxy-by-parent: OCBC"
+    quarter: 1H2026
+    date: 2026-08-07
+  - id: ocbc-fy25-media-release
+    local_file: transcripts/ocbc-fy2025-media-release.pdf
+    url: "https://www.ocbc.com/iwov-resources/sg/ocbc/gbc/pdf/investors/quarterly-results/2025/ocbc%20fy25%20media%20release%20financial%20highlights.pdf"
+    content_type: application/pdf
+    purpose: "OCBC FY2025 media release + financial highlights (insurance segment numbers)"
+    module: earnings-calls
+    verify: proxy_by_parent
+    label: "proxy-by-parent: OCBC"
+    quarter: FY2025
+    date: 2026-02-25
+  - id: ocbc-1h26-media-release
+    local_file: transcripts/ocbc-1h2026-media-release.pdf
+    url: "https://www.ocbc.com/iwov-resources/sg/ocbc/gbc/pdf/investors/quarterly-results/2026/ocbc%201h26%20media%20release%20financial%20highlights.pdf"
+    content_type: application/pdf
+    purpose: "OCBC 1H2026 media release + financial highlights"
+    module: earnings-calls
+    verify: proxy_by_parent
+    label: "proxy-by-parent: OCBC"
+    quarter: 1H2026
+    date: 2026-08-07
+  - id: ocbc-ar-2025
+    local_file: ocbc-annual-report-2025.pdf
+    url: "https://www.ocbc.com/iwov-resources/sg/ocbc/gbc/pdf/investors/annual-reports/2025/2025-annual-report-en.pdf"
+    content_type: application/pdf
+    purpose: "OCBC AR2025 (parent): Group CEO perspectives / ADD strategy, group CDO/CTO roles, GEH shareholding note"
+    module: annual-report
+    instrument_items: [D1.1]
+    verify: proxy_by_parent
+    label: "proxy-by-parent: OCBC"
+  - id: ocbc-results-briefing-recordings
+    local_file: null
+    url: "https://www.youtube.com/watch?v=ZGEw4bU-xgo"
+    content_type: video
+    purpose: "OCBC FY2025 results briefing recording (Q&A where GE is discussed). 1H2026: https://www.youtube.com/watch?v=6rN0Tp2JxyU . Not downloaded; transcribe only if the engagement lead approves (third-party transcripts exist on marketscreener.com / investing.com but are paywalled/secondary)."
+    module: earnings-calls
+    verify: proxy_by_parent
+    manual: true
+
+  # ------------------------------------------------------------------ job postings (D4.1)
+  - id: mcf-api-search
+    local_file: postings/mcf-great-eastern-page-{n}.json
+    url: "https://api.mycareersfuture.gov.sg/v2/search?limit=50&page={n}"
+    content_type: application/json
+    purpose: "MyCareersFuture search API: POST JSON {\"search\":\"great eastern\"} with Content-Type/Accept application/json and a UA. Response has `total` and `results[]` with metadata.jobDetailsUrl, postedCompany, title, description, metadata.newPostingDate. limit 1–50, page 0–50. Usable from a laptop with plain curl; the HTML site is client-rendered."
+    module: postings
+    instrument_items: [D4.1]
+    verify: url_confirmed
+    notes: "Endpoint shape taken from two independent open-source clients (pwaaron/jobscrapers notebook; gabrielchua/mcf-mcp). Live only shows CURRENT postings — the 24-month series needs repeated snapshots or a historical source; record snapshot date in postings.csv `source`."
+  - id: mcf-company-page
+    local_file: null
+    url: "https://www.mycareersfuture.gov.sg/companies/great-eastern-life-assurance-company-190800011G"
+    content_type: text/html
+    purpose: "MyCareersFuture company page for THE GREAT EASTERN LIFE ASSURANCE COMPANY LIMITED (UEN 190800011G). Search UI pattern: https://www.mycareersfuture.gov.sg/search?search=great%20eastern&sortBy=relevancy&page=0 (JS-rendered; use the API)."
+    module: postings
+    verify: url_confirmed
+    manual: true
+  - id: linkedin-jobs-company
+    local_file: null
+    url: "https://www.linkedin.com/company/great-eastern-group/jobs"
+    content_type: text/html
+    purpose: "LinkedIn jobs page for 'GREAT EASTERN' (vanity slug great-eastern-group). robots-disallowed to fetchers; requires a logged-in browser; numeric company id not captured — read it from the page source (f_C=<id>) and use https://www.linkedin.com/jobs/search/?f_C=<id>&geoId=102454443 (Singapore). Count manually and record the snapshot date."
+    module: postings
+    verify: url_confirmed
+    manual: true
+  - id: geh-careers
+    local_file: null
+    url: "https://www.greateasternlife.com/sg/en/careers.html"
+    content_type: text/html
+    purpose: "GEH careers overview (corporate roles: /sg/en/careers/employee.html; financial representatives: /sg/en/careers/financial-representative.html). Check whether it embeds a Workday/SuccessFactors job board with its own JSON feed."
+    module: postings
+    verify: url_confirmed
+    manual: true
+
+  # ------------------------------------------------------------------ patents (D4.2)
+  - id: google-patents-xhr
+    local_file: patents/google-patents-great-eastern-life.json
+    url: "https://patents.google.com/xhr/query?url=assignee%3D%22Great%20Eastern%20Life%22%26oq%3Dassignee%3A%22Great%20Eastern%20Life%22&exp="
+    content_type: application/json
+    purpose: "Google Patents JSON endpoint behind the search UI (robots-disallowed to fetchers; works from a browser session / curl with a browser UA). Expect total_num_results = 0. Repeat for \"Great Eastern Holdings\" and \"Great Eastern General Insurance\"."
+    module: patents
+    instrument_items: [D4.2]
+    verify: url_inferred
+    notes: "UI URL: https://patents.google.com/?assignee=%22Great+Eastern+Life%22 . Count could not be confirmed from the sandbox; the pipeline must record '0 found' as a finding with the fetched JSON as evidence, never as instrument level 1."
+  - id: ipos-search
+    local_file: null
+    url: "https://digitalhub.ipos.gov.sg/FAMN/eservice/IP4SG/BTA_SearchPage"
+    content_type: text/html
+    purpose: "IPOS Digital Hub (IP2SG successor, launched 2 Jun 2022) patent search by applicant 'Great Eastern' — interactive; screenshot the zero-result page and record the date."
+    module: patents
+    verify: url_inferred
+    manual: true
+    notes: "Exact search path not confirmed from the sandbox; start at https://digitalhub.ipos.gov.sg and use Search → Patents → Applicant."
+
+  # ------------------------------------------------------------------ context / exited peers
+  - id: lia-4q2025
+    local_file: lia-4q2025-results-media-release.pdf
+    url: "https://www.lia.org.sg/media/4789/20260211_lia-4q2025-results_media-release.pdf"
+    content_type: application/pdf
+    purpose: "LIA 4Q2025 industry results (TWNBP S$6.53bn, +11.3%)"
+    module: peer-set
+    verify: carried_from_subject_yaml
+  - id: ocbc-ar2025-ceo-perspectives
+    local_file: ocbc-ar2025-group-ceo-perspectives.html
+    url: "https://www.ocbc.com/group/investors/annual-reports/2025-annual-report/group-ceos-perspectives.page"
+    content_type: text/html
+    purpose: "Parent ADD strategy narrative"
+    module: annual-report
+    verify: carried_from_subject_yaml
