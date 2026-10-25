@@ -1,7 +1,9 @@
-"""plumbresearch run <subject.yaml> --out DIR [--data-dir DIR] [--fixtures] [--cap N] [--modules a,b] [--as-of YYYY-MM-DD] [--offline]"""
+"""plumbresearch run <subject.yaml> --out DIR [--data-dir DIR] [--fixtures] [--cap N] [--modules a,b] [--as-of YYYY-MM-DD] [--offline]
+plumbresearch ingest <subject.yaml> --file PATH --doc <document-key> [--out DIR] [--supplied-by NAME]"""
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from datetime import date
 from pathlib import Path
@@ -24,11 +26,60 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--cap", type=int, default=40, help="C10 tool-call cap per module run (default 40; hard ceiling 60)")
     r.add_argument("--modules", default=None, help="comma-separated subset of: " + ",".join(MODULE_ORDER))
     r.add_argument("--as-of", default=None, help="window end date (default today)")
+
+    i = sub.add_parser("ingest", help="attach a local copy of a declared subject document (annual report PDF) into the run's evidence store "
+                                      "under the document's publisher URL; cited with the label 'attached; publisher hash unreconciled' until reconciled")
+    i.add_argument("subject", help="subject YAML")
+    i.add_argument("--file", required=True, help="the attached file (PDF or HTML)")
+    i.add_argument("--doc", required=True, help="document key from the subject YAML: '<kind>-<fy>' (e.g. annual_report-2025), an explicit `key:`, the URL or the local_file name")
+    i.add_argument("--out", default="out", help="output root the later `run` will use; the store is <out>/<slug>/evidence")
+    i.add_argument("--supplied-by", default=None, help="who supplied the file (recorded in provenance)")
     return p
+
+
+def ingest_document(subject_path: str | Path, file: str | Path, doc_key: str, out_root: str | Path = "out",
+                    supplied_by: str | None = None) -> dict:
+    """Map an attached file to a subject document entry and ingest it into
+    ``<out>/<slug>/evidence`` under the document's declared URL (plumbverify
+    0.3 ``ingest_local``). Returns a JSON-able summary."""
+    from plumbverify.fetch import EvidenceStore
+    from plumbverify.ingest import ingest_local
+    from plumbverify.tier import load_tier_rules
+
+    subject = load_subject(subject_path)
+    d = subject.find_document(doc_key)
+    if d is None:
+        keys = ", ".join(x.document_key for x in subject.documents)
+        raise KeyError(f"no document matching {doc_key!r} in {subject.slug}; declared keys: {keys}")
+    store_dir = Path(out_root) / subject.slug / "evidence"
+    store = EvidenceStore(store_dir)
+    try:
+        rules = load_tier_rules(overrides={"tiers": {k: {"domains": v} for k, v in subject.tier_overrides.items()}}) \
+            if subject.tier_overrides else load_tier_rules()
+        src = ingest_local(file, d.url, store, supplied_by=supplied_by, document_key=d.document_key, tier_rules=rules,
+                           provenance={"subject": subject.slug, "document_kind": d.kind, "document_fy": d.fy})
+    finally:
+        store.close()
+    return {
+        "subject": subject.slug, "document_key": d.document_key, "kind": d.kind, "fy": d.fy, "url": d.url,
+        "store": str(store_dir), "state": src.state.value, "sha256": src.sha256, "tier": src.tier.value,
+        "page_count": src.page_count, "needs_ocr": src.needs_ocr, "text_chars": len(src.text_extract or ""),
+        "label": src.attached_label, "provenance": src.provenance, "error": src.error,
+        "next": [f"plumbresearch run {subject_path} --out {out_root} --offline   # uses the attachment, claims carry the attached label",
+                 f"plumbverify reconcile --store {store_dir}   # when egress is available: MATCH lifts the label, MISMATCH blocks"],
+    }
 
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
+    if args.cmd == "ingest":
+        try:
+            out = ingest_document(args.subject, args.file, args.doc, args.out, args.supplied_by)
+        except (KeyError, FileNotFoundError, ValueError) as e:
+            print(f"ingest refused: {e}", file=sys.stderr)
+            return 2
+        print(json.dumps(out, indent=2, default=str))
+        return 0 if not out["needs_ocr"] and not out["error"] else 1
     if args.cmd == "run":
         if args.cap > 60:
             print("cap above the hard ceiling of 60 (spec C10) — refusing; record an override to raise it", file=sys.stderr)

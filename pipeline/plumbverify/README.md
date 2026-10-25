@@ -1,4 +1,4 @@
-# plumbverify 0.2.0
+# plumbverify 0.3.0
 
 PLUMB's verification layer (decision D2: build in-house). Implements the
 engineering side of `../verification-pipeline-spec.md` (PI-CV v0.1) as a
@@ -10,7 +10,9 @@ plumbverify verify claims.json --out report.json [--store DIR] [--log FILE] [--t
 plumbverify check-url https://example.org/page [--archive] [--archive-save]
 plumbverify verify-log .plumbverify/inference.jsonl
 plumbverify report report.json --format md [--out report.md] [--seed N] [--sample-min 30]
-pytest                      # 84 tests, fully offline (httpx.MockTransport)
+plumbverify ingest <file> --url <declared_url> --store DIR [--supplied-by NAME] [--doc KEY]
+plumbverify reconcile --store DIR [--url URL] [--all] [--archive]
+pytest                      # 94 tests, fully offline (httpx.MockTransport)
 ```
 
 `report --format md` renders the reviewer-facing Markdown: a claim table
@@ -21,6 +23,18 @@ and the section 6.2 sampling worksheet skeleton (P1 eligibility, P4 per-claim
 rows, P5 C7 agreement, P6 totals, P7 decision). The sample is stratified per
 P3 and drawn with a recorded random seed, so `--seed N` reproduces it.
 `--format json` pretty-prints the report. Exit code mirrors the build gate.
+
+### What changed in 0.3.0: attached documents
+
+The pipeline used to treat URL-fetched bytes as the only citable evidence. In an environment without egress the person running the sprint attaches the primary document (an annual-report PDF) directly. 0.3 lets that document enter the evidence store **with the same integrity guarantees as a fetch, not as a bypass**:
+
+- `ingest.ingest_local(path, declared_url, store, *, provenance)` reads the bytes, hashes them (SHA-256), runs `extract_document` (PDF/HTML, page-aware, `needs_ocr`) and stores them **under the declared canonical URL** - the publisher's URL the file claims to come from - so the citation of record is still the URL and the tier comes from its domain as usual. The source gets `state = ATTACHED` (new `SourceState`), `health_class = UNCHECKED`, `provenance = {supplied_by, supplied_at, original_filename, declared_url, size_bytes}` and a `recheck_after` deadline. The store keeps an `attachments` table next to `sources`; the raw bytes sit in `raw/<sha256>` like any fetch.
+- ATTACHED sources are citable (C2) but **weaker than fetched evidence**: every citation from one carries the visible label `attached; publisher hash unreconciled` (`Citation.labels`, `ClaimDecision.labels`, the Status cell of the reviewer table) until reconciliation succeeds.
+- `ingest.reconcile(store, url, fetched_bytes) -> MATCH | MISMATCH | UNAVAILABLE` compares the publisher's bytes with the attachment. MATCH flips the state to FETCHED/LIVE (ARCHIVED when the bytes came from a Wayback snapshot) and the label disappears; MISMATCH makes the source non-citable so **every claim citing it is BLOCKED** (the publisher's bytes are kept in the store under their own hash as evidence of the discrepancy); UNAVAILABLE leaves it ATTACHED and labelled. `reconcile_all(store, fetcher)` and `plumbverify reconcile` drive this over the Fetcher (MockTransport in tests). `Fetcher(reconcile_on_fetch=True)` / `plumbverify verify --reconcile` do it in passing during a run; the default (`False`) uses attachments as stored so a no-egress run never burns the 2/8/32 s retry budget on a URL it cannot reach. In both modes an attachment is preferred over a 404/DEAD result for its URL.
+- `plumbverify report --format md` gains an **Attached sources** section (declared URL, original file, supplier, supplied-at, attached hash, pages, tier, state, reconciliation, publisher hash) and the header line counts unreconciled attachments and the released claims resting on them. The 6.2 sample stratifies attached-source claims separately as stratum **(f)** (>= 5, load-bearing first) and marks them in the P4 notes column: the reviewer's live re-fetch and hash check is the only thing that closes that gap.
+- Metrics: `attached_sources`, `attached_unreconciled`, `attached_mismatch`, `claims_on_unreconciled_attachments`.
+
+Honest statement: an attached document proves that *this file* says what the claim says; it does not prove that the *publisher* says it. Until `reconcile` returns MATCH, treat every attached-source claim as unconfirmed against the publisher, and never release a deliverable on attached evidence alone without the label.
 
 ### What changed in 0.2.0
 
@@ -47,7 +61,8 @@ See `examples/claims.json` for the input shape.
 | `log.py` | append-only JSONL with SHA-256 chaining, `log_inference` (model version, prompt hash, tool calls, outcome, region), `verify()` | C12, C13 |
 | `pipeline.py` | `Verifier.run()` orchestrates S2-S5 and logs each step | 3.3 |
 | `report.py` | `render_markdown` (reviewer table + 6.2 worksheet), `build_sample` (seeded, stratified a/b/c/d per P3, RELEASED frame only) | C16, 6.2 |
-| `cli.py` | `verify`, `check-url`, `verify-log`, `report` | - |
+| `ingest.py` | `ingest_local` (attach a local document under its declared publisher URL: hash, extract, provenance, ATTACHED), `reconcile` (publisher bytes vs attachment: MATCH / MISMATCH / UNAVAILABLE), `reconcile_all` (over the Fetcher) | C1, C2 (0.3) |
+| `cli.py` | `verify` (`--reconcile`), `check-url`, `verify-log`, `report`, `ingest`, `reconcile` | - |
 
 ## Thresholds (v0.1 defaults, G1 calibration pending)
 
@@ -84,7 +99,7 @@ See `examples/claims.json` for the input shape.
 | Spec | Control row | Status in v0.1 | Where |
 |---|---|---|---|
 | C1 Fetcher + hash store | CL-001 | working: SHA-256 over raw bytes, final URL after redirects, fetch timestamp, immutable raw store, sqlite index, hash re-verification | `fetch.Fetcher.fetch`, `fetch.EvidenceStore` |
-| C2 URL health + retry + archive | CL-002 | working: HEAD then GET, 3 retries with 2/8/32 s backoff, LIVE / ARCHIVED / DEAD / LIKELY_HALLUCINATED, DEAD and LIKELY_HALLUCINATED never citable; Wayback availability lookup with 24-month window and opt-in Save Page Now (`WaybackArchive`, MockTransport-tested, off by default); `recheck_after` (24 h) recorded on every LIVE / ARCHIVED result. Stubbed: two-egress-IP retry, the S6 scheduled re-check job itself (the deadline is recorded, nothing runs it yet) | `fetch.Fetcher.check_health`, `fetch.WaybackArchive`, `fetch.recheck_deadline`, `models.Source.citable` |
+| C2 URL health + retry + archive | CL-002 | working: HEAD then GET, 3 retries with 2/8/32 s backoff, LIVE / ARCHIVED / DEAD / LIKELY_HALLUCINATED, DEAD and LIKELY_HALLUCINATED never citable; Wayback availability lookup with 24-month window and opt-in Save Page Now (`WaybackArchive`, MockTransport-tested, off by default); `recheck_after` (24 h) recorded on every LIVE / ARCHIVED result. 0.3: **ATTACHED** (person-supplied document stored under its declared publisher URL) is citable with the visible label `attached; publisher hash unreconciled`; `reconcile` re-fetches the URL and compares hashes - MATCH flips to LIVE/ARCHIVED, MISMATCH blocks every citing claim, UNAVAILABLE keeps the label; attached evidence is weaker than fetched evidence until MATCH. Stubbed: two-egress-IP retry, the S6 scheduled re-check job itself (the deadline is recorded for fetched and attached sources alike, nothing runs it yet) | `fetch.Fetcher.check_health`, `fetch.WaybackArchive`, `fetch.recheck_deadline`, `models.Source.citable`, `ingest.ingest_local`, `ingest.reconcile` |
 | C3 Claim extraction | CL-003 | not implemented: claims arrive pre-extracted in `claims.json` with `kind` and `load_bearing` set by the caller. The load-bearing default rules (exec summary, scorecards, value pools, business cases) are not coded yet | - |
 | C4 Claim-to-passage match | CL-003 | working (lexical): rapidfuzz partial_ratio with 0.85 / 0.70 bands; number claims gated on number presence with unit; `SemanticMatcher` protocol defaults to `None`; passages are page-aware for PDFs so citations carry `page` | `match.claim_match`, `match.number_claim_match`, `match.number_in_passage`, `extract.split_passages_paged` |
 | C5 Quotation exact match | CL-004 | working: normalisation, exact substring, ellipsis fragments with omitted spans logged; failure routes to BLOCKED not UNSUPPORTED | `match.quote_match`, `policy.decide` |
@@ -98,10 +113,10 @@ See `examples/claims.json` for the input shape.
 | C13 Tamper-evident retention | CL-013 | working: append-only JSONL (O_APPEND + fsync), SHA-256 chain, `verify()` detects edit, deletion and reorder. Stubbed: daily segment seal, 90-day retention policy, separate write-only credentials | `log.py`, `plumbverify verify-log` |
 | C14 Prompt-injection controls | CL-014 | not implemented | - |
 | C15 Action classes / lethal trifecta | CL-015, CL-016 | not implemented (gateway concern) | - |
-| C16 Independent reviewer protocol | CL-022 | partial: `plumbverify report --format md` renders the claim table and the 6.2 worksheet skeleton (P1, P4, P5, P6, P7 sections) with a seeded, stratified 30-claim sample from the RELEASED frame; the reviewer's live re-fetch, hash check and labelling remain manual, and the signed worksheet is filed outside this package | `report.render_markdown`, `report.build_sample` |
+| C16 Independent reviewer protocol | CL-022 | partial: `plumbverify report --format md` renders the claim table and the 6.2 worksheet skeleton (P1, P4, P5, P6, P7 sections) with a seeded, stratified 30-claim sample from the RELEASED frame; 0.3 adds the Attached sources section and stratum (f) so attached-source claims are sampled separately and flagged for the mandatory publisher hash check; the reviewer's live re-fetch, hash check and labelling remain manual, and the signed worksheet is filed outside this package | `report.render_markdown`, `report.build_sample`, `report.attached_claim_ids` |
 | V1-V8 vendor rules | CL-017 to CL-021, CL-023, CL-024 | out of scope for this package; `region_asserted` is logged per record as the hook for CL-017 | `log.py` |
 
-Test IDs from spec section 6.1 covered in miniature: T-01 (hash determinism, redirect capture, magic-byte type detection), T-02 (LIVE / DEAD / ARCHIVED / LIKELY_HALLUCINATED on fixtures, Wayback lookup / stale / save paths), T-04 (altered and paraphrased quotations fail), T-05 (shared-upstream pairs rejected, independent pairs accepted, aggregator traced to a T1 original, max-hops guard), T-07 (tier rules), T-09 (one blocked claim fails the build and appears in the gap register), T-11 (out-of-band edit detected), plus PDF page-tagged citations and a scanned PDF routed to `needs_ocr`. T-03, T-06, T-08, T-10, T-12 to T-15 need labelled sets or runtime components that do not exist yet.
+Test IDs from spec section 6.1 covered in miniature: T-01 (hash determinism, redirect capture, magic-byte type detection; 0.3: an attached PDF is hashed and stored identically and reconciled by hash), T-02 (LIVE / DEAD / ARCHIVED / LIKELY_HALLUCINATED on fixtures, Wayback lookup / stale / save paths; 0.3: ATTACHED citable with label, MATCH flips, MISMATCH blocks, UNAVAILABLE keeps the label), T-04 (altered and paraphrased quotations fail), T-05 (shared-upstream pairs rejected, independent pairs accepted, aggregator traced to a T1 original, max-hops guard), T-07 (tier rules), T-09 (one blocked claim fails the build and appears in the gap register), T-11 (out-of-band edit detected), plus PDF page-tagged citations and a scanned PDF routed to `needs_ocr`. T-03, T-06, T-08, T-10, T-12 to T-15 need labelled sets or runtime components that do not exist yet.
 
 ## Deliberate deviations from the spec
 
@@ -111,12 +126,14 @@ Test IDs from spec section 6.1 covered in miniature: T-01 (hash determinism, red
 4. **Soft C7 signals do not reject T1-T3 pages.** Spec rejects any page at or above 0.70. The soft heuristics are too crude to stay inside the 5% false-rejection budget for T1-T3, so only hard signals apply there until the classifier exists.
 5. **Claim status names.** The brief's `verified | partial | unverified | blocked` are used for `Citation.status` and `ClaimDecision.status`; they correspond to the spec's SUPPORTED / PARTIAL / UNSUPPORTED / BLOCKED.
 
-## Working vs stubbed (0.2.0)
+## Working vs stubbed (0.3.0)
 
 | Area | Status | Notes |
 |---|---|---|
 | Fetch, hash, immutable store | working | C1 |
 | Health classes, retry/backoff | working | C2 |
+| Attached documents (ingest under declared URL, provenance, label) | working | `plumbverify ingest`; citable with `attached; publisher hash unreconciled`; weaker than fetched evidence until reconciled |
+| Publisher reconciliation (MATCH / MISMATCH / UNAVAILABLE) | working, explicit step | `plumbverify reconcile`, `verify --reconcile`, `Fetcher(reconcile_on_fetch=True)`; MISMATCH blocks every citing claim; no scheduler re-runs it |
 | Wayback lookup (24-month window) | working, off by default | `--archive`; `WaybackArchive(client=...)` for tests |
 | Wayback save | working, double opt-in | `--archive-save` / `save_missing=True` |
 | 24 h re-check rule | recorded only | `recheck_after` on Source / HealthResult / ArchiveSnapshot; no scheduler runs the S6 re-check |
@@ -133,7 +150,7 @@ Test IDs from spec section 6.1 covered in miniature: T-01 (hash determinism, red
 | Aggregator tracing | working from HTML/text | ranked candidates, max 2 hops; pipeline stores `upstream_candidates` but does not auto-fetch the terminus |
 | Block-not-flag, gap register | working | C11 |
 | Hash-chained log | working | segment sealing, retention, write-only creds not implemented |
-| Reviewer Markdown + 6.2 worksheet | working (skeleton) | seeded stratified sample; reviewer labels are filled by hand |
+| Reviewer Markdown + 6.2 worksheet | working (skeleton) | seeded stratified sample; attached-source claims in stratum (f) with an Attached sources section; reviewer labels are filled by hand |
 | C3 claim extraction, C10 depth cap, C14 injection controls, C15 action classes | not implemented | outside this layer |
 
 ## Input format
@@ -146,4 +163,16 @@ Test IDs from spec section 6.1 covered in miniature: T-01 (hash determinism, red
 ]}
 ```
 
-Report: `VerificationReport` JSON with `sources` (url, url_final, fetched_at, sha256, tier, content_type, detected_content_type, page_count, needs_ocr, recheck_after, health_class, state, archived_url, aigen_score, farm_score, upstream_of, upstream_candidates), `citations` (claim_id, source_url, passage, page, match_score, status, reasons), `decisions`, `gap_register`, `build_pass`, `metrics`. Render it for reviewers with `plumbverify report report.json --format md`.
+Report: `VerificationReport` JSON with `sources` (url, url_final, fetched_at, sha256, tier, content_type, detected_content_type, page_count, needs_ocr, recheck_after, health_class, state, archived_url, aigen_score, farm_score, upstream_of, upstream_candidates, provenance, reconciliation, reconciled_at, reconciled_sha256), `citations` (claim_id, source_url, passage, page, match_score, status, reasons, labels), `decisions` (with `labels`), `gap_register`, `build_pass`, `metrics`. Render it for reviewers with `plumbverify report report.json --format md`.
+
+## Attaching a document (no egress)
+
+```
+plumbverify ingest ~/Downloads/GEH-Annual-Report-FY2025.pdf \
+    --url "https://links.sgx.com/1.0.0/corporate-announcements/LNEPNAAMA9G4OO20/880681_GEH%20Annual%20Report%20FY2025.pdf" \
+    --store out/great-eastern/evidence --supplied-by "Deepak Waghmare"
+plumbverify verify claims.json --out report.json --store out/great-eastern/evidence      # claims cite the URL; each carries the attached label
+plumbverify reconcile --store out/great-eastern/evidence                               # later, with egress: MATCH lifts the label, MISMATCH blocks
+```
+
+The declared URL must be the publisher's URL (absolute http(s)); a relative or local path is refused. Re-ingesting the same URL replaces the attachment row; both byte versions stay in `raw/`.

@@ -12,15 +12,16 @@ import sqlite3
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from enum import Enum
 from pathlib import Path
 from typing import Callable, Optional, Protocol
 
 import httpx
 
 from .extract import extract_document
-from .models import HealthClass, Source, SourceState
+from .models import HealthClass, Reconciliation, Source, SourceState
 
-USER_AGENT = "plumbverify/0.2 (+PLUMB verification pipeline; citation verification)"
+USER_AGENT = "plumbverify/0.3 (+PLUMB verification pipeline; citation verification)"
 DEFAULT_TIMEOUT = 20.0
 DEFAULT_MAX_BODY = 25 * 1024 * 1024
 DEFAULT_BACKOFF = (2.0, 8.0, 32.0)  # spec C2: retry 3x with exponential backoff
@@ -169,6 +170,30 @@ class EvidenceStore:
                 PRIMARY KEY (sha256, url)
             )"""
         )
+        # 0.3: person-supplied documents stored under their declared publisher URL.
+        # One row per declared URL; the raw bytes sit in raw/<sha256> like any fetch.
+        self.db.execute(
+            """CREATE TABLE IF NOT EXISTS attachments (
+                url TEXT PRIMARY KEY,
+                sha256 TEXT NOT NULL,
+                supplied_by TEXT,
+                supplied_at TEXT NOT NULL,
+                original_filename TEXT,
+                document_key TEXT,
+                content_type TEXT,
+                state TEXT NOT NULL,
+                health_class TEXT NOT NULL,
+                archived_url TEXT,
+                recheck_after TEXT,
+                reconciliation TEXT,
+                reconciled_at TEXT,
+                reconciled_sha256 TEXT,
+                page_count INTEGER,
+                needs_ocr INTEGER NOT NULL DEFAULT 0,
+                detected_content_type TEXT,
+                error TEXT
+            )"""
+        )
         self.db.commit()
 
     def put(self, source: Source, raw: bytes) -> None:
@@ -207,6 +232,75 @@ class EvidenceStore:
     def verify_hash(self, sha256: str) -> bool:
         raw = self.get_raw(sha256)
         return raw is not None and hashlib.sha256(raw).hexdigest() == sha256
+
+    # -- attachments (0.3) ---------------------------------------------------
+    _ATT_COLS = ("url", "sha256", "supplied_by", "supplied_at", "original_filename", "document_key", "content_type",
+                 "state", "health_class", "archived_url", "recheck_after", "reconciliation", "reconciled_at",
+                 "reconciled_sha256", "page_count", "needs_ocr", "detected_content_type", "error")
+
+    def put_attachment(self, source: Source, raw: bytes) -> None:
+        """Store a person-supplied document under its declared URL. The bytes
+        and the ``sources`` row are written exactly as for a fetch; the
+        ``attachments`` row carries provenance and reconciliation state and is
+        the one record that is updated later (by :func:`plumbverify.ingest.reconcile`)."""
+        assert source.sha256 and source.provenance
+        self.put(source, raw)
+        prov = source.provenance
+        self.db.execute(
+            f"INSERT OR REPLACE INTO attachments ({','.join(self._ATT_COLS)}) VALUES ({','.join('?' * len(self._ATT_COLS))})",
+            (source.url, source.sha256, prov.get("supplied_by"), prov.get("supplied_at") or (source.fetched_at or datetime.now(timezone.utc)).isoformat(),
+             prov.get("original_filename"), prov.get("document_key"), source.content_type, source.state.value,
+             source.health_class.value, source.archived_url,
+             source.recheck_after.isoformat() if source.recheck_after else None,
+             source.reconciliation.value if source.reconciliation else None,
+             source.reconciled_at.isoformat() if source.reconciled_at else None, source.reconciled_sha256,
+             source.page_count, 1 if source.needs_ocr else 0, source.detected_content_type, source.error),
+        )
+        self.db.commit()
+
+    def update_attachment(self, url: str, **fields) -> None:
+        bad = set(fields) - set(self._ATT_COLS)
+        if bad:
+            raise ValueError(f"unknown attachment columns: {sorted(bad)}")
+        if not fields:
+            return
+        sets = ", ".join(f"{k}=?" for k in fields)
+        vals = [(v.value if isinstance(v, Enum) else v.isoformat() if isinstance(v, datetime) else v) for v in fields.values()]
+        self.db.execute(f"UPDATE attachments SET {sets} WHERE url=?", (*vals, url))
+        self.db.commit()
+
+    def get_attachment(self, url: str) -> Optional[dict]:
+        row = self.db.execute(f"SELECT {','.join(self._ATT_COLS)} FROM attachments WHERE url=?", (url,)).fetchone()
+        if not row:
+            row = self.db.execute(f"SELECT {','.join(self._ATT_COLS)} FROM attachments WHERE url=?", (url.rstrip("/"),)).fetchone()
+        return dict(zip(self._ATT_COLS, row)) if row else None
+
+    def list_attachments(self) -> list[dict]:
+        rows = self.db.execute(f"SELECT {','.join(self._ATT_COLS)} FROM attachments ORDER BY supplied_at, url").fetchall()
+        return [dict(zip(self._ATT_COLS, r)) for r in rows]
+
+    def load_attached_source(self, url: str) -> Optional[Source]:
+        """Rebuild the ``Source`` for an attached URL (None when nothing is attached)."""
+        att = self.get_attachment(url)
+        if not att:
+            return None
+        row = self.db.execute(
+            "SELECT text_extract, fetched_at FROM sources WHERE sha256=? AND url=?", (att["sha256"], att["url"])
+        ).fetchone()
+        text, fetched_at = (row or (None, att["supplied_at"]))
+        _dt = lambda v: datetime.fromisoformat(v) if v else None
+        return Source(
+            url=att["url"], url_final=att["url"], fetched_at=_dt(fetched_at), sha256=att["sha256"],
+            content_type=att["content_type"], detected_content_type=att["detected_content_type"],
+            page_count=att["page_count"], needs_ocr=bool(att["needs_ocr"]), recheck_after=_dt(att["recheck_after"]),
+            archived_url=att["archived_url"], health_class=HealthClass(att["health_class"]), state=SourceState(att["state"]),
+            text_extract=text,
+            provenance={"supplied_by": att["supplied_by"], "supplied_at": att["supplied_at"],
+                        "original_filename": att["original_filename"], "declared_url": att["url"],
+                        **({"document_key": att["document_key"]} if att["document_key"] else {})},
+            reconciliation=Reconciliation(att["reconciliation"]) if att["reconciliation"] else None,
+            reconciled_at=_dt(att["reconciled_at"]), reconciled_sha256=att["reconciled_sha256"], error=att["error"],
+        )
 
     def close(self) -> None:
         self.db.close()
@@ -254,8 +348,16 @@ class Fetcher:
         backoff: tuple[float, ...] = DEFAULT_BACKOFF,
         max_body: int = DEFAULT_MAX_BODY,
         sleep: Callable[[float], None] = time.sleep,
+        reconcile_on_fetch: bool = False,
     ):
+        """``reconcile_on_fetch`` (0.3): when the store holds an ATTACHED document
+        for a URL, ``False`` (default) returns the attachment without touching the
+        network, so a no-egress run does not burn the retry/backoff budget on a
+        URL it cannot reach; ``True`` fetches the declared URL and reconciles the
+        attachment against the publisher bytes (MATCH flips it to LIVE/ARCHIVED,
+        MISMATCH blocks it), falling back to the attachment when the fetch fails."""
         self.store = store
+        self.reconcile_on_fetch = reconcile_on_fetch
         self.client = client or httpx.Client(
             timeout=timeout, follow_redirects=True, headers={"User-Agent": USER_AGENT}
         )
@@ -342,7 +444,32 @@ class Fetcher:
     # -- fetch + hash ------------------------------------------------------
     def fetch(self, url: str) -> Source:
         """Fetch once, hash, extract text, store; returns a Source in FETCHED,
-        ARCHIVED, DEAD or LIKELY_HALLUCINATED state."""
+        ARCHIVED, DEAD or LIKELY_HALLUCINATED state. An ATTACHED document in the
+        store is preferred over a failed fetch (0.3; see ``reconcile_on_fetch``)."""
+        attached = self.store.load_attached_source(url) if self.store is not None else None
+        if attached is not None:
+            if not self.reconcile_on_fetch or attached.reconciliation == Reconciliation.MISMATCH:
+                return attached
+            return self._fetch_and_reconcile(url, attached)
+        return self._fetch_live(url)
+
+    def _fetch_and_reconcile(self, url: str, attached: Source) -> Source:
+        from .ingest import reconcile  # local import: ingest depends on this module
+
+        resp, _err, _ = self._request("GET", url)
+        if resp is not None and 200 <= resp.status_code < 300:
+            reconcile(self.store, url, resp.content[: self.max_body])
+            return self.store.load_attached_source(url) or attached
+        health = self.check_health(url)
+        if health.health_class == HealthClass.ARCHIVED and health.archived_url:
+            arch_resp, _e, _ = self._request("GET", health.archived_url)
+            if arch_resp is not None and 200 <= arch_resp.status_code < 300:
+                reconcile(self.store, url, arch_resp.content[: self.max_body], archived_url=health.archived_url)
+                return self.store.load_attached_source(url) or attached
+        reconcile(self.store, url, None)
+        return self.store.load_attached_source(url) or attached
+
+    def _fetch_live(self, url: str) -> Source:
         src = Source(url=url, fetched_at=datetime.now(timezone.utc))
         resp, err, _ = self._request("GET", url)
         if resp is not None and 200 <= resp.status_code < 300:

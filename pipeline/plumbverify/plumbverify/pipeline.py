@@ -26,7 +26,7 @@ from .tier import TierRules, aigen_score, assign_tier, load_tier_rules
 from .upstream import count_independent_upstreams, is_aggregator, trace_upstream
 
 MODEL_ID = "plumbverify-rules"
-MODEL_VERSION = "0.2.0"
+MODEL_VERSION = "0.3.0"
 
 
 class Verifier:
@@ -90,11 +90,20 @@ class Verifier:
 
     # -- S3 ------------------------------------------------------------------
     def cite(self, claim: Claim, src: Source) -> Citation:
+        c = self._cite(claim, src)
+        if src.attached_label and c.status != CitationStatus.blocked:
+            # 0.3: attached evidence is citable but visibly weaker until the publisher hash is reconciled
+            c.labels.append(src.attached_label)
+        return c
+
+    def _cite(self, claim: Claim, src: Source) -> Citation:
         url = src.url
         if not src.citable:
+            why = f"source not citable: state={src.state.value} health={src.health_class.value}"
+            if src.reconciliation is not None and src.reconciliation.value == "MISMATCH":
+                why = f"attached document does not match the publisher's bytes (reconcile MISMATCH; attached {(src.sha256 or '')[:16]}, publisher {(src.reconciled_sha256 or '')[:16]})"
             return Citation(claim_id=claim.id, source_url=url, status=CitationStatus.blocked,
-                            reasons=[f"source not citable: state={src.state.value} health={src.health_class.value}"
-                                     + (f" ({src.error})" if src.error else "")])
+                            reasons=[why + (f" ({src.error})" if src.error and "MISMATCH" not in why else "")])
         if src.needs_ocr:
             return Citation(claim_id=claim.id, source_url=url, status=CitationStatus.unverified,
                             reasons=[f"PDF ({src.page_count or '?'} pages) has no text layer; needs OCR before the claim can match (C1/C4)"])
@@ -181,6 +190,12 @@ class Verifier:
             "two_upstream_coverage": round(sum(1 for d in lb_numbers if d.independent_upstreams >= 2) / len(lb_numbers), 4) if lb_numbers else 1.0,
             "aigen_or_farm_cited": sum(1 for s in sources if s.state in (SourceState.REJECTED_AIGEN, SourceState.REJECTED_FARM)
                                        and any(c.source_url == s.url and c.status == CitationStatus.verified for c in citations)),
+            # 0.3: attached evidence. "unreconciled" = still ATTACHED (no MATCH yet); "mismatch" = publisher bytes differ
+            "attached_sources": sum(1 for s in sources if s.provenance is not None),
+            "attached_unreconciled": sum(1 for s in sources if s.state == SourceState.ATTACHED),
+            "attached_mismatch": sum(1 for s in sources if s.reconciliation is not None and s.reconciliation.value == "MISMATCH"),
+            "claims_on_unreconciled_attachments": len({c.claim_id for c in citations if any(
+                l.startswith("attached;") for l in c.labels) and c.status != CitationStatus.blocked}),
         }
         report = VerificationReport(run_id=run_id, generated_at=datetime.now(timezone.utc), sources=sources,
                                     claims=claims, citations=citations, decisions=decisions,

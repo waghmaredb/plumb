@@ -44,6 +44,7 @@ class RunOutcome:
     report: object  # plumbverify VerificationReport
     gaps: list[Gap]
     escalations: list[str] = field(default_factory=list)
+    attached_documents: list[dict] = field(default_factory=list)  # per attached document: hash, supplier, reconciliation status
 
     @property
     def released_claims(self) -> list[ResearchClaim]:
@@ -123,11 +124,27 @@ def run_subject(subject: Subject, out_dir: str | Path, data_dir: str | Path, *, 
         rel = [i for i in ev if i in decisions and not decisions[i].blocked]
         s.status = "released" if len(rel) == len(ev) else ("blocked" if not rel else f"partial ({len(rel)}/{len(ev)} evidence released)")
     outcome = RunOutcome(subject=subject, run_id=ctx.run_id, out_dir=out_dir, modules=results, claims=claims, signals=signals,
-                         report=report, gaps=gaps, escalations=[r.module for r in results if r.escalated])
+                         report=report, gaps=gaps, escalations=[r.module for r in results if r.escalated],
+                         attached_documents=_attached_documents(ctx, report))
     _write_outputs(ctx, outcome)
     ctx.log_call("orchestrator", "run_end", subject.slug, "PASS" if report.build_pass else "FAIL", claims=len(claims),
                  blocked=report.metrics.get("blocked_claims"), signals=len(signals))
     return outcome
+
+
+def _attached_documents(ctx: RunContext, report) -> list[dict]:
+    """Attached documents in the run's evidence store with their reconciliation
+    status and how many released claims rest on each (plumbverify 0.3)."""
+    rows = ctx.attached_documents()
+    if not rows:
+        return rows
+    blocked = {d.claim_id for d in report.decisions if d.blocked}
+    for r in rows:
+        cites = [c for c in report.citations if c.source_url == r["url"]]
+        r["claims_citing"] = len({c.claim_id for c in cites})
+        r["claims_released"] = len({c.claim_id for c in cites if c.claim_id not in blocked})
+        r["claims_blocked"] = len({c.claim_id for c in cites if c.claim_id in blocked})
+    return rows
 
 
 # --------------------------------------------------------------------------
@@ -153,6 +170,7 @@ def _write_outputs(ctx: RunContext, o: RunOutcome) -> None:
                          "module_gaps": [g.model_dump(mode="json") for g in o.gaps],
                          "verify_items": o.subject.all_verify_items()},
         "escalations": o.escalations,
+        "attached_documents": o.attached_documents,
         "log": str(ctx.log.path) if ctx.log else None,
         "log_chain_ok": ctx.log.verify().ok if ctx.log else None,
     }
@@ -197,7 +215,33 @@ def signals_markdown(o: RunOutcome) -> str:
     L.append(f"Verification: {m.get('claims')} claims, {m.get('blocked_claims')} BLOCKED, build {'PASS' if o.report.build_pass else 'FAIL'}; "
              f"citation resolution {m.get('citation_resolution_rate')}, quotation pass rate {m.get('quotation_pass_rate')}, "
              f"two-upstream coverage {m.get('two_upstream_coverage')}, AI/farm pages cited {m.get('aigen_or_farm_cited')}.")
+    if o.attached_documents:
+        L.append("")
+        L.extend(attached_documents_markdown(o))
     return "\n".join(L)
+
+
+def attached_documents_markdown(o: RunOutcome, heading: str = "## Attached documents (reconciliation status)") -> list[str]:
+    """Per attached document: which subject document it maps to, hash, supplier and
+    whether the publisher's bytes have been reconciled. Attached evidence is weaker
+    than fetched evidence until reconciliation returns MATCH; the signals that rest
+    on it inherit the label."""
+    L = [heading, "",
+         "A person attached these documents instead of the pipeline fetching them. Each is stored and cited under the declared "
+         "publisher URL. `pending` / `UNAVAILABLE` = the publisher hash is unreconciled and every claim from the document is released "
+         "with the label `attached; publisher hash unreconciled`; `MATCH` = the publisher's bytes are identical and the document now "
+         "counts as fetched; `MISMATCH` = the attachment is not the published document and every claim citing it is BLOCKED. "
+         "Run `plumbverify reconcile --store <out>/<slug>/evidence` when egress is available.", "",
+         "| Document | Declared URL | File | Supplied by | Supplied at | SHA-256 (attached) | State | Reconciliation | SHA-256 (publisher) | Claims released / blocked |",
+         "|---|---|---|---|---|---|---|---|---|---|"]
+    for r in o.attached_documents:
+        url = r["url"] if len(r["url"]) < 90 else r["url"][:87] + "..."
+        rec = r.get("reconciliation") or "pending"
+        L.append(f"| {r.get('document_key') or '—'} | {url} | {r.get('original_filename') or ''} | {r.get('supplied_by') or '—'} | "
+                 f"{(r.get('supplied_at') or '')[:16]} | `{r['sha256']}` | {r['state']} | {rec} | "
+                 f"{('`' + r['reconciled_sha256'] + '`') if r.get('reconciled_sha256') else '—'} | "
+                 f"{r.get('claims_released', 0)} / {r.get('claims_blocked', 0)} |")
+    return L
 
 
 def gap_register_markdown(o: RunOutcome) -> str:
@@ -238,4 +282,15 @@ def gap_register_markdown(o: RunOutcome) -> str:
         L.append("")
         for e in o.escalations:
             L.append(f"- {e}: hit the tool-call cap twice; escalated to the research lead")
+    if o.attached_documents:
+        unrec = [r for r in o.attached_documents if r["state"] == "ATTACHED"]
+        L.append("")
+        L.extend(attached_documents_markdown(o, heading=f"## 5. Attached documents awaiting publisher reconciliation ({len(unrec)} of {len(o.attached_documents)})"))
+        for r in unrec:
+            if r.get("reconciliation") == "MISMATCH":
+                L.append(f"- **{r.get('document_key') or r['url']}: MISMATCH** — the attached file is not the document at the declared URL; "
+                         f"{r.get('claims_blocked', 0)} claim(s) BLOCKED. Obtain the published copy or correct the declared URL and re-ingest.")
+            else:
+                L.append(f"- {r.get('document_key') or r['url']}: publisher hash unreconciled; {r.get('claims_released', 0)} released claim(s) carry the attached label "
+                         f"until `plumbverify reconcile` returns MATCH.")
     return "\n".join(L) + "\n"

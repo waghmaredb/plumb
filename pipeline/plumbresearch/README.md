@@ -13,7 +13,8 @@ fully testable offline.
 ```
 pip install -e ../plumbverify && pip install -e ".[test]"      # pyproject pins plumbverify by absolute path; see note below
 plumbresearch run plumbresearch/fixtures/acme-bank/subject.yaml --out out --fixtures   # offline demo
-pytest                                                          # 30 tests, no network
+plumbresearch ingest plumbresearch/subjects/great-eastern.yaml --file ~/Downloads/geh-ar-fy2025.pdf --doc annual_report-2025 --out out --supplied-by "Deepak Waghmare"
+pytest                                                          # 35 tests, no network
 ```
 
 Exit code follows plumbverify: 0 when the build gate passes (zero BLOCKED
@@ -24,10 +25,10 @@ ceiling of 60).
 
 | Path | What it is |
 |---|---|
-| `subject.py` | `Subject`, `Peer`, `PeerSet`, `Document` models; YAML loader; `[VERIFY]` flags kept as `verify: true` fields and collected by `Subject.all_verify_items()` |
+| `subject.py` | `Subject`, `Peer`, `PeerSet`, `Document` models; YAML loader; `[VERIFY]` flags kept as `verify: true` fields and collected by `Subject.all_verify_items()`; `Document.document_key` (`<kind>-<fy>` or an explicit `key:`) and `Subject.find_document()` for `ingest --doc` |
 | `subjects/maybank.yaml`, `subjects/great-eastern.yaml` | the two G1 alpha subjects pre-filled from `docs/alpha-targets.md` (listing, tickers, IR URLs, FY, documents, size, core / secondary / exited peers with every `[VERIFY]` preserved) |
 | `models.py` | `ResearchClaim` (plumbverify `Claim` + passage, tier, instrument items, signal ids), `Signal`, `Gap`, `ModuleResult`, `confidence_for_tier` |
-| `context.py` | `RunContext` (store, log, fetcher, data dir, budget per module), `ToolBudget` / `ToolCapExceeded` (C10), `Checkpoint`, `ResearchFetcher` (plumbverify Fetcher + PDF line unwrapping), `LocalDocTransport` (serves local PDFs under their IR URL, and the fixture web) |
+| `context.py` | `RunContext` (store, log, fetcher, data dir, budget per module), `ToolBudget` / `ToolCapExceeded` (C10), `Checkpoint`, `ResearchFetcher` (plumbverify Fetcher + PDF line unwrapping; prefers an ATTACHED document in the store over a 404 and reconciles it against the publisher on online runs), `LocalDocTransport` (serves local PDFs under their IR URL, and the fixture web), `RunContext.attached_documents()` |
 | `textutil.py` | AI-term lexicon, sentence splitter that unwraps hard-wrapped lines, NER-lite for organisation names, competitor-context patterns |
 | `modules/annual_report.py` | 1–5 AI disclosure rubric, named-competitor extraction, leadership-structure extraction |
 | `modules/postings.py` | AI-skill share of postings (24-month window, peer comparison), `PostingsSource` protocol, CSV implementation, lexicon |
@@ -35,10 +36,10 @@ ceiling of 60).
 | `modules/patents.py` | AI patent counts, `PatentSource` protocol, CSV implementation, PatentsView client (untested), EPO OPS stub |
 | `modules/peerset.py` | the funnel (size band, core/secondary, exited retained) and the Markdown protocol exhibit |
 | `modules/financials.py` | KPI percentiles vs core peers from a CSV, economic-profit placeholder with explicit assumptions |
-| `orchestrator.py` | module loop with cap / checkpoint / escalation, Verifier pass, signal status, output writers |
-| `cli.py` | `plumbresearch run <subject.yaml> --out DIR [--data-dir DIR] [--fixtures] [--offline] [--cap N] [--modules a,b] [--as-of DATE]` |
+| `orchestrator.py` | module loop with cap / checkpoint / escalation, Verifier pass, signal status, output writers; `signals.md` and `gap-register.md` carry an attached-documents section with the reconciliation status per document |
+| `cli.py` | `plumbresearch run <subject.yaml> --out DIR [--data-dir DIR] [--fixtures] [--offline] [--cap N] [--modules a,b] [--as-of DATE]`; `plumbresearch ingest <subject.yaml> --file PATH --doc <document-key> [--out DIR] [--supplied-by NAME]` |
 | `fixtures/acme-bank/` | synthetic subject, fixture web (`web.yaml` → HTML/text files), postings.csv, transcripts/, patents.csv, financials.csv |
-| `tests/` | rubric 1/3/5, postings arithmetic, call density, funnel, financials, PDF path, orchestrator end to end, C10 cap, CLI |
+| `tests/` | rubric 1/3/5, postings arithmetic, call density, funnel, financials, PDF path, orchestrator end to end, C10 cap, CLI, attached annual report end to end (offline use, MATCH, MISMATCH, 404 fallback) |
 
 ## Module → instrument items → spec criteria
 
@@ -96,6 +97,7 @@ publisher reported; extension of the spec rule, documented here); T4 →
 | Rubric scoring, competitor and leadership extraction | real (regex/NER-lite rules over extracted text; no model) |
 | HTML and PDF ingestion | real: plumbverify 0.2 fetch + hash + page-aware PDF extraction; this layer unwraps hard-wrapped PDF lines and writes the unwrapped text back to the evidence store (hash unchanged). Scanned PDFs (`needs_ocr`) surface as a gap |
 | Local documents | real: a PDF placed in `data/<slug>/<local_file>` is served under its declared IR URL by `LocalDocTransport`; the citation of record stays the URL. Everything else goes to the network unless `--offline` |
+| Attached documents | real (plumbverify 0.3): `plumbresearch ingest` maps an attached file to a declared document and stores it in `<out>/<slug>/evidence` under the document's publisher URL with `state=ATTACHED` and provenance (supplier, time, file name). The module reads it, the Verifier cites it, and every claim is released with the visible label `attached; publisher hash unreconciled`. **Attached evidence is weaker than fetched evidence until reconciled**: an online run (or `plumbverify reconcile --store <out>/<slug>/evidence`) re-fetches the URL and compares hashes; MATCH turns the document into fetched evidence and drops the label, MISMATCH blocks every claim citing it, UNAVAILABLE keeps the label. `signals.md` / `gap-register.md` / `report.json` show the status per document. A missing `local_file` is no longer a gap when the document is attached |
 | Postings share arithmetic, lexicon, window, peer percentile | real; **collection is fixture-only** (`CsvPostingsSource`). `MyCareersFutureSource` and `LinkedInJobsSource` raise `NotImplementedError` |
 | Call density arithmetic, Q&A split | real; **transcripts are supplied as local text files** (`FileTranscriptSource` reading `transcripts/index.yaml`); no live provider |
 | Patent counting, AI tagging (terms + CPC G06N/G06F40/G06V…) | real; `CsvPatentSource` is the working source; `PatentsViewSource` is written against the documented API shape but **untested against the live service**; `EpoOpsSource` is interface-only |
@@ -112,9 +114,23 @@ four KPI claims to be BLOCKED and everything else released.
 
 ## Running the two alpha subjects
 
-1. Download the primary documents to `data/<slug>/` under the file names the
-   subject YAML declares (`documents[].local_file`); they are served under the
-   declared URL, so the citation of record is the IR URL, not the local path:
+1. Get the primary documents in. Two routes, same citation of record (the IR URL):
+
+   **(a) attach** (sandbox without egress; the person downloads the PDF on a desktop and attaches it):
+
+   ```
+   plumbresearch ingest plumbresearch/subjects/great-eastern.yaml --file "~/Downloads/880681_GEH Annual Report FY2025.pdf" \
+       --doc annual_report-2025 --out out --supplied-by "Deepak Waghmare"
+   plumbresearch ingest plumbresearch/subjects/great-eastern.yaml --file ~/Downloads/geh-ar-fy2024.pdf --doc annual_report-2024 --out out
+   ```
+
+   `--doc` is `<kind>-<fy>` from the subject YAML (or an explicit `key:`, the URL, or the `local_file` name). The file lands in
+   `out/<slug>/evidence` as an ATTACHED source under the declared URL; every claim lifted from it is released with the label
+   `attached; publisher hash unreconciled`, and `gap-register.md` section 5 lists it until `plumbverify reconcile --store out/<slug>/evidence`
+   (or an online `run`) confirms the publisher's bytes MATCH. A MISMATCH blocks the document's claims: the attachment is not what the publisher serves.
+
+   **(b) place** the files in `data/<slug>/` under the names the subject YAML declares (`documents[].local_file`); they are served under the
+   declared URL by `LocalDocTransport`:
 
    ```
    data/maybank/maybank-integrated-annual-report-2025.pdf        # BankTrack mirror URL in the YAML is [VERIFY]: re-point to the maybank.com primary before release
@@ -138,6 +154,7 @@ four KPI claims to be BLOCKED and everything else released.
    ```
    plumbresearch run plumbresearch/subjects/maybank.yaml --out out --data-dir data
    plumbresearch run plumbresearch/subjects/great-eastern.yaml --out out --data-dir data
+   plumbresearch run plumbresearch/subjects/great-eastern.yaml --out out --offline --modules annual-report,peer-set   # no egress: attached documents only
    ```
 
    Add `--offline` to see the gap register without touching the network, or
@@ -173,5 +190,10 @@ requirement. Python 3.11+, pydantic 2, httpx, pyyaml; `pypdf` (or
    behaviour of the ranking exhibit, not a bug.
 4. Posting, transcript and patent collection remain file-based; live sources
    need the data annex licences and a recorded terms-of-use check.
+6. Attached documents are a weaker evidence class than fetched ones until
+   reconciled, and the outputs say so on every claim. The alpha may be *run*
+   on attached annual reports; it should not be *signed off* (QA gate 3) while
+   `gap-register.md` section 5 still lists an unreconciled document, because
+   the reviewer's P4 hash check cannot be completed against the publisher.
 5. The funnel's text-similarity step (TNIC-style) is not computed; the
    subject YAML carries the reasoning per peer.

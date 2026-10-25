@@ -25,15 +25,28 @@ class HealthClass(str, Enum):
     ARCHIVED = "ARCHIVED"
     DEAD = "DEAD"
     LIKELY_HALLUCINATED = "LIKELY_HALLUCINATED"
+    UNCHECKED = "UNCHECKED"  # attached document: no URL health check has run yet (0.3)
 
 
 class SourceState(str, Enum):
     FETCHED = "FETCHED"
     ARCHIVED = "ARCHIVED"
+    ATTACHED = "ATTACHED"  # supplied by a person, stored under its declared publisher URL, publisher hash not yet reconciled (0.3)
     DEAD = "DEAD"
     LIKELY_HALLUCINATED = "LIKELY_HALLUCINATED"
     REJECTED_AIGEN = "REJECTED_AIGEN"
     REJECTED_FARM = "REJECTED_FARM"
+
+
+class Reconciliation(str, Enum):
+    """Outcome of re-fetching an ATTACHED source's declared URL and comparing hashes."""
+    MATCH = "MATCH"            # publisher bytes hash equal: the attachment is the published document
+    MISMATCH = "MISMATCH"      # publisher bytes differ: every claim citing the attachment is BLOCKED
+    UNAVAILABLE = "UNAVAILABLE"  # declared URL could not be fetched (no egress, 4xx/5xx, no archive)
+
+
+#: label every citation from an unreconciled ATTACHED source must carry
+ATTACHED_LABEL = "attached; publisher hash unreconciled"
 
 
 class ClaimKind(str, Enum):
@@ -80,13 +93,32 @@ class Source(BaseModel):
     farm_score: float = 0.0
     upstream_of: list[str] = Field(default_factory=list, description="URLs of the original study/filing this source summarises (traced upstream)")
     upstream_candidates: list[str] = Field(default_factory=list, description="ranked candidate originals found by trace_upstream on an aggregator page; untraced until fetched and hashed")
+    provenance: Optional[dict] = Field(default=None, description="ATTACHED sources: supplied_by, supplied_at, original_filename, declared_url (+ document_key when mapped by plumbresearch)")
+    reconciliation: Optional[Reconciliation] = Field(default=None, description="ATTACHED sources: result of the last publisher re-fetch and hash comparison; None until reconcile has run")
+    reconciled_at: Optional[datetime] = None
+    reconciled_sha256: Optional[str] = Field(default=None, description="SHA-256 of the publisher bytes seen at reconciliation (differs from sha256 on MISMATCH)")
     error: Optional[str] = None
 
     @property
+    def attached(self) -> bool:
+        """True while the source is a person-supplied document whose publisher hash is unreconciled."""
+        return self.state == SourceState.ATTACHED
+
+    @property
+    def attached_label(self) -> Optional[str]:
+        """Visible label every citation from an unreconciled attachment carries (None otherwise)."""
+        return ATTACHED_LABEL if self.attached else None
+
+    @property
     def citable(self) -> bool:
-        """Spec C2/C7: only LIVE or ARCHIVED-with-hash sources that are not rejected may be cited."""
+        """Spec C2/C7: only LIVE or ARCHIVED-with-hash sources that are not rejected may be cited.
+        0.3: an ATTACHED source is citable (with the attached label) unless reconciliation found a MISMATCH."""
         if self.state in (SourceState.REJECTED_AIGEN, SourceState.REJECTED_FARM):
             return False
+        if self.reconciliation == Reconciliation.MISMATCH:
+            return False
+        if self.state == SourceState.ATTACHED:
+            return self.sha256 is not None
         if self.health_class == HealthClass.LIVE:
             return self.sha256 is not None
         if self.health_class == HealthClass.ARCHIVED:
@@ -112,6 +144,7 @@ class Citation(BaseModel):
     match_score: float = 0.0
     status: CitationStatus = CitationStatus.unverified
     reasons: list[str] = Field(default_factory=list)
+    labels: list[str] = Field(default_factory=list, description="visible caveats that travel with the citation into output, e.g. the attached label (0.3)")
 
     @property
     def locator(self) -> str:
@@ -132,6 +165,7 @@ class ClaimDecision(BaseModel):
     blocked: bool
     load_bearing: bool
     reasons: list[str] = Field(default_factory=list)
+    labels: list[str] = Field(default_factory=list, description="labels carried by the supporting citations (e.g. attached; publisher hash unreconciled)")
     independent_upstreams: int = 0
     upstream_pairs: list[UpstreamPair] = Field(default_factory=list)
 

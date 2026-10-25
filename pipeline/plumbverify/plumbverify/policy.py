@@ -64,9 +64,15 @@ def decide(
         status = CitationStatus.verified
     else:
         status = CitationStatus.partial
+    # labels (e.g. "attached; publisher hash unreconciled") travel with the supporting citations into the output
+    labels: list[str] = []
+    for c in (verified or partial):
+        for l in c.labels:
+            if l not in labels:
+                labels.append(l)
     return ClaimDecision(
         claim_id=claim.id, status=status, blocked=blocked, load_bearing=claim.load_bearing,
-        reasons=reasons, independent_upstreams=independent_upstreams, upstream_pairs=upstream_pairs or [],
+        reasons=reasons, labels=labels, independent_upstreams=independent_upstreams, upstream_pairs=upstream_pairs or [],
     )
 
 

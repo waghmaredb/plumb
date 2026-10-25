@@ -305,8 +305,9 @@ def run(subject: Subject, store: EvidenceStore, log: Optional[HashChainLog], ctx
     for d in docs:
         if cp.has(d.url):
             continue
-        if d.local_file and not (ctx.subject_dir / d.local_file).exists() and not ctx.fixtures:
-            cp.put(d.url, {"claims": [], "signals": [], "gap": f"local file missing: data/{subject.slug}/{d.local_file} (download the PDF and place it there)",
+        if d.local_file and not (ctx.subject_dir / d.local_file).exists() and not ctx.fixtures and not ctx.has_attachment(d.url):
+            cp.put(d.url, {"claims": [], "signals": [], "gap": f"local file missing: data/{subject.slug}/{d.local_file} (download the PDF and place it there, "
+                           f"or attach it: plumbresearch ingest <subject.yaml> --file <pdf> --doc {d.document_key})",
                            "doc_url": d.url, "doc_kind": d.kind, "fy": d.fy})
             continue
         src = ctx.fetch(MODULE, d.url)

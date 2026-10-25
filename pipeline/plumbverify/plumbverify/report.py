@@ -9,6 +9,10 @@ Two parts:
        (b) stratified fill from remaining load-bearing claims, >= 2 per module;
        (c) >= 5 non-load-bearing qualitative claims at random;
        (d) random load-bearing top-up to the minimum sample size.
+     0.3 adds stratum (f): claims whose support comes from an ATTACHED source
+     (person-supplied document, publisher hash unreconciled) are sampled
+     separately, at least MIN_ATTACHED of them, because the reviewer's live
+     re-fetch and hash check is the only thing that closes that gap.
      The frame is RELEASED claims only (P2): blocked claims are listed for
      context but never sampled.
 """
@@ -19,18 +23,19 @@ import re
 from dataclasses import dataclass, field
 from typing import Optional
 
-from .models import Citation, CitationStatus, Claim, ClaimDecision, ClaimKind, Source, VerificationReport
+from .models import Citation, CitationStatus, Claim, ClaimDecision, ClaimKind, Source, SourceState, VerificationReport
 
 SAMPLE_MIN = 30
 MIN_PER_MODULE = 2
 MIN_QUALITATIVE = 5
+MIN_ATTACHED = 5  # 0.3: minimum sampled claims resting on unreconciled attached sources (stratum f)
 _EXEC_MODULE = re.compile(r"exec(utive)?[-_ ]?summary|^exec$|^executive$", re.I)
 
 
 @dataclass
 class SampledClaim:
     claim: Claim
-    stratum: str  # "a" | "b" | "c" | "d" per P3; "e" = non-load-bearing fill when load-bearing claims run out
+    stratum: str  # "a" | "b" | "c" | "d" per P3; "e" = non-load-bearing fill when load-bearing claims run out; "f" = attached-source claims (0.3)
     decision: Optional[ClaimDecision] = None
 
 
@@ -51,8 +56,16 @@ def is_exec_module(module: Optional[str]) -> bool:
     return bool(module and _EXEC_MODULE.search(module))
 
 
+def attached_claim_ids(report: VerificationReport) -> set[str]:
+    """Claims whose supporting (non-blocked) citation rests on an unreconciled ATTACHED source."""
+    attached_urls = {s.url for s in report.sources if s.state == SourceState.ATTACHED}
+    return {c.claim_id for c in report.citations
+            if c.status != CitationStatus.blocked and (c.source_url in attached_urls or any(l.startswith("attached;") for l in c.labels))}
+
+
 def build_sample(report: VerificationReport, seed: int, sample_min: int = SAMPLE_MIN,
-                 min_per_module: int = MIN_PER_MODULE, min_qualitative: int = MIN_QUALITATIVE) -> SamplePlan:
+                 min_per_module: int = MIN_PER_MODULE, min_qualitative: int = MIN_QUALITATIVE,
+                 min_attached: int = MIN_ATTACHED) -> SamplePlan:
     """Deterministic stratified sample per spec 6.2 P3. Same report + seed = same sample."""
     rng = random.Random(seed)
     decisions = {d.claim_id: d for d in report.decisions}
@@ -60,6 +73,7 @@ def build_sample(report: VerificationReport, seed: int, sample_min: int = SAMPLE
     frame = [c for c in report.claims if c.id not in blocked]  # P2: RELEASED only
     plan = SamplePlan(seed=seed, frame_size=len(frame))
     chosen: dict[str, str] = {}
+    attached_ids = attached_claim_ids(report)
 
     def take(claim: Claim, stratum: str) -> None:
         if claim.id not in chosen:
@@ -69,6 +83,12 @@ def build_sample(report: VerificationReport, seed: int, sample_min: int = SAMPLE
     for c in frame:
         if is_exec_module(c.module) and ((c.kind == ClaimKind.number and c.load_bearing) or c.kind == ClaimKind.quote):
             take(c, "a")
+    # (f) attached-source claims, sampled separately (0.3): load-bearing first, then the rest, >= min_attached
+    att_pool = sorted([c for c in frame if c.id in attached_ids and c.id not in chosen], key=lambda c: c.id)
+    rng.shuffle(att_pool)
+    att_pool.sort(key=lambda c: not c.load_bearing)  # stable: load-bearing first, random within each half
+    for c in att_pool[:min_attached]:
+        take(c, "f")
     # (b) stratified fill: remaining load-bearing claims, >= 2 per module
     remaining_lb = [c for c in frame if c.load_bearing and c.id not in chosen]
     by_module: dict[str, list[Claim]] = {}
@@ -104,7 +124,8 @@ def build_sample(report: VerificationReport, seed: int, sample_min: int = SAMPLE
         [SampledClaim(claim=c, stratum=chosen[c.id], decision=decisions.get(c.id)) for c in frame if c.id in chosen],
         key=lambda s: (s.stratum, order[s.claim.id]),
     )
-    plan.counts = {k: sum(1 for s in plan.sampled if s.stratum == k) for k in "abcde"}
+    plan.counts = {k: sum(1 for s in plan.sampled if s.stratum == k) for k in "abcdef"}
+    plan.counts["attached_in_sample"] = sum(1 for s in plan.sampled if s.claim.id in attached_ids)
     plan.shortfall = max(0, sample_min - len(plan.sampled))
     return plan
 
@@ -149,6 +170,13 @@ def render_markdown(report: VerificationReport, seed: Optional[int] = None, samp
     out.append(f"- Quotation exact-match: {_pct(m.get('quotation_pass_rate'))} (G1 target 100%)")
     out.append(f"- Two-upstream coverage: {_pct(m.get('two_upstream_coverage'))} (G1 target >= 90%)")
     out.append(f"- AI-generated or farm pages cited: {m.get('aigen_or_farm_cited', 0)} (G1 target 0)")
+    attached_srcs = [s for s in report.sources if s.provenance is not None]
+    if attached_srcs:
+        unrec = sum(1 for s in attached_srcs if s.state == SourceState.ATTACHED)
+        mism = sum(1 for s in attached_srcs if s.reconciliation is not None and s.reconciliation.value == "MISMATCH")
+        out.append(f"- Attached (person-supplied) sources: {len(attached_srcs)}; publisher hash unreconciled: {unrec}; MISMATCH: {mism}; "
+                   f"released claims resting on unreconciled attachments: {m.get('claims_on_unreconciled_attachments', 0)} "
+                   f"(attached evidence is weaker than fetched evidence until `plumbverify reconcile` returns MATCH)")
     out.append("")
 
     out.append("## Claims")
@@ -167,8 +195,10 @@ def render_markdown(report: VerificationReport, seed: Optional[int] = None, samp
         indep = str(d.independent_upstreams) if (d and c.kind == ClaimKind.number and c.load_bearing) else "n/a"
         reasons = "; ".join(d.reasons) if d and d.reasons else ""
         locator = best.locator if best else ""
+        if d and d.labels:  # 0.3: the attached label is part of the visible status, not a footnote
+            status = f"{status} ({'; '.join(d.labels)})"
         out.append(f"| {_esc(c.id)} | {_esc(c.text, 140)} | {_esc(c.module) or '-'} | {c.kind.value} | "
-                   f"{'yes' if c.load_bearing else 'no'} | {status} | {score} | {tier} | {indep} | "
+                   f"{'yes' if c.load_bearing else 'no'} | {_esc(status)} | {score} | {tier} | {indep} | "
                    f"{_esc(locator, 120)} | {_esc(reasons, 240)} |")
     out.append("")
 
@@ -193,6 +223,28 @@ def render_markdown(report: VerificationReport, seed: Optional[int] = None, samp
                    f"{s.recheck_after.isoformat(timespec='minutes') if s.recheck_after else '-'} | {_esc(cands, 160)} |")
     out.append("")
 
+    # ---- attached sources (0.3) -------------------------------------------
+    if attached_srcs:
+        out.append("## Attached sources (person-supplied documents)")
+        out.append("")
+        out.append("These documents were not fetched by the pipeline; a person attached them and declared the publisher URL they "
+                   "come from. They are stored, hashed and cited under that URL. Until `plumbverify reconcile` fetches the URL "
+                   "and the publisher's bytes hash MATCH, every citation from them carries the label "
+                   "`attached; publisher hash unreconciled` and the reviewer must treat them as weaker than fetched evidence. "
+                   "A MISMATCH blocks every claim citing the document.")
+        out.append("")
+        out.append("| Declared URL | Original file | Supplied by | Supplied at | SHA-256 (attached) | Pages | Tier | State | Reconciliation | Reconciled at | SHA-256 (publisher) |")
+        out.append("|---|---|---|---|---|---|---|---|---|---|---|")
+        for s in attached_srcs:
+            prov = s.provenance or {}
+            pages = ("needs OCR" if s.needs_ocr else (str(s.page_count) if s.page_count else "-"))
+            rec = s.reconciliation.value if s.reconciliation else "pending (not yet attempted)"
+            out.append(f"| {_esc(s.url, 90)} | {_esc(prov.get('original_filename'))} | {_esc(prov.get('supplied_by')) or '-'} | "
+                       f"{_esc(str(prov.get('supplied_at') or ''))[:16]} | `{_esc(s.sha256)}` | {pages} | {s.tier.value} | {s.state.value} | "
+                       f"{rec} | {s.reconciled_at.isoformat(timespec='minutes') if s.reconciled_at else '-'} | "
+                       f"{('`' + s.reconciled_sha256 + '`') if s.reconciled_sha256 else '-'} |")
+        out.append("")
+
     # ---- sampling worksheet (spec 6.2) ------------------------------------
     out.append(f"## Independent reviewer sampling worksheet (spec section 6.2, minimum {sample_min} claims)")
     out.append("")
@@ -205,7 +257,9 @@ def render_markdown(report: VerificationReport, seed: Optional[int] = None, samp
                f"(b) stratified load-bearing fill, >= {MIN_PER_MODULE} per module = {plan.counts.get('b', 0)}; "
                f"(c) non-load-bearing qualitative >= {MIN_QUALITATIVE} = {plan.counts.get('c', 0)}; "
                f"(d) random load-bearing top-up = {plan.counts.get('d', 0)}"
-               + (f"; (e) non-load-bearing fill after load-bearing frame exhausted = {plan.counts['e']}" if plan.counts.get('e') else ""))
+               + (f"; (e) non-load-bearing fill after load-bearing frame exhausted = {plan.counts['e']}" if plan.counts.get('e') else "")
+               + (f"; (f) attached-source claims sampled separately, >= {MIN_ATTACHED} = {plan.counts['f']} "
+                  f"({plan.counts.get('attached_in_sample', 0)} sampled claims rest on unreconciled attachments in all)" if attached_srcs else ""))
     out.append("")
     out.append("### P1 Reviewer eligibility")
     out.append("")
@@ -234,9 +288,10 @@ def render_markdown(report: VerificationReport, seed: Optional[int] = None, samp
         label = c.confidence_label.value if c.confidence_label else "-"
         quote_cell = "" if c.kind == ClaimKind.quote else "n.a."
         upstream_cell = "" if (c.kind == ClaimKind.number and c.load_bearing) else "n.a."
+        note = "ATTACHED source: hash check against the publisher is mandatory" if (d and any(l.startswith("attached;") for l in d.labels)) else ""
         out.append(f"| {_esc(c.id)} | {sc.stratum} | {_esc(c.text, 120)} | {c.kind.value} | {'yes' if c.load_bearing else 'no'} | "
                    f"{_esc(c.module) or '-'} | {_esc(best.locator if best else '', 100)} | "
-                   f"{(d.status.value.upper() if d else '-')} | | | | {quote_cell} | {upstream_cell} | {tier} / | {label} / | | |")
+                   f"{(d.status.value.upper() if d else '-')} | | | | {quote_cell} | {upstream_cell} | {tier} / | {label} / | | {note} |")
     out.append("")
     out.append("### P5 C7 agreement sample")
     out.append("")

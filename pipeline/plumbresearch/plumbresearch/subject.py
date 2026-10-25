@@ -47,8 +47,17 @@ class Document(BaseModel):
     fy: Optional[int] = None
     url: str
     local_file: Optional[str] = None
+    key: Optional[str] = Field(default=None, description="explicit document key for `plumbresearch ingest --doc`; defaults to '<kind>-<fy>'")
     verify: bool = False
     note: Optional[str] = None
+
+    @property
+    def document_key(self) -> str:
+        return self.key or (f"{self.kind}-{self.fy}" if self.fy else self.kind)
+
+    def matches_key(self, key: str) -> bool:
+        k = (key or "").strip()
+        return k in {self.document_key, self.url, self.local_file or "", f"{self.kind}:{self.fy}", f"{self.kind}_{self.fy}"}
 
 
 class SizeMetric(BaseModel):
@@ -110,6 +119,11 @@ class Subject(BaseModel):
         if self.short_name not in base:
             base.append(self.short_name)
         return base
+
+    def find_document(self, key: str) -> Optional[Document]:
+        """Resolve `--doc KEY` (document key, URL or local_file) to a declared document."""
+        hits = [d for d in self.documents if d.matches_key(key)]
+        return hits[0] if hits else None
 
     def peers_by_role(self, role: PeerRole) -> list[Peer]:
         return [p for p in self.peers if p.role == role]

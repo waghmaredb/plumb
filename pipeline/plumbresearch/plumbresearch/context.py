@@ -158,13 +158,19 @@ class ResearchFetcher(Fetcher):
     written back to the store) so that the module lifting a sentence and the
     Verifier matching it see the same unwrapped text. If plumbverify returned
     no PDF text (v0.1, or an engine failure) and the PDF is not flagged
-    ``needs_ocr``, a local pypdf/pdfminer pass is tried."""
+    ``needs_ocr``, a local pypdf/pdfminer pass is tried.
+
+    Attached documents (plumbverify 0.3): when the evidence store holds an
+    ATTACHED source for the URL, the base fetcher prefers it over a 404/DEAD
+    result and, when ``reconcile_on_fetch`` is on (online runs), re-fetches
+    the declared URL and reconciles the hashes in passing. Attached PDFs get
+    the same line unwrapping as fetched ones."""
 
     def fetch(self, url: str) -> Source:
         src = super().fetch(url)
         ctype = (getattr(src, "detected_content_type", None) or src.content_type or "").lower()
         is_pdf = "pdf" in ctype or (src.url_final or url).lower().endswith(".pdf")
-        if src.state not in (SourceState.FETCHED, SourceState.ARCHIVED) or not is_pdf or not src.sha256:
+        if src.state not in (SourceState.FETCHED, SourceState.ARCHIVED, SourceState.ATTACHED) or not is_pdf or not src.sha256:
             return src
         if getattr(src, "needs_ocr", False):
             return src
@@ -274,7 +280,9 @@ class RunContext:
         if fixtures and (subj_dir / "web.yaml").exists():
             registry.update(load_fixture_web(subj_dir / "web.yaml"))
         for d in subject.documents:
-            if d.local_file:
+            # a declared local file is served under its URL only when it exists; otherwise the URL
+            # goes to the network (or the attached copy in the store), so reconciliation can reach the publisher
+            if d.local_file and ((subj_dir / d.local_file).exists() or fixtures or offline):
                 registry[d.url] = (subj_dir / d.local_file, None)
         tidx = subj_dir / "transcripts" / "index.yaml"
         if tidx.exists():
@@ -287,7 +295,9 @@ class RunContext:
         import time
 
         sleep = (lambda s: None) if (fixtures or offline) else time.sleep
-        fetcher = ResearchFetcher(store=store, client=client, sleep=sleep)
+        # attached documents: online runs re-fetch the declared URL and reconcile the hash in passing;
+        # offline / fixture runs use the attachment as is (labelled) and never touch the network for it
+        fetcher = ResearchFetcher(store=store, client=client, sleep=sleep, reconcile_on_fetch=not (fixtures or offline))
         rules = load_tier_rules(overrides={"tiers": {k: {"domains": v} for k, v in subject.tier_overrides.items()}}) \
             if subject.tier_overrides else load_tier_rules()
         return cls(subject=subject, store=store, log=log, data_dir=data_dir, out_dir=out_dir, fetcher=fetcher,
@@ -338,6 +348,21 @@ class RunContext:
 
     def tier_of(self, url: str) -> Tier:
         return assign_tier(url, self.tier_rules).tier
+
+    def has_attachment(self, url: str) -> bool:
+        """True when a person attached a document for this URL into the run's evidence store."""
+        return self.store.get_attachment(url) is not None
+
+    def attached_documents(self) -> list[dict]:
+        """Reconciliation status per attached document, joined to the subject's declared documents."""
+        by_url = {d.url: d for d in self.subject.documents}
+        out = []
+        for att in self.store.list_attachments():
+            d = by_url.get(att["url"])
+            out.append({**att, "document_key": att.get("document_key") or (d.document_key if d else None),
+                        "kind": d.kind if d else None, "fy": d.fy if d else None,
+                        "label": None if att["state"] != SourceState.ATTACHED.value else "attached; publisher hash unreconciled"})
+        return out
 
     def charge(self, module: str, tool: str, **detail: Any) -> None:
         """Charge a non-fetch external call (a data-source query) to the budget."""
