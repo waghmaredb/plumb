@@ -1,0 +1,164 @@
+{
+  "deck_id": "PLUMB-GEH-PREREAD",
+  "version": "3.0",
+  "client": "Great Eastern Holdings",
+  "audience": "Group CEO, COO, CRO and Data & AI lead — pre-read before a first meeting",
+  "source_doc": "Great Eastern Holdings Annual Report 2025",
+  "printed_page_offset": -2,
+  "date_label": "October 2026",
+  "word_budget": {"title": 18, "body": 35},
+  "companion": "Deep-dive evidence report",
+  "notes": "v3: visual-first. Each slide = action title + one visual + at most one line. Research text lives in the deep-dive report. Pending slides render only in drafts until their sources are fetched and verified.",
+  "slides": [
+    {
+      "id": "cover",
+      "layout": "cover",
+      "eyebrow": {"kind": "label", "text": "Great Eastern Holdings"},
+      "title": {"kind": "label", "text": "Scaling AI at Great Eastern: from proven use cases to measurable value"},
+      "subtitle": {"kind": "label", "text": "Perspectives for discussion with the leadership team"}
+    },
+    {
+      "id": "exec-summary",
+      "layout": "tiles",
+      "section": "The picture on one page",
+      "title": {"kind": "synthesis", "text": "AI already works across Great Eastern; the next step is turning speed into dollars",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.deploy.4"]},
+      "tiles": [
+        {"icon": "LuLayers", "big": "5 of 5", "line": {"kind": "synthesis", "text": "lifecycle stages use AI",
+          "support": ["great-eastern.findings.deploy.1", "great-eastern.ar.annual_report.2025.q6", "great-eastern.findings.deploy.5", "great-eastern.findings.deploy.2", "great-eastern.findings.governance.2"], "pages": [8]}},
+        {"icon": "LuGauge", "big": "75%", "line": {"kind": "synthesis", "text": "of medical claims settled same day, 2025",
+          "support": ["great-eastern.findings.deploy.4"]}},
+        {"icon": "LuHandCoins", "big": "S$4.0bn", "figure": "claims_benefits", "line": {"kind": "label", "text": "claims and benefits paid, 2025"}}
+      ],
+      "strap": {"kind": "synthesis", "text": "Board-level AI oversight exists; the AI framework is not yet described publicly.",
+        "support": ["great-eastern.findings.governance.4", "great-eastern.findings.governance.1"], "observation": "governance-disclosure"}
+    },
+    {
+      "id": "lifecycle",
+      "layout": "lifecycle",
+      "section": "Where AI is in use",
+      "title": {"kind": "synthesis", "text": "AI is in use from advice to claims; complex underwriting is still in testing",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.2", "great-eastern.findings.deploy.3", "great-eastern.findings.governance.2"]},
+      "stages": [
+        {"name": "Advice", "icon": "LuUsers", "items": [
+          {"text": "Adviser AI platform", "status": "In use", "support": ["great-eastern.findings.deploy.1"]}]},
+        {"name": "Underwriting", "icon": "LuFileSearch", "items": [
+          {"text": "Underwriting analytics", "status": "In use", "support": ["great-eastern.ar.annual_report.2025.q6"], "pages": [8]},
+          {"text": "Complex cases", "status": "Testing", "support": ["great-eastern.findings.deploy.3"]}]},
+        {"name": "Onboarding", "icon": "LuUserCheck", "items": [
+          {"text": "Instant approvals", "status": "In use", "support": ["great-eastern.findings.deploy.5"]}]},
+        {"name": "Claims", "icon": "LuStethoscope", "items": [
+          {"text": "Claims automation", "status": "In use", "support": ["great-eastern.findings.deploy.2"]},
+          {"text": "Bill-fraud checks", "status": "In use", "market": "MY", "support": ["great-eastern.findings.deploy.6", "great-eastern.findings.deploy.6.context1"]}]},
+        {"name": "Risk & conduct", "icon": "LuShieldCheck", "items": [
+          {"text": "Compliance monitoring", "status": "In use", "support": ["great-eastern.findings.governance.2"]},
+          {"text": "Misconduct alerts", "status": "In use", "market": "MY", "support": ["great-eastern.findings.deploy.7"]}]}
+      ]
+    },
+    {
+      "id": "claims-proof",
+      "layout": "donuts",
+      "section": "Reported outcomes",
+      "title": {"kind": "synthesis", "text": "Claims shows a proven AI result; the adviser platform's benefit is still a target",
+        "support": ["great-eastern.findings.deploy.4", "great-eastern.findings.deploy.1"]},
+      "primary": {"pct": 75, "label": {"kind": "synthesis", "text": "medical claims settled same day, 2025", "support": ["great-eastern.findings.deploy.4"]}, "tag": "Result"},
+      "secondary": {"pct": 75, "approx": true, "label": {"kind": "synthesis", "text": "targeted cut in adviser preparation time", "support": ["great-eastern.findings.deploy.1"]}, "tag": "Target"},
+      "strap": {"kind": "synthesis", "text": "Neither figure is reported with a baseline or a dollar value.",
+        "support": ["great-eastern.findings.deploy.1", "great-eastern.findings.deploy.4"], "observation": "measurement-absence"}
+    },
+    {
+      "id": "value-base",
+      "layout": "value_bars",
+      "section": "Where the value sits",
+      "title": {"kind": "derived", "text": "Claims and benefits is the largest cost line: every 1% is worth about S$40m a year",
+        "derived": {"figure": "claims_benefits", "pct": 1, "display": "S$40m"}},
+      "figures": [
+        {"id": "claims_benefits", "label": "Claims and benefits", "pdf_page": 147, "row": "Claims and benefits", "value": "4,033.8"},
+        {"id": "commissions", "label": "Commissions and distribution", "pdf_page": 147, "row": "Commissions and distribution expenses", "value": "1,489.3"},
+        {"id": "staff", "label": "Staff costs", "pdf_page": 147, "row": "Staff costs and related expenses", "value": "515.6"}
+      ],
+      "unit": "S$ million, FY2025",
+      "strap": {"kind": "label", "text": "Illustrative arithmetic on reported figures, not a forecast. Sizing by use case is part of the assessment."}
+    },
+    {
+      "id": "peers",
+      "layout": "pending_bars",
+      "pending_sources": ["aia-group-ar-2025", "upd-2026-10-prudential-fy25-results-presentation", "upd-2026-10-manulife-ai-platform-release"],
+      "section": "Peer comparison",
+      "title": {"kind": "label", "text": "Peers now report AI value in dollars; Great Eastern reports speed"},
+      "bars": ["AIA", "Prudential", "Manulife", "Great Eastern"],
+      "axis": "Disclosed AI value (US$ m)",
+      "note": {"kind": "label", "text": "Figures added once each peer's own report is checked."}
+    },
+    {
+      "id": "mas-clock",
+      "layout": "pending_timeline",
+      "pending_sources": ["upd-2026-10-mas-airm-guidelines", "upd-2026-10-mas-airm-media-release"],
+      "section": "Regulatory clock",
+      "title": {"kind": "label", "text": "MAS's AI risk rules give Great Eastern about a year to evidence AI governance"},
+      "milestones": [
+        {"when": "Oct 2026", "what": "Guidelines issued"},
+        {"when": "Oct 2027", "what": "Board oversight and AI inventory"},
+        {"when": "Oct 2028", "what": "Full lifecycle controls"}
+      ],
+      "note": {"kind": "label", "text": "Dates and expectations confirmed against MAS's published guidelines before use."}
+    },
+    {
+      "id": "governance",
+      "layout": "disclosure_matrix",
+      "section": "AI governance",
+      "title": {"kind": "synthesis", "text": "AI oversight reaches the board; the framework behind it is not yet public",
+        "support": ["great-eastern.findings.governance.4", "great-eastern.findings.governance.3", "great-eastern.findings.governance.1"]},
+      "columns": ["Disclosed in the 2025 report"],
+      "rows": [
+        {"label": "Board-level AI oversight", "icon": "LuLandmark", "cells": [{"state": "yes", "support": ["great-eastern.findings.governance.4", "great-eastern.findings.governance.3"]}]},
+        {"label": "AI used for compliance monitoring", "icon": "LuShieldCheck", "cells": [{"state": "yes", "support": ["great-eastern.findings.governance.2"]}]},
+        {"label": "AI policy or principles", "icon": "LuScale", "cells": [{"state": "no", "observation": "governance-disclosure"}]},
+        {"label": "AI inventory and risk tiers", "icon": "LuClipboardCheck", "cells": [{"state": "no", "observation": "governance-disclosure"}]},
+        {"label": "Model risk management for AI", "icon": "LuGauge", "cells": [{"state": "no", "observation": "governance-disclosure"}]}
+      ],
+      "strap": {"kind": "method", "text": "Public disclosure only, not an assessment of practice; OCBC group frameworks not reviewed."}
+    },
+    {
+      "id": "hypotheses",
+      "layout": "icon_cards",
+      "section": "Hypotheses to test together",
+      "title": {"kind": "label", "text": "Three hypotheses would turn this outside-in view into decisions"},
+      "cards": [
+        {"icon": "LuTrendingUp", "head": "Value", "kind": "question", "text": "Which three AI use cases would cut claims and expense ratios most?"},
+        {"icon": "LuShieldCheck", "head": "Governance", "kind": "question", "text": "What would board-ready AI risk evidence look like?"},
+        {"icon": "LuRocket", "head": "Scale", "kind": "question", "text": "What would move complex underwriting AI into production?"}
+      ]
+    },
+    {
+      "id": "proposal",
+      "layout": "plan",
+      "section": "Proposed next step",
+      "title": {"kind": "offer", "text": "A 12-day assessment would test these hypotheses with your leadership team"},
+      "lanes": [
+        {"name": "Public evidence and peers", "from": 1, "to": 3},
+        {"name": "Leadership questionnaire", "from": 3, "to": 6},
+        {"name": "10–12 leadership interviews", "from": 4, "to": 9},
+        {"name": "Synthesis and read-out", "from": 10, "to": 12}
+      ],
+      "outputs": [
+        {"icon": "LuHandCoins", "text": "Sized AI value pools"},
+        {"icon": "LuClipboardCheck", "text": "AI inventory and risk tiers"},
+        {"icon": "LuRocket", "text": "Production path for next use cases"}
+      ],
+      "ask": {"kind": "offer", "text": "45-minute session in [[FOUNDER: week]] · Fixed fee [[FOUNDER: S$ amount]] · No confidential data needed"}
+    },
+    {
+      "id": "about",
+      "layout": "about_min",
+      "section": "About PLUMB Advisory",
+      "title": {"kind": "label", "text": "About PLUMB Advisory"},
+      "lines": [
+        {"icon": "LuUsers", "text": "[[FOUNDER: one line on the firm and lead advisor]]"},
+        {"icon": "LuClipboardCheck", "text": "Every statement traces to its source; findings are reviewed by an advisor who did not produce them"},
+        {"icon": "LuFileSearch", "text": "Evidence, quotations and method are in the accompanying deep-dive report"},
+        {"icon": "LuLandmark", "text": "[[FOUNDER: name, email, phone]]"}
+      ]
+    }
+  ]
+}

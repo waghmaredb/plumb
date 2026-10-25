@@ -15,6 +15,7 @@ Usage: python resolve_storyline.py STORYLINE.json --run RUN_DIR --out OUT_DIR [-
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import subprocess
@@ -125,9 +126,105 @@ def resolve(story: dict, run_dir: Path, pdf: Path | None, signoff: Path | None) 
         qa_rows.append(row)
 
     for path, el in walk(story["slides"]):
+        if el["kind"] == "derived":
+            continue  # checked against its verified figure below
         check(path, el, el["kind"])
     for path, el in items_with_support(story["slides"]):
         check(path, el, "synthesis")
+    # matrix cells carry support without text: check release and collect pages
+    for si, s in enumerate(story["slides"]):
+        for ri, r in enumerate(s.get("rows", []) or []):
+            for ci, c in enumerate(r.get("cells", []) or []):
+                for cid in c.get("support", []) or []:
+                    d = decisions.get(cid)
+                    if cid not in claims or d is None or d.get("blocked") or d.get("status") == "blocked":
+                        errors.append(f"[{si}].rows[{ri}].cells[{ci}]: support {cid} missing or withheld")
+                c["_pages"] = pages_for(c.get("support", []) or [], None, r.get("label", ""))
+                if c.get("support"):
+                    qa_rows.append({"path": f"[{si}].rows[{ri}]", "kind": "synthesis", "text": f"{r['label']}: {c['state']}",
+                                    "support": c["support"], "pages": c["_pages"], "reviewer_check": True})
+
+    # ---- table figures: re-extracted from the hashed source, label and value on one printed row ----
+    report = json.loads((run_dir / "report.json").read_text())
+    att = {a["sha256"] for a in report.get("attached_documents", [])}
+    figures: dict[str, dict] = {}
+    for si, s in enumerate(story["slides"]):
+        for f in s.get("figures", []):
+            if not pdf:
+                errors.append(f"slide {s['id']}: figure {f['id']} needs --pdf to verify")
+                continue
+            sha = hashlib.sha256(pdf.read_bytes()).hexdigest()
+            if sha not in att:
+                errors.append(f"figure {f['id']}: --pdf hash {sha[:12]} is not the run's attached document")
+                continue
+            lay = subprocess.run(["pdftotext", "-f", str(f["pdf_page"]), "-l", str(f["pdf_page"]), "-layout", str(pdf), "-"],
+                                 capture_output=True, text=True, check=True).stdout
+            row = next((ln for ln in lay.splitlines() if re.search(rf"^\s*{re.escape(f['row'])}\b", ln)), None)
+            if not row or not re.search(rf"(?<![\d,.]){re.escape(f['value'])}(?![\d])", row):
+                errors.append(f"figure {f['id']}: row '{f['row']}' with value {f['value']} not found on PDF page {f['pdf_page']}")
+                continue
+            f["_num"] = float(f["value"].replace(",", ""))
+            f["_pages"] = [f["pdf_page"]]
+            f["_row"] = " ".join(row.split())
+            figures[f["id"]] = f
+            qa_rows.append({"path": f"[{si}].figures.{f['id']}", "kind": "figure", "text": f"{f['label']}: {f['value']} ({story.get('unit', s.get('unit',''))})",
+                            "support": [f"pdf p.{f['pdf_page']} row: {f['_row'][:70]}"], "pages": [f["pdf_page"]], "reviewer_check": True})
+    # tiles/bigs that cite a figure must display it correctly
+    for s in story["slides"]:
+        for tl in s.get("tiles", []):
+            if "figure" in tl:
+                f = figures.get(tl["figure"])
+                if not f:
+                    errors.append(f"tile '{tl['big']}': figure {tl['figure']} not verified")
+                else:
+                    shown = float(re.sub(r"[^\d.]", "", tl["big"]))
+                    exp = f["_num"] / 1000 if "bn" in tl["big"] else f["_num"]
+                    if abs(shown - round(exp, 1)) > 0.05:
+                        errors.append(f"tile '{tl['big']}' does not match verified {f['value']}")
+                    tl["_pages"] = f["_pages"]
+        # derived arithmetic in titles
+        for path, el in walk(s):
+            if el["kind"] == "derived":
+                d = el["derived"]; f = figures.get(d["figure"])
+                if not f:
+                    errors.append(f"derived '{el['text'][:50]}': figure {d['figure']} not verified"); continue
+                val = f["_num"] * d["pct"] / 100
+                shown = float(re.sub(r"[^\d.]", "", d["display"]))
+                if abs(shown - val) / val > 0.05:
+                    errors.append(f"derived '{d['display']}' is not {d['pct']}% of {f['value']} (= {val:.1f})")
+                if d["display"] not in el["text"]:
+                    errors.append(f"derived display {d['display']} not in title text")
+                el["_pages"] = f["_pages"]
+                qa_rows.append({"path": s["id"] + ".title", "kind": "derived", "text": el["text"], "support": [f"{d['pct']}% × {f['value']} = {val:.1f}"],
+                                "pages": f["_pages"], "reviewer_check": True})
+
+    # ---- pending slides: built, never final until their sources are fetched and verified ----
+    pending = [s["id"] for s in story["slides"] if s.get("pending_sources")]
+    for s in story["slides"]:
+        if s.get("pending_sources"):
+            s["_pending"] = True
+
+    # ---- word budget on the face ----
+    wb = story.get("word_budget") or {}
+    def words(x: str) -> int:
+        return len(re.sub(r"\[\[FOUNDER: [^\]]+\]\]", "X", x).split())
+    for s in story["slides"]:
+        if s["layout"] == "cover":
+            continue
+        t = s.get("title", {}).get("text", "")
+        if wb.get("title") and words(t) > wb["title"]:
+            errors.append(f"slide {s['id']}: title has {words(t)} words (budget {wb['title']})")
+        body = [el["text"] for path, el in walk({k: v for k, v in s.items() if k not in ("title",)})]
+        body += [it["text"] for _, it in items_with_support({k: v for k, v in s.items() if k != "title"})]
+        for k in ("cards", "lines", "milestones", "outputs", "lanes", "rows", "stages", "tiles"):
+            for x in s.get(k, []) or []:
+                for fld in ("text", "what", "name", "label", "head", "big"):
+                    if isinstance(x.get(fld), str):
+                        body.append(x[fld])
+        n = sum(words(b) for b in set(body))
+        s["_words"] = n
+        if wb.get("body") and n > wb["body"] * (1.6 if s["layout"] in ("lifecycle", "disclosure_matrix", "plan") else 1):
+            errors.append(f"slide {s['id']}: {n} words on the face (budget {wb['body']}); move text to the report")
 
     if errors:
         raise StorylineError("Storyline refused:\n  " + "\n  ".join(errors))
@@ -146,7 +243,10 @@ def resolve(story: dict, run_dir: Path, pdf: Path | None, signoff: Path | None) 
 
     for s in story["slides"]:
         pages = sorted({p for _, el in walk(s) for p in el.get("_pages", [])}
-                       | {p for _, el in items_with_support(s) for p in el.get("_pages", [])})
+                       | {p for _, el in items_with_support(s) for p in el.get("_pages", [])}
+                       | {p for f in s.get("figures", []) for p in f.get("_pages", [])}
+                       | {p for tl in s.get("tiles", []) for p in tl.get("_pages", [])}
+                       | {p for r in s.get("rows", []) or [] for c in r.get("cells", []) or [] for p in c.get("_pages", [])})
         if pages:
             pp = sorted({printed(p) for p in pages})
             lab = "p." if len(pp) == 1 else "pp."
@@ -155,15 +255,14 @@ def resolve(story: dict, run_dir: Path, pdf: Path | None, signoff: Path | None) 
         raise StorylineError("Storyline refused:\n  " + "\n  ".join(errors))
 
     # founder inputs: visible "to confirm" fields; a deck containing any cannot be final
-    founder = sorted({m for _, el in walk(story["slides"]) for m in re.findall(r"\[\[FOUNDER: ([^\]]+)\]\]", el["text"])}
-                     | {m for s in story["slides"] for b in s.get("blocks", []) for m in re.findall(r"\[\[FOUNDER: ([^\]]+)\]\]", b.get("body", ""))})
+    founder = sorted(set(re.findall(r"\[\[FOUNDER: ([^\]]+)\]\]", json.dumps(story["slides"], ensure_ascii=False))))
 
     run = RunData(run_dir)
     lock = compute_interlock(run, signoff)
-    final = lock.passed and not founder
+    final = lock.passed and not founder and not pending
     # the client sees one quiet footer mark while the deck is a draft; the reasons live in the QA sheet
     story["_status"] = {"final": final, "marker": None if final else "Discussion draft",
-                        "founder_inputs": founder, "interlock_reasons": lock.reasons}
+                        "founder_inputs": founder, "interlock_reasons": lock.reasons, "pending_slides": pending}
     return story, qa_rows, lock.to_dict()
 
 
@@ -174,6 +273,7 @@ def write_qa(out: Path, story: dict, rows: list[dict], lock: dict) -> None:
          "",
          f"Interlock: {'PASSED' if lock['passed'] else 'NOT PASSED'} — " + ("; ".join(lock["reasons"]) or "all conditions met"),
          f"Founder inputs outstanding: {', '.join(story['_status']['founder_inputs']) or 'none'}",
+         f"Pending slides (sources not yet fetched): {', '.join(story['_status'].get('pending_slides') or []) or 'none'}",
          f"Run outcome: {lock['outcome']}",
          "",
          "## Reviewer must-check list",

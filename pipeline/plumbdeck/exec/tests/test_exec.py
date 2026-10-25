@@ -57,3 +57,42 @@ def test_v2_resolves_with_printed_pages_and_founder_inputs_block_final():
     src = {s["id"]: s.get("_source", "") for s in story["slides"]}
     assert "pp. 12, 38" in src["outcomes"]  # printed folios, not PDF pages 14, 40
     assert lint(story) == []
+
+
+STORY3 = EXEC / "storylines" / "geh-preread-exec-v3.json"
+AR_PDF = Path("/mnt/user-data/attachments/598a1fc4-71d0-5dc6-b611-3434cc77d612/19c5f9bb-great-eastern-holdings-limited-ar-2025.pdf")
+v3 = pytest.mark.skipif(not (RUN6.exists() and AR_PDF.exists()), reason="run 6 or attached AR not present")
+
+
+@v3
+def test_v3_figures_verified_and_pending_slides_block_final():
+    story, _, _ = resolve(json.loads(STORY3.read_text()), RUN6, AR_PDF, None)
+    st = story["_status"]
+    assert st["final"] is False
+    assert set(st["pending_slides"]) == {"peers", "mas-clock"}
+    src = {s["id"]: s.get("_source", "") for s in story["slides"]}
+    assert "p. 145" in src["value-base"]  # PDF 147 -> printed 145
+    assert lint(story) == []
+
+
+@v3
+def test_v3_wrong_figure_is_refused():
+    s = json.loads(STORY3.read_text())
+    vb = next(x for x in s["slides"] if x["id"] == "value-base")
+    vb["figures"][0]["value"] = "4,133.8"
+    with pytest.raises(StorylineError, match="not found on PDF page"):
+        resolve(s, RUN6, AR_PDF, None)
+
+
+@v3
+def test_v3_figure_without_pdf_is_refused():
+    with pytest.raises(StorylineError, match="needs --pdf"):
+        resolve(json.loads(STORY3.read_text()), RUN6, None, None)
+
+
+@v3
+def test_v3_word_budget_enforced():
+    s = json.loads(STORY3.read_text())
+    s["slides"][8]["cards"][0]["text"] = " ".join(["word"] * 40)
+    with pytest.raises(StorylineError, match="word"):
+        resolve(s, RUN6, AR_PDF, None)
