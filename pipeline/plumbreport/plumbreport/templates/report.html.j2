@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="en-GB">
+<head>
+<meta charset="utf-8">
+<title>{{ r.client }} · {{ r.title }}</title>
+<style>{{ css }}</style>
+</head>
+<body>
+
+{# ------------------------------------------------------------------ cover #}
+<section class="cover">
+  <div class="cover-band"></div>
+  <div class="cover-body">
+    <p class="cover-client">{{ r.client }}</p>
+    <h1 class="cover-title">{{ r.title | typo }}</h1>
+    {% if r.subtitle %}<p class="cover-sub">{{ r.subtitle | md }}</p>{% endif %}
+  </div>
+  <div class="cover-meta">
+    <table>
+      <tr><th>Prepared for</th><td>{{ r.prepared_for | md }}</td></tr>
+      <tr><th>Prepared by</th><td>{{ r.prepared_by }}</td></tr>
+      <tr><th>Date</th><td>{{ r.date }}</td></tr>
+      {% if r.status %}<tr><th>Status</th><td class="status">{{ r.status }}</td></tr>{% endif %}
+    </table>
+    {% if r.basis %}<p class="cover-basis">{{ r.basis | md }}</p>{% endif %}
+  </div>
+</section>
+
+{# --------------------------------------------------------------- contents #}
+<section class="contents">
+  <p class="kicker">Contents</p>
+  <h1 class="contents-title">Contents</h1>
+  <ol class="toc">
+  {% for s in m.sections %}
+    <li class="toc-row {{ 'toc-appendix' if s.kind == 'appendix' else '' }}{% if s.kind == 'appendix' and loop.previtem and loop.previtem.kind != 'appendix' %} toc-first-appendix{% endif %}">
+      <span class="toc-num">{% if s.kind == 'appendix' %}{{ s.label }}{% else %}{{ s.label }}{% endif %}</span>
+      <span class="toc-title">{% if s.kind == 'appendix' %}Appendix {{ s.label }}: {% endif %}{{ s.title | typo }}</span>
+      <span class="toc-dots"></span>
+      <span class="toc-page">{{ toc_pages.get(s.id, '') }}</span>
+    </li>
+  {% endfor %}
+  </ol>
+  {% if r.reading_note %}<p class="contents-note">{{ r.reading_note | md }}</p>{% endif %}
+</section>
+
+{# --------------------------------------------------------------- sections #}
+{% for s in m.sections %}
+<section class="sec sec-{{ s.kind }}" id="{{ s.id }}">
+  <header class="sec-head">
+    <p class="kicker">{% if s.kind == 'appendix' %}Appendix {{ s.label }}{% else %}Section {{ s.label }}{% endif %}{% if s.kicker %} · {{ s.kicker }}{% endif %}</p>
+    <h1>{{ s.title | typo }}</h1>
+  </header>
+
+  {% for b in s.blocks %}
+    {% if b.type == 'lead' %}
+      <p class="lead">{{ b.text | md }}{% if b.cite and b.cite.note %}<sup class="fn">{{ b.cite.note }}</sup>{% endif %}</p>
+
+    {% elif b.type == 'para' %}
+      <p class="para">{{ b.text | md }}{% if b.cite %}{% if b.cite.note %}<sup class="fn">{{ b.cite.note }}</sup>{% else %} <span class="ref">({{ b.cite.inline }})</span>{% endif %}{% endif %}</p>
+
+    {% elif b.type == 'subhead' %}
+      <h2>{{ b.text | typo }}</h2>
+
+    {% elif b.type == 'note' %}
+      <p class="small-note">{{ b.text | md }}</p>
+
+    {% elif b.type == 'message' %}
+      <div class="message">
+        <p class="message-num">{{ b.n }}</p>
+        <div class="message-body">
+          <h3>{{ b.head | typo }}</h3>
+          <p>{{ b.text | md }}{% if b.cite and b.cite.note %}<sup class="fn">{{ b.cite.note }}</sup>{% elif b.cite %} <span class="ref">({{ b.cite.inline }})</span>{% endif %}</p>
+        </div>
+      </div>
+
+    {% elif b.type == 'quote' %}
+      <figure class="pull">
+        {% if b.label %}<p class="pull-label">{{ b.label | typo }}</p>{% endif %}
+        <blockquote>{{ '“' }}{{ b.text }}{{ '”' }}</blockquote>
+        <figcaption>{{ b.source }}</figcaption>
+      </figure>
+
+    {% elif b.type == 'uses_table' %}
+      {% if b.caption %}<p class="caption">{{ b.caption | typo }}</p>{% endif %}
+      <table class="data uses">
+        <colgroup><col class="c-stage"><col class="c-use"><col class="c-status"><col class="c-market"><col class="c-page"></colgroup>
+        <thead><tr>{% for h in b.head %}<th{% if loop.last %} class="num"{% endif %}>{{ h }}</th>{% endfor %}</tr></thead>
+        <tbody>
+        {% for row in b.rows %}
+          <tr><td class="stage">{{ row.stage }}</td><td>{{ row.use | typo }}</td><td>{{ row.status }}</td><td>{{ row.market }}</td><td class="num">{{ row.page }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% if b.note %}<p class="table-note">{{ b.note | md }}</p>{% endif %}
+
+    {% elif b.type == 'figures' %}
+      <div class="figures">
+      {% for f in b.items %}
+        <div class="figure figure-{{ f.tone or 'result' }}">
+          <p class="fig-tag">{{ f.tag }}</p>
+          <p class="fig-value">{{ f.value }}</p>
+          <p class="fig-label">{{ f.label | md }}</p>
+          {% if f.detail %}<p class="fig-detail">{{ f.detail | md }}</p>{% endif %}
+          <p class="fig-source">{{ f.source }}</p>
+        </div>
+      {% endfor %}
+      </div>
+
+    {% elif b.type == 'table' %}
+      {% if b.caption %}<p class="caption">{{ b.caption | typo }}</p>{% endif %}
+      <table class="data generic">
+        {% if b.widths %}<colgroup>{% for w in b.widths %}<col style="width:{{ w }}">{% endfor %}</colgroup>{% endif %}
+        <thead><tr>{% for h in b.head %}<th>{{ h | typo }}</th>{% endfor %}</tr></thead>
+        <tbody>
+        {% for row in b.rows %}
+          <tr>{% for c in row %}<td{% if loop.first %} class="rowhead"{% endif %}>{{ c | md }}</td>{% endfor %}</tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% if b.cite %}<p class="table-note">Source: {% if b.cite.inline %}{{ b.cite.inline }}{% else %}see note {{ b.cite.note }}{% endif %}.</p>{% endif %}
+
+    {% elif b.type == 'observations' %}
+      <div class="obs">
+        {% if b.head %}<h3>{{ b.head | typo }}</h3>{% endif %}
+        {% if b.intro %}<p>{{ b.intro | md }}</p>{% endif %}
+        <ul>{% for it in b['items'] %}<li>{{ it | md }}</li>{% endfor %}</ul>
+      </div>
+
+    {% elif b.type == 'callout' %}
+      <aside class="callout">
+        {% if b.head %}<p class="callout-head">{{ b.head | typo }}</p>{% endif %}
+        <p>{{ b.text | md }}</p>
+      </aside>
+
+    {% elif b.type == 'search_method' %}
+      <aside class="method-box">
+        <p class="callout-head">{{ b.head | typo }}</p>
+        <p>{{ b.scope | md }}</p>
+        <p class="terms">{% for t in b.terms %}<span>{{ t }}</span>{% if not loop.last %}<span class="sep"> · </span>{% endif %}{% endfor %}</p>
+        <p><strong>Result.</strong> {{ b.result | md }}</p>
+        <p class="lim-head">What this search cannot show</p>
+        <ul>{% for l in b.limitations %}<li>{{ l | md }}</li>{% endfor %}</ul>
+      </aside>
+
+    {% elif b.type == 'hypotheses' %}
+      <table class="data hyp">
+        <colgroup><col class="h-topic"><col class="h-text"><col class="h-how"></colgroup>
+        <thead><tr><th></th><th>{{ b.head[0] }}</th><th>{{ b.head[1] }}</th></tr></thead>
+        <tbody>
+        {% for row in b.rows %}
+          <tr><td class="topic">{{ row.topic }}</td><td>{{ row.text | typo }}<span class="basis">Starting evidence: {{ row.basis }}</span></td><td>{{ row.how | typo }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+
+    {% elif b.type == 'questions' %}
+      {% if b.head %}<h2>{{ b.head | typo }}</h2>{% endif %}
+      <ol class="questions">
+      {% for q in b['items'] %}<li><p>{{ q.text | typo }}</p><p class="basis">Starting evidence: {{ q.basis }}</p></li>{% endfor %}
+      </ol>
+
+    {% elif b.type == 'phases' %}
+      {% if b.head %}<h2>{{ b.head | typo }}</h2>{% endif %}
+      {% if b.intro %}<p class="para">{{ b.intro | md }}</p>{% endif %}
+      <div class="phases">
+      {% for p in b.phases %}
+        <div class="phase"><p class="phase-when">{{ p.when }}</p><p class="phase-what">{{ p.what | typo }}</p></div>
+      {% endfor %}
+      </div>
+      <table class="data generic outputs">
+        <thead><tr><th>Area</th><th>What the assessment would deliver</th></tr></thead>
+        <tbody>{% for c in b.columns %}<tr><td class="rowhead">{{ c.head }}</td><td>{{ c.body | typo }}</td></tr>{% endfor %}</tbody>
+      </table>
+
+    {% elif b.type == 'awaiting' %}
+      {% if b.head %}<h2>{{ b.head | typo }}</h2>{% endif %}
+      {% if b.intro %}<p class="para">{{ b.intro | md }}</p>{% endif %}
+      <div class="await-list">
+      {% for it in b['items'] %}
+        <div class="await-item">
+          <p class="await-text">{{ it.text | md }}</p>
+          <p class="await-meta"><span class="await-tag">{{ it.status }}</span> Reported by {{ it.source_type | typo }}{% if it.date %}, {{ it.date }}{% endif %}</p>
+          <p class="await-url">{{ it.url | url }}</p>
+        </div>
+      {% endfor %}
+      </div>
+
+    {% elif b.type == 'sources' %}
+      {% if b.intro %}<p class="para">{{ b.intro | md }}</p>{% endif %}
+      <h2>{{ b.head_main or 'Documents relied on in this report' }}</h2>
+      <table class="data sources">
+        <colgroup><col class="s-doc"><col class="s-pages"></colgroup>
+        <thead><tr><th>Document</th><th>Pages cited</th></tr></thead>
+        <tbody>
+        {% for d in m.sources_main %}
+          <tr><td><p class="src-title">{{ d.title | typo }}</p>
+            <p class="src-meta">{{ d.publisher }}{% if d.published %}, published {{ d.published }}{% endif %}.{% if d.note %} {{ d.note | md }}{% endif %}</p>
+            <p class="src-url">{{ d.url | url }}</p></td>
+            <td class="pages">{{ d.pages | replace('pp. ', '') | replace('p. ', '') }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      <p class="table-note">{{ b.page_note | md }}</p>
+      {% if m.sources_awaiting %}
+      <h2>{{ b.head_awaiting or 'Documents referred to in section 5 (awaiting source check)' }}</h2>
+      <p class="para">{{ b.awaiting_note | md }}</p>
+      <table class="data sources">
+        <colgroup><col class="s-doc"><col class="s-pages"></colgroup>
+        <thead><tr><th>Document</th><th>Date</th></tr></thead>
+        <tbody>
+        {% for d in m.sources_awaiting %}
+          <tr><td><p class="src-title">{{ d.label | typo }}</p><p class="src-url">{{ d.url | url }}</p></td><td class="pages">{{ d.date }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+    {% elif b.type == 'method' %}
+      <div class="method">
+      {% for it in b['items'] %}
+        <div class="method-step"><p class="method-num">{{ loop.index }}</p><div><h3>{{ it.head | typo }}</h3><p>{{ it.text | md }}</p></div></div>
+      {% endfor %}
+      </div>
+
+    {% elif b.type == 'open_items' %}
+      <table class="data generic open">
+        <colgroup><col class="o-item"><col class="o-why"><col class="o-next"></colgroup>
+        <thead><tr><th>Item</th><th>Why it is open</th><th>How it will be closed</th></tr></thead>
+        <tbody>
+        {% for it in b['items'] %}
+          <tr><td class="rowhead">{{ it.head | typo }}</td><td>{{ it.text | md }}</td><td>{{ it.next | md }}</td></tr>
+        {% endfor %}
+        </tbody>
+      </table>
+    {% endif %}
+  {% endfor %}
+
+  {% if s.notes %}
+  <ol class="notes">
+    {% for n in s.notes %}<li>{{ n }}</li>{% endfor %}
+  </ol>
+  {% endif %}
+</section>
+{% endfor %}
+
+</body>
+</html>
