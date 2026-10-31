@@ -1,0 +1,115 @@
+{
+  "status": {
+    "final": false,
+    "marker": "Discussion draft",
+    "founder_inputs": [
+      "lead advisor — name and insurance, AI and MAS-regulated experience",
+      "name, email, phone",
+      "two relevant engagements or references",
+      "week"
+    ],
+    "pending_slides": [
+      "peers",
+      "mas-clock"
+    ]
+  },
+  "slides": [
+    {
+      "id": "cover",
+      "layout": "cover",
+      "title": "Great Eastern's AI is working. The next step is proving its value in dollars.",
+      "source": null,
+      "figures": {},
+      "tiles": [],
+      "pending": false
+    },
+    {
+      "id": "about",
+      "layout": "about_min",
+      "title": "Who we are",
+      "source": null,
+      "figures": {},
+      "tiles": [],
+      "pending": false
+    },
+    {
+      "id": "exec-summary",
+      "layout": "tiles",
+      "title": "Great Eastern's AI delivers speed, but no benefit is yet reported in dollars",
+      "source": "Source: Great Eastern Holdings Annual Report 2025, pp. 6, 12, 38, 41, 186, 187",
+      "figures": {},
+      "tiles": [
+        "75%",
+        "S$131m",
+        "0 of 8"
+      ],
+      "pending": false
+    },
+    {
+      "id": "lifecycle",
+      "layout": "lifecycle",
+      "title": "AI is live from advice to claims, with complex underwriting still in testing",
+      "source": "Source: Great Eastern Holdings Annual Report 2025, pp. 6, 12, 38, 41",
+      "figures": {},
+      "tiles": [],
+      "pending": false
+    },
+    {
+      "id": "value-base",
+      "layout": "sensitivity_bars",
+      "title": "10% better accident and health claims would add S$131m to a year's profit",
+      "source": "Source: Great Eastern Holdings Annual Report 2025, pp. 41, 186, 187",
+      "figures": {
+        "ah_sg": "31.8",
+        "ah_my": "99.3"
+      },
+      "tiles": [],
+      "pending": false
+    },
+    {
+      "id": "peers",
+      "layout": "pending_table",
+      "title": "Regional peers have begun reporting AI value in dollars",
+      "source": "Source: Great Eastern Holdings Annual Report 2025, p. 38",
+      "figures": {},
+      "tiles": [],
+      "pending": true
+    },
+    {
+      "id": "mas-clock",
+      "layout": "pending_timeline",
+      "title": "MAS's AI risk guidelines set a timeline for evidencing AI governance",
+      "source": null,
+      "figures": {},
+      "tiles": [],
+      "pending": true
+    },
+    {
+      "id": "governance",
+      "layout": "disclosure_matrix",
+      "title": "AI has board oversight and dedicated leadership; the annual report does not set out the AI framework",
+      "source": "Source: Great Eastern Holdings Annual Report 2025, pp. 39, 65, 71, 78",
+      "figures": {},
+      "tiles": [],
+      "pending": false
+    },
+    {
+      "id": "hypotheses",
+      "layout": "icon_cards",
+      "title": "Three testable hypotheses would turn this outside-in view into decisions",
+      "source": null,
+      "figures": {},
+      "tiles": [],
+      "pending": false
+    },
+    {
+      "id": "proposal",
+      "layout": "plan",
+      "title": "A six-week assessment would test these hypotheses with your leadership team",
+      "source": null,
+      "figures": {},
+      "tiles": [],
+      "pending": false
+    }
+  ]
+}

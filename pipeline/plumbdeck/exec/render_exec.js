@@ -111,6 +111,62 @@ function lines(txt, wIn, pt, bold, useSerif) {
   }
   return n;
 }
+// ---------------------------------------------------------------- layout audit
+// Every text box is measured with the same font metrics: overflow, off-slide, orphaned
+// title words and colliding text are build errors, not things a reviewer has to spot.
+const AUDIT = { boxes: [], errors: [] };
+function wrapWidths(txt, wIn, pt, bold, useSerif, spacingPt) {
+  const f = useSerif ? serif() : font(bold), limit = wIn * 72, out = [];
+  const adv = (x) => f.getAdvanceWidth(x, pt) + (spacingPt || 0) * x.length;
+  for (const para of String(txt).split("\n")) {
+    let cur = "";
+    for (const word of para.split(/\s+/).filter(Boolean)) {
+      const trial = cur ? cur + " " + word : word;
+      if (adv(trial) <= limit || !cur) cur = trial; else { out.push({ text: cur, w: adv(cur) / 72 }); cur = word; }
+    }
+    out.push({ text: cur, w: adv(cur) / 72 });
+  }
+  return out;
+}
+function auditText(slideNo, txt, o) {
+  const runs = Array.isArray(txt) ? txt : [{ text: String(txt), options: {} }];
+  const text = runs.map((r) => r.text).join("");
+  if (!text.trim() || o.x == null || o.w == null) return;
+  const pt = o.fontSize || 18, first = (runs[0] && runs[0].options) || {};
+  const bold = !!(o.bold || first.bold), useSerif = (o.fontFace || first.fontFace) === F.head;
+  const ls = wrapWidths(text, o.w, pt, bold, useSerif, o.charSpacing || 0);
+  const lh = pt * 1.17 / 72, th = ls.length * lh, tw = Math.max(...ls.map((l) => l.w));
+  const ax = o.align === "center" ? o.x + (o.w - tw) / 2 : o.align === "right" ? o.x + o.w - tw : o.x;
+  const ay = o.valign === "middle" ? o.y + (o.h - th) / 2 : o.valign === "bottom" ? o.y + o.h - th : o.y;
+  const box = { slide: slideNo, text: text.slice(0, 60), lines: ls.length, x: ax, y: ay, w: tw, h: th, isTitle: !!o._title };
+  AUDIT.boxes.push(box);
+  const where = `slide ${slideNo}: "${box.text}"`;
+  if (o.h != null && th > o.h + 0.04) AUDIT.errors.push(`${where} needs ${ls.length} line(s), ${th.toFixed(2)}in, box is ${o.h.toFixed(2)}in`);
+  if (ax + tw > W + 0.01 || ay + th > H + 0.01 || ax < -0.01 || ay < -0.01) AUDIT.errors.push(`${where} runs off the slide`);
+  if (o._title && ls.length > 1 && ls[ls.length - 1].text.split(/\s+/).length < 3)
+    AUDIT.errors.push(`${where} title leaves "${ls[ls.length - 1].text}" alone on its last line`);
+  if (o._oneLine && ls.length > 1) AUDIT.errors.push(`${where} must fit on one line, needs ${ls.length}`);
+  if (o._title && ls.length > 2) AUDIT.errors.push(`${where} title runs to ${ls.length} lines`);
+}
+function auditCollisions() {
+  const bySlide = {};
+  AUDIT.boxes.forEach((b) => (bySlide[b.slide] = bySlide[b.slide] || []).push(b));
+  for (const [n, bs] of Object.entries(bySlide)) {
+    for (let a = 0; a < bs.length; a++) for (let b = a + 1; b < bs.length; b++) {
+      const p = bs[a], q = bs[b];
+      const ix = Math.min(p.x + p.w, q.x + q.w) - Math.max(p.x, q.x), iy = Math.min(p.y + p.h, q.y + q.h) - Math.max(p.y, q.y);
+      if (ix > 0.03 && iy > 0.03) AUDIT.errors.push(`slide ${n}: text "${p.text}" collides with "${q.text}"`);
+    }
+  }
+}
+let SLIDE_NO = 0;
+const _addSlide = pres.addSlide.bind(pres);
+pres.addSlide = function (opts) {
+  const sl = _addSlide(opts), no = ++SLIDE_NO, _addText = sl.addText.bind(sl);
+  sl.addText = function (txt, o) { try { auditText(no, txt, o || {}); } catch (e) { AUDIT.errors.push(`slide ${no}: audit failed: ${e.message}`); } return _addText(txt, o); };
+  return sl;
+};
+
 function titleLines(txt) { return lines(txt, CW - 0.4, 25, false, true) > 1 ? 2 : 1; }
 function contentTop(sl) { return titleLines(t(sl.title)) === 2 ? 2.05 : 1.6; }
 
@@ -130,7 +186,7 @@ function frame(sl, slideIdx) {
   });
   draftMarker(s, false);
   s.addText(t(sl.title), {
-    x: MX, y: 0.78, w: CW - 0.4, h: 1.05, isTextBox: true, margin: 0,
+    _title: true, x: MX, y: 0.78, w: CW - 0.4, h: 1.05, isTextBox: true, margin: 0,
     fontFace: F.head, fontSize: 25, color: COL.ink, valign: "top", paraSpaceAfter: 0,
   });
   if (sl._source) {
@@ -147,7 +203,7 @@ function cover(sl) {
   plumbMark(s, 10.6, 0.0, 4.55, COL.teal, 0.32);
   s.addText(t(sl.eyebrow).toUpperCase(), { x: MX + 0.2, y: 1.75, w: 8.8, h: 0.35, isTextBox: true, margin: 0,
     fontFace: F.body, fontSize: 12, bold: true, color: "5FB3B0", charSpacing: 2 });
-  s.addText(t(sl.title), { x: MX + 0.2, y: 2.2, w: 8.9, h: 2.2, isTextBox: true, margin: 0,
+  s.addText(t(sl.title), { _title: true, x: MX + 0.2, y: 2.2, w: 8.9, h: 2.2, isTextBox: true, margin: 0,
     fontFace: F.head, fontSize: 40, color: COL.white, valign: "top" });
   s.addText(`${t(sl.subtitle)}  ·  ${story.date_label}`, { x: MX + 0.2, y: 4.55, w: 8.9, h: 0.4, isTextBox: true, margin: 0,
     fontFace: F.body, fontSize: 15, color: COL.onDark });
@@ -429,14 +485,14 @@ function pendingStamp(s, x, y) {
 
 function tiles(sl, i) {
   const s = frame(sl, i);
-  const top = contentTop(sl) + 0.1, n = sl.tiles.length, gap = 0.3, tw = (CW - gap * (n - 1)) / n, th = 3.15;
+  const top = contentTop(sl) + 0.1, n = sl.tiles.length, gap = 0.3, tw = (CW - gap * (n - 1)) / n, th = 3.35;
   sl.tiles.forEach((tl, k) => {
     const x = MX + k * (tw + gap);
     s.addShape(pres.shapes.RECTANGLE, { x, y: top, w: tw, h: th, fill: { color: k === n - 1 ? COL.ink : COL.panel }, line: { color: k === n - 1 ? COL.ink : COL.panel, width: 0 } });
     const dark = k === n - 1;
     iconDisc(s, tl.icon, x + 0.75, top + 0.75, 0.82, dark ? COL.teal : COL.teal, "white");
-    s.addText(tl.big, { x: x + 0.4, y: top + 1.3, w: tw - 0.8, h: 1.0, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 52, color: dark ? COL.white : COL.ink, valign: "bottom" });
-    s.addText(t(tl.line), { x: x + 0.42, y: top + 2.35, w: tw - 0.84, h: 0.65, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, color: dark ? COL.onDark : COL.text, valign: "top" });
+    s.addText(tl.big, { _oneLine: true, x: x + 0.4, y: top + 1.3, w: tw - 0.8, h: 1.0, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 52, color: dark ? COL.white : COL.ink, valign: "bottom" });
+    s.addText(t(tl.line), { x: x + 0.42, y: top + 2.35, w: tw - 0.84, h: 0.8, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, color: dark ? COL.onDark : COL.text, valign: "top" });
   });
   strap(s, sl, top + th + 0.3, "LuLandmark");
 }
@@ -448,13 +504,13 @@ function lifecycle(sl, i) {
   sl.stages.forEach((st, k) => {
     const cx = MX + cw * k + cw / 2;
     iconDisc(s, st.icon, cx, cy, d, COL.teal, "white");
-    s.addText(st.name, { x: cx - cw / 2, y: top + d + 0.15, w: cw, h: 0.35, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, bold: true, color: COL.ink, align: "center" });
+    s.addText(st.name, { _oneLine: true, x: cx - cw / 2, y: top + d + 0.15, w: cw, h: 0.35, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, bold: true, color: COL.ink, align: "center" });
     st.items.forEach((it, j) => {
       const py = top + d + 0.7 + j * 0.62, pw = cw - 0.16, px = cx - pw / 2;
       const c = STATUS_COL[it.status] || COL.muted;
       s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: px, y: py, w: pw, h: 0.48, rectRadius: 0.24, fill: { color: COL.white }, line: { color: c, width: 1.25 } });
       s.addShape(pres.shapes.OVAL, { x: px + 0.17, y: py + 0.17, w: 0.14, h: 0.14, fill: { color: c }, line: { color: c, width: 0 } });
-      s.addText(it.text, { x: px + 0.4, y: py, w: pw - (it.market ? 0.78 : 0.5), h: 0.48, isTextBox: true, margin: 0, fontFace: F.body, fontSize: it.text.length > 22 ? 10.5 : 11, color: COL.ink, valign: "middle" });
+      s.addText(it.text, { _oneLine: true, x: px + 0.4, y: py, w: pw - (it.market ? 0.78 : 0.5), h: 0.48, isTextBox: true, margin: 0, fontFace: F.body, fontSize: it.text.length > 22 ? 10.5 : 11, color: COL.ink, valign: "middle" });
       if (it.market) s.addText(it.market, { x: px + pw - 0.42, y: py, w: 0.3, h: 0.48, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 9, bold: true, color: COL.muted, align: "right", valign: "middle" });
     });
   });
@@ -466,7 +522,7 @@ function lifecycle(sl, i) {
       const cx = MX + cw * k + cw / 2, y = oy + 0.5;
       if (st.outcome) {
         const c = st.outcome.tag === "Result" ? COL.teal : COL.amber;
-        s.addText(st.outcome.text, { x: cx - cw / 2, y, w: cw, h: 0.4, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 18, color: COL.ink, align: "center", valign: "middle" });
+        s.addText(st.outcome.text, { _oneLine: true, x: cx - cw / 2, y, w: cw, h: 0.4, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 18, color: COL.ink, align: "center", valign: "middle" });
         s.addText(st.outcome.tag.toUpperCase(), { x: cx - 0.45, y: y + 0.48, w: 0.9, h: 0.24, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 8, bold: true, color: COL.white, charSpacing: 1.2,
           align: "center", valign: "middle", shape: pres.shapes.ROUNDED_RECTANGLE, rectRadius: 0.04, fill: { color: c }, line: { color: c, width: 0 } });
       } else {
@@ -516,14 +572,14 @@ function valueBars(sl, i) {
     const y = top + k * (bh + gap), w = bwMax * f._num / maxV, lead = k === 0;
     s.addText(f.label, { x: MX, y, w: lw - 0.2, h: bh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, bold: lead, color: COL.ink, valign: "middle" });
     s.addShape(pres.shapes.RECTANGLE, { x: bx, y, w, h: bh, fill: { color: lead ? COL.teal : "C9D3DE" }, line: { color: lead ? COL.teal : "C9D3DE", width: 0 } });
-    s.addText(`S$${f.value}m`, { x: bx + w + 0.15, y, w: 1.6, h: bh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, bold: lead, color: COL.ink, valign: "middle" });
+    s.addText(`S$${f.value}m`, { _oneLine: true, x: bx + w + 0.15, y, w: 1.6, h: bh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, bold: lead, color: COL.ink, valign: "middle" });
   });
   s.addText(sl.unit, { x: bx, y: top + 3 * (bh + gap) - 0.25, w: 4, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.muted });
   // callout
   const cx = MX + 9.3, cy = top - 0.05, cw2 = W - MX - cx;
   s.addShape(pres.shapes.RECTANGLE, { x: cx, y: cy, w: cw2, h: 2.75, fill: { color: COL.ink }, line: { color: COL.ink, width: 0 } });
   s.addText("Every 1%", { x: cx + 0.3, y: cy + 0.3, w: cw2 - 0.6, h: 0.4, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 14, color: COL.onDark });
-  s.addText(sl.title.derived.display.replace("S$", "S$"), { x: cx + 0.28, y: cy + 0.7, w: cw2 - 0.5, h: 1.0, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 40, color: COL.white, valign: "middle" });
+  s.addText(sl.title.derived.display.replace("S$", "S$"), { _oneLine: true, x: cx + 0.28, y: cy + 0.7, w: cw2 - 0.5, h: 1.0, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 40, color: COL.white, valign: "middle" });
   s.addText("a year on claims and benefits", { x: cx + 0.3, y: cy + 1.75, w: cw2 - 0.6, h: 0.75, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 14, color: COL.onDark, valign: "top" });
   if (sl.strap) s.addText(t(sl.strap), { x: MX, y: 5.95, w: CW, h: 0.4, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, italic: true, color: COL.muted });
 }
@@ -549,7 +605,7 @@ function pendingTimeline(sl, i) {
   sl.milestones.forEach((m, k) => {
     const cx = x0 + step * k;
     s.addShape(pres.shapes.OVAL, { x: cx - 0.2, y: ly - 0.2, w: 0.4, h: 0.4, fill: { color: k === 0 ? COL.ink : COL.white }, line: { color: COL.ink, width: 2 } });
-    s.addText(m.when, { x: cx - 1.4, y: ly - 1.05, w: 2.8, h: 0.6, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 28, color: COL.ink, align: "center", valign: "bottom" });
+    s.addText(m.when, { _oneLine: true, x: cx - 1.4, y: ly - 1.05, w: 2.8, h: 0.6, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 28, color: COL.ink, align: "center", valign: "bottom" });
     s.addText(m.what, { x: cx - 1.5, y: ly + 0.4, w: 3.0, h: 0.8, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 15, color: COL.text, align: "center", valign: "top" });
   });
   pendingStamp(s, (W - 3.0) / 2, top + 2.75);
@@ -607,7 +663,7 @@ function plan(sl, i) {
   s.addText(sl.unit_label ? "" : "Working day", { x: MX, y: top, w: lw - 0.2, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10, color: COL.muted });
   sl.lanes.forEach((ln, k) => {
     const y = top + 0.42 + k * rh, last = k === sl.lanes.length - 1;
-    s.addText(ln.name, { x: MX, y, w: lw - 0.2, h: rh - 0.08, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 13, color: COL.ink, valign: "middle" });
+    s.addText(ln.name, { _oneLine: true, x: MX, y, w: lw - 0.2, h: rh - 0.08, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 13, color: COL.ink, valign: "middle" });
     s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: gx + (ln.from - 1) * dw + 0.03, y: y + 0.07, w: (ln.to - ln.from + 1) * dw - 0.06, h: rh - 0.22, rectRadius: 0.08,
       fill: { color: last ? COL.teal : COL.ink }, line: { color: last ? COL.teal : COL.ink, width: 0 } });
   });
@@ -633,7 +689,7 @@ function sensitivityBars(sl, i) {
     const y = top + k * (bh + gap), w = bwMax * f._num / maxV;
     s.addText(f.label, { x: MX, y, w: lw - 0.2, h: bh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 16, bold: true, color: COL.ink, valign: "middle" });
     s.addShape(pres.shapes.RECTANGLE, { x: bx, y, w, h: bh, fill: { color: COL.teal }, line: { color: COL.teal, width: 0 } });
-    s.addText(`S$${f._num.toFixed(1)}m`, { x: bx + w + 0.15, y, w: 1.4, h: bh, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 22, color: COL.ink, valign: "middle" });
+    s.addText(`S$${f._num.toFixed(1)}m`, { _oneLine: true, x: bx + w + 0.15, y, w: 1.4, h: bh, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 22, color: COL.ink, valign: "middle" });
     const an = (sl.annotations || {})[f.id];
     if (an) s.addText(t(an), { x: bx, y: y + bh + 0.06, w: bwMax, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, italic: true, color: COL.teal });
   });
@@ -699,6 +755,13 @@ const LAYOUTS = { cover, exec_summary: execSummary, value_chain: valueChain, two
     if (!fn) throw new Error(`unknown layout ${sl.layout}`);
     fn(sl, i);
   });
+  auditCollisions();
+  const auditFile = outFile.replace(/\.pptx$/, "") + ".layout.json";
+  fs.writeFileSync(auditFile, JSON.stringify({ errors: AUDIT.errors, boxes: AUDIT.boxes.length }, null, 2));
+  if (AUDIT.errors.length) {
+    console.error(`layout audit: ${AUDIT.errors.length} problem(s)\n  ` + AUDIT.errors.join("\n  "));
+    if (process.env.PLUMB_LAYOUT_LENIENT !== "1") { console.error("refusing to write the deck (set PLUMB_LAYOUT_LENIENT=1 to inspect a draft)"); process.exit(3); }
+  } else console.log("layout audit: ok");
   await pres.writeFile({ fileName: outFile });
   if (applyTheme) await applyTheme(outFile, THEME);
   console.log(`wrote ${outFile} (${story.slides.length} slides, ${STATUS.final ? "FINAL" : STATUS.marker})`);

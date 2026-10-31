@@ -203,3 +203,27 @@ def test_full_report_binds_both_modes(inputs):
         assert m["binding"]["not_verified_unaccounted"] == []
         ids = [s["id"] for s in m["sections"]]
         assert ("developments" in ids) is (not strict)
+
+
+# ------------------------------------------------------------------ deck and report agree
+
+@needs_pdf
+def test_report_carries_every_headline_number_on_the_deck(tmp_path):
+    """The deck shows numbers; the report is where a reader checks them. Every number on the
+    deck face must appear in the report, and the abandoned total-claims anchor must not."""
+    import json as _json
+    import re as _re
+    build(SPEC, RUN, STORY, RESEARCH, tmp_path, strict=True, source_pdf=PDF, pdf=False)
+    html = (tmp_path / "report.html").read_text()
+    text = _re.sub(r"<[^>]+>", " ", html).replace("&nbsp;", " ")
+    story = _json.loads(STORY.read_text())
+    nums = set()
+    for s in story["slides"]:
+        nums |= {t["big"] for t in s.get("tiles", [])}
+        nums |= {f["value"] for f in s.get("figures", [])}
+        d = s.get("title", {}).get("derived")
+        if d:
+            nums.add(d["display"])
+    missing = [n for n in sorted(nums) if n not in text]
+    assert not missing, f"deck numbers absent from the report: {missing}"
+    assert "S$40m" not in text and "every 1%" not in text.lower()

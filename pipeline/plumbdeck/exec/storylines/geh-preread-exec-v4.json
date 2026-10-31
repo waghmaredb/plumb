@@ -75,8 +75,8 @@
       "title": {"kind": "derived", "text": "10% better accident and health claims would add S$131m to a year's profit",
         "derived": {"sum": ["ah_sg", "ah_my"], "display": "S$131m"}},
       "figures": [
-        {"id": "ah_sg", "label": "Singapore", "pdf_page": 188, "row": "Scenario 4 – Accident and Health", "value": "31.8"},
-        {"id": "ah_my", "label": "Malaysia", "pdf_page": 189, "row": "Scenario 4 – Accident and Health", "value": "99.3"}
+        {"id": "ah_sg", "label": "Singapore", "pdf_page": 188, "row": "Scenario 4 – Accident and Health", "value": "31.8", "addressable": true, "basis": "Accident & health claims experience: leakage, fraud and medical cost management are within reach of claims AI; contractual life benefits are excluded"},
+        {"id": "ah_my", "label": "Malaysia", "pdf_page": 189, "row": "Scenario 4 – Accident and Health", "value": "99.3", "addressable": true, "basis": "As Singapore; Malaysia already runs AI bill-fraud checks on this claims line"}
       ],
       "unit": "Profit after tax, S$ million, net of reinsurance",
       "annotations": {"ah_my": {"kind": "synthesis", "text": "AI bill-fraud checks already run here", "support": ["great-eastern.findings.deploy.6"]}},
