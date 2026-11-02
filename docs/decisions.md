@@ -10,6 +10,7 @@
 | D6 | 2026-10-25 | Entity | Incorporate PLUMB Advisory Pte. Ltd. now | ACRA checklist in docs/incorporation-checklist.md; engagement letter and DPA name this entity |
 | D7 | 2026-10-25 | Founder-time clearance | **Self-attested; record basis** | "Already cleared / not required" is currently a self-attestation by the person with the conflict. Record the basis here (written employer clearance, or the documented reason none is needed) and file it with the GE/OCBC conflict declaration before the GE run is shown to anyone at GE or OCBC (founder checklist F25; red-team review §1(d)) |
 
-Open: D3 reviewer name (BLOCKER); D7 clearance basis; SS 680 / EDGE applicability; AI TAP application requirements; CSA AICM v1.1 spreadsheet; MAS response-to-feedback "as soon as possible" qualifier.
+Open: D3 reviewer name (BLOCKER); SS 680 / EDGE applicability; AI TAP application requirements; CSA AICM v1.1 spreadsheet; MAS response-to-feedback "as soon as possible" qualifier.
 
 Change log: 2026-10-25 — D3 marked BLOCKER until named; D7 restated as self-attested pending a recorded basis (red-team review 2026-10-25, §1(c), §1(d), §2.8).
+2026-11-03 — D7: founder decision that employer-related matters are out of scope for this project; removed from PLUMB documents and plans.
