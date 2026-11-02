@@ -20,3 +20,17 @@ v1 reviewed by two independent executive personas (CEO + head of film technology
 7. Roles, not names, for sponsors until agreed.
 8. Start every plant strategy with an inventory of what the client already runs and pays for.
 9. Sanctions/data-transfer review for multi-country footprints.
+
+## v3 (after the second red-team, 2026-11-03)
+- Gate 2 now tests the film-line use case on its own incremental costs (base: ~1.0% scrap removed, 3.4% energy per good kg).
+- Stage 1 commitment explicit (~₹18 cr base); years 2–5 only after Gate 2.
+- Value bases fixed: UC6 on flexible-packaging output (~78,700 t), UC3 on rPET tonnes and utilisation, UC4 limited to Dharwad and Egypt with demand-constrained attribution.
+- Cash and EBITDA views (capitalisable build excluded), steady-state NPV, sensitivity (tornado), top-down check.
+- Film science deepened (chip moisture and IV, blend, pinning, filter changes, clip and chain wear, black specks from degraded polymer); metallising, chip plant, aseptic laminate integrity, WPP, product development and enterprise AI (cash and FX forecasting, procurement, EPR) added.
+- Leak fingerprints removed (no tool meta tag, no version label, no review mentions, no country-specific sanctions wording); converter-waste benchmark from a non-comparable study removed; peer sources added.
+- Founder decision: employer-related matters are out of scope for this project.
+
+## Lessons to encode (additional)
+10. Break-even gates are computed per use case on incremental cost, not across the programme.
+11. Strip authorship and review fingerprints from client deliverables.
+12. Release timing: refresh numbers after the client's next results before sending.
