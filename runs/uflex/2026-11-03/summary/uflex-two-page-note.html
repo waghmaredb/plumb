@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<title>AI at UFlex: a two-page note</title>
+<style>
+@page { size: A4; margin: 15mm 16mm 14mm 16mm; }
+:root { --ink:#13233A; --text:#2B3645; --muted:#667085; --hair:#D7DCE3; --panel:#F3F5F8; --teal:#0B6E6E; --slate:#4B6584; --amber:#A86B12; --red:#B5523B; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: Arial, "Liberation Sans", sans-serif; font-size: 9.6pt; line-height: 1.42; color: var(--text); background:#fff; }
+h1,h2,.big { font-family: Cambria, Caladea, Georgia, serif; font-weight: 400; color: var(--ink); }
+.top { display:flex; justify-content:space-between; align-items:center; font-size:7.6pt; letter-spacing:.14em; text-transform:uppercase; color:var(--muted); border-bottom:1px solid var(--hair); padding-bottom:5px; }
+.top b { color: var(--teal); letter-spacing:.2em; }
+h1 { font-size: 21pt; line-height:1.15; margin: 12px 0 6px; }
+.lede { font-size: 10.4pt; color: var(--ink); margin: 0 0 10px; }
+h2 { font-size: 13pt; margin: 14px 0 6px; padding-top:8px; border-top: 1px solid var(--hair); }
+h2 .k { font-family: Arial, sans-serif; font-size: 7.6pt; letter-spacing:.14em; color: var(--teal); text-transform: uppercase; display:block; margin-bottom:2px; }
+p { margin: 0 0 6px; }
+.tiles { display:grid; grid-template-columns: repeat(3,1fr); gap: 8px; margin: 10px 0 4px; }
+.tile { background: var(--panel); padding: 10px 12px 9px; }
+.tile.dark { background: var(--ink); color:#C9D1DC; }
+.tile .big { font-size: 24pt; line-height:1; margin-bottom:5px; }
+.tile.dark .big { color:#fff; }
+.tile .sub { font-size: 8pt; color: var(--muted); margin-top: 3px; }
+.tile.dark .sub { color:#8C99AA; }
+table { width:100%; border-collapse: collapse; font-size: 8.6pt; }
+th { text-align:left; font-size:7.2pt; letter-spacing:.1em; text-transform:uppercase; color: var(--muted); font-weight:700; border-bottom: 1.2px solid var(--ink); padding: 4px 6px 4px 0; }
+td { border-bottom: 1px solid var(--hair); padding: 5px 6px 5px 0; vertical-align: top; }
+td.n, th.n { text-align:right; white-space:nowrap; }
+.uc { font-weight:700; color: var(--ink); white-space: nowrap; }
+.pill { display:inline-block; font-size:6.8pt; font-weight:700; letter-spacing:.08em; text-transform:uppercase; color:#fff; padding:2px 6px; border-radius:3px; white-space:nowrap; }
+.s1 { background: var(--teal); } .g2 { background: var(--slate); }
+.note { font-size: 7.8pt; color: var(--muted); margin-top: 4px; }
+.two { display:grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.gate { display:grid; grid-template-columns: 118px 1fr; gap: 6px; padding: 5px 0; border-bottom:1px solid var(--hair); }
+.gate b { color: var(--teal); }
+ul { margin: 0 0 6px; padding-left: 15px; } li { margin-bottom: 3px; }
+.ask { background: var(--ink); color: #fff; padding: 11px 14px; margin-top: 10px; display:grid; grid-template-columns: 80px 1fr; gap: 10px; align-items:center; }
+.ask .lbl { font-size:7.6pt; font-weight:700; letter-spacing:.16em; color:#5FB3B0; }
+.foot { margin-top: 10px; font-size: 7.6pt; color: var(--muted); border-top: 1px solid var(--hair); padding-top: 6px; display:flex; justify-content:space-between; gap: 16px; }
+.to-confirm { color: var(--amber); font-style: italic; font-weight: 700; }
+.page2 { break-before: page; }
+svg text { font-family: Arial, sans-serif; }
+</style></head>
+<body>
+<div class="top"><span><b>PLUMB Advisory</b></span><span>For discussion · prepared from public information · November 2026</span></div>
+
+<h1>AI at UFlex: more from every kilogram while new capacity comes on stream</h1>
+<p class="lede">UFlex is in a growth phase. Egypt aseptic is in commercial trials, a 54,000-tonne BOPP line is coming at Dharwad, and Mexico WPP and the Noida recycling plant came on stream in 2026. Film lines ran at 85.4% utilisation in Q1 FY27. This note sets out where AI can add value in that phase, and a way to test it on one film line before any larger spend.</p>
+
+<div class="tiles">
+  <div class="tile"><div class="big">₹18 cr</div>Stage 1 commitment, before any roll-out decision<div class="sub">range ₹16 cr to ₹22 cr</div></div>
+  <div class="tile"><div class="big">1.02%</div>of film output removed as scrap on the pilot line: where the film-line roll-out pays for itself<div class="sub">with 3.4% energy saved per good kg</div></div>
+  <div class="tile dark"><div class="big">₹34 cr</div>recurring benefit in year 5 (base); ₹14 cr after the programme's own running cost<div class="sub">plus one-off: ₹61 cr inventory cash, ₹8 cr ramp-up</div></div>
+</div>
+
+<h2><span class="k">Where AI helps</span>Six use cases, valued on tonnes rather than revenue</h2>
+<table>
+<thead><tr><th>Use case</th><th>What AI adds</th><th class="n">Base value</th><th>When</th></tr></thead>
+<tbody>
+<tr><td class="uc">1 · Film-line yield</td><td>Links breaks, gels and specks to upstream causes, from chip IV and moisture to the winder; warns shift leads before a break; tracks energy per good kg</td><td class="n">₹17.9 cr a year</td><td><span class="pill s1">Stage 1 pilot</span></td></tr>
+<tr><td class="uc">3 · Recycling quality</td><td>Grades bales from images and lab data; predicts rPET yield and grade; keeps records from bale to pack that fit a recognised chain-of-custody model</td><td class="n">₹15.8 cr a year*</td><td><span class="pill s1">Stage 1</span></td></tr>
+<tr><td class="uc">4 · New-line ramp-up</td><td>Captures start-up and grade-qualification data at Dharwad from commissioning, rather than as a retrofit</td><td class="n">₹8.3 cr one-off</td><td><span class="pill s1">Stage 1</span></td></tr>
+<tr><td class="uc">5 · Inventory planning</td><td>Forecasts by grade, market and customer; inventory norms by item and plant; price-risk signals for PTA, MEG and polypropylene</td><td class="n">₹61 cr cash, one-off</td><td><span class="pill s1">Stage 1</span></td></tr>
+<tr><td class="uc">2 · Slit and schedule</td><td>Grade and thickness campaigning, changeover-loss prediction and BOPP master-roll ageing, on top of existing deckle optimisation</td><td class="n">₹3.3 cr a year</td><td><span class="pill g2">After Gate 2</span></td></tr>
+<tr><td class="uc">6 · Print make-ready</td><td>Press and ink settings from job history and spectral colour data; viscosity drift; returned-ink reuse</td><td class="n">₹4.3 cr a year</td><td><span class="pill g2">After Gate 2</span></td></tr>
+</tbody></table>
+<p class="note">Base case, pre-tax, at full rate. *At full recycling utilisation; ₹11.9 cr at 75%. Inventory value counts half of a five-day release as attributable to AI; interest on released cash is not counted. Maintenance, metallising, chip plants and aseptic laminate integrity are sized in the sprint, not here.</p>
+
+<h2><span class="k">Why now</span>Recycled-content records are becoming a customer requirement</h2>
+<p>India's Plastic Waste Management (Amendment) Rules 2026 raise recycled-content obligations for flexible packaging from 10% to 20%, and for multilayer from 5% to 10%, by 2027-28. QR labelling has applied since July 2025, and the EU's Packaging and Packaging Waste Regulation has applied since August 2026. Brand owners will ask suppliers for records by plant and format. UFlex makes chips, film, inks and packs and recycles within one group, so it can assemble those records from resin to pack in one place.</p>
+
+<div class="page2"></div>
+<div class="top"><span><b>PLUMB Advisory</b></span><span>AI at UFlex · page 2</span></div>
+
+<h2 style="border-top:0;padding-top:4px"><span class="k">How the money is staged</span>Commit ₹18 cr first; the larger spend waits for measured results</h2>
+<div class="two">
+<div>
+<p>Stage 1 covers one pilot film line chosen by UFlex, inventory planning, recycling quality at Noida and Dharwad instrumentation. None of the enterprise use cases depends on the pilot line.</p>
+<p>The film-line roll-out follows only if the pilot line, measured for six months against a control line, clears its own break-even on its own costs. In the base case that is about 1.02% of film output removed as scrap and 3.4% energy saved per good kilogram, 1.7 times our base rates.</p>
+<p>At conservative rates the full programme does not pay back within five years on pre-tax cash. It is positive in the base case once steady state after year 5 or the inventory release is included. That is the reason for staging it.</p>
+</div>
+<div>
+<table>
+<thead><tr><th>₹ crore</th><th class="n">Low</th><th class="n">Base</th><th class="n">High</th></tr></thead>
+<tbody>
+<tr><td>Stage 1 commitment</td><td class="n">22</td><td class="n">18</td><td class="n">16</td></tr>
+<tr><td>Year-5 recurring benefit</td><td class="n">15</td><td class="n">34</td><td class="n">64</td></tr>
+<tr><td>Year 5, net of running cost</td><td class="n">−11</td><td class="n">14</td><td class="n">45</td></tr>
+<tr><td>5-year NPV, pre-tax cash</td><td class="n">−96</td><td class="n">−30</td><td class="n">50</td></tr>
+<tr><td>NPV with steady state after year 5</td><td class="n">−136</td><td class="n">35</td><td class="n">331</td></tr>
+<tr><td>NPV with inventory release</td><td class="n">−106</td><td class="n">86</td><td class="n">415</td></tr>
+</tbody></table>
+<p class="note">Costs include 25% contingency, plant time, licences, sensors and FX. The low case also assumes a 25% overrun. Build cost is charged when spent.</p>
+</div>
+</div>
+
+<h2><span class="k">Gates</span>Each commitment follows a measured result, signed by group finance</h2>
+<div class="gate"><b>Gate 1 · week 2</b><span>A line and a problem chosen, the data request agreed, and the AI, inspection and line-supplier digital services already installed listed, so nothing is bought twice.</span></div>
+<div class="gate"><b>Gate 2 · month 10</b><span>The pilot line against its control, normalised for grade mix, reaches its break-even. Below it, UFlex keeps the enterprise use cases and the data foundation and does not roll out the film-line work.</span></div>
+<div class="gate"><b>Gate 3 · month 18</b><span>India sites tracking the measured rates in the value ledger before any commitment to overseas sites.</span></div>
+
+<h2><span class="k">Architecture</span>One data foundation, built once, on what UFlex already runs</h2>
+<svg viewBox="0 0 700 92" width="100%" role="img" aria-label="Five layers from plant and ERP data to applications">
+  <g font-size="10.5">
+    <g><rect x="0" y="6" width="128" height="58" fill="#E3E8EE"/><text x="10" y="26" font-weight="700" fill="#13233A">Plant and ERP</text><text x="10" y="43" fill="#2B3645">Line controls, OEM,</text><text x="10" y="57" fill="#2B3645">lab, energy, ERP</text></g>
+    <g><rect x="143" y="6" width="128" height="58" fill="#E3E8EE"/><text x="153" y="26" font-weight="700" fill="#13233A">Plant edge</text><text x="153" y="43" fill="#2B3645">Read-only exports</text><text x="153" y="57" fill="#2B3645">by UFlex IT</text></g>
+    <g><rect x="286" y="6" width="128" height="58" fill="#0B6E6E"/><text x="296" y="26" font-weight="700" fill="#fff">Data foundation</text><text x="296" y="43" fill="#E6F2F2">Site, line, grade,</text><text x="296" y="57" fill="#E6F2F2">order, roll; resin to pack</text></g>
+    <g><rect x="429" y="6" width="128" height="58" fill="#E3E8EE"/><text x="439" y="26" font-weight="700" fill="#13233A">AI services</text><text x="439" y="43" fill="#2B3645">Cause-finding, break</text><text x="439" y="57" fill="#2B3645">warning, forecasts</text></g>
+    <g><rect x="572" y="6" width="128" height="58" fill="#E3E8EE"/><text x="582" y="26" font-weight="700" fill="#13233A">Applications</text><text x="582" y="43" fill="#2B3645">Shift-lead advice,</text><text x="582" y="57" fill="#2B3645">value ledger</text></g>
+    <g fill="#667085"><path d="M130 35 l10 0 m-4 -4 l4 4 l-4 4" stroke="#667085" fill="none"/><path d="M273 35 l10 0 m-4 -4 l4 4 l-4 4" stroke="#667085" fill="none"/><path d="M416 35 l10 0 m-4 -4 l4 4 l-4 4" stroke="#667085" fill="none"/><path d="M559 35 l10 0 m-4 -4 l4 4 l-4 4" stroke="#667085" fill="none"/></g>
+    <rect x="0" y="72" width="700" height="18" fill="#F3F5F8"/><text x="10" y="85" fill="#13233A" font-size="9.5">Security across all layers: no remote access to plant networks; IEC 62443 segmentation before any integration</text>
+  </g>
+</svg>
+
+<div class="ask"><span class="lbl">NEXT STEP</span><span>A two-week readiness sprint on one film line and one problem UFlex chooses, preceded by a short working session with film technical leadership. Fixed fee; UFlex owns the deliverables, with no exclusivity and no obligation to continue.</span></div>
+
+<div class="two" style="margin-top:8px">
+<div><p style="margin-bottom:3px"><b style="color:var(--ink)">The sprint, day by day</b></p>
+<p>Days 1–3 immerse on the nominated line and interview leaders. Days 4–7 audit data and the IT and OT landscape. Days 8–11 rebuild the model on UFlex numbers and agree the Gate 2 test with group finance. Days 12–14 decide the pilot scope together.</p></div>
+<div><p style="margin-bottom:3px"><b style="color:var(--ink)">About PLUMB Advisory</b></p>
+<p>Independent AI strategy: no reseller, referral or implementation fees from any technology vendor. Pilot fees are capped, with part held back until Gate 2 is signed off. Film-process expertise: <span class="to-confirm">[to confirm: named specialist]</span>.</p></div>
+</div>
+
+<div class="foot"><span>Prepared from public information only: UFlex annual reports FY25–FY26, the Q1 FY27 investor presentation and industry sources. Figures will be refreshed after the Q2 FY27 results. A full strategy with sources and the business-case workbook is available on request.</span><span style="white-space:nowrap">Deepak Waghmare · <span class="to-confirm">[to confirm: email]</span></span></div>
+</body></html>

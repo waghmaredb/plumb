@@ -1,0 +1,136 @@
+{
+  "client": "UFlex Limited",
+  "date_label": "November 2026",
+  "_status": { "final": false, "marker": "For discussion · prepared from public information", "founder_inputs": [], "pending_slides": [] },
+  "slides": [
+    { "layout": "cover", "eyebrow": "AI strategy · pre-read",
+      "title": "Getting more from every kilogram, on today's lines and the new ones",
+      "subtitle": "UFlex Limited",
+      "footnote": "Prepared from UFlex disclosures up to Q1 FY27 and public industry sources. Figures will be refreshed after the Q2 FY27 results." },
+
+    { "layout": "tiles", "section": "Summary",
+      "title": "Commit ₹18 cr first, and roll out only when one line clears its own break-even",
+      "tiles": [
+        { "icon": "LuLayers", "big": "₹18 cr", "line": "Stage 1: one pilot line, inventory planning, recycling quality, Dharwad instrumentation" },
+        { "icon": "LuGauge", "big": "1.02%", "line": "of film output removed as scrap on the pilot line: where the roll-out pays for itself" },
+        { "icon": "LuTrendingUp", "big": "₹34 cr", "line": "recurring benefit in year 5 (base); ₹14 cr after the programme's own running cost" }
+      ],
+      "strap": "One-off value comes on top: about ₹61 cr of inventory cash and ₹8 cr from faster ramp-up of new lines.",
+      "_source": "Source: PLUMB model built on UFlex FY26 Annual Report and Q1 FY27 investor presentation; base case, pre-tax, ₹ crore." },
+
+    { "layout": "lifecycle", "section": "Where AI applies",
+      "title": "UFlex runs the whole chain from resin to pack, so AI can work at every step",
+      "stages": [
+        { "icon": "LuFlaskConical", "name": "PET chips", "items": [ { "text": "Chip-plant control", "status": "Sized in sprint" } ],
+          "outcome": { "text": "Panipat, Egypt", "tag": "Sites", "teal": true } },
+        { "icon": "LuFactory", "name": "Film lines", "items": [ { "text": "UC1 Line yield", "status": "Stage 1" }, { "text": "UC4 New-line ramp-up", "status": "Stage 1" }, { "text": "UC2 Slit and schedule", "status": "After Gate 2" } ],
+          "outcome": { "text": "636,160 t", "tag": "Capacity", "teal": true } },
+        { "icon": "LuSparkles", "name": "Metallising", "items": [ { "text": "Metalliser losses", "status": "Sized in sprint" } ],
+          "outcome": { "text": "238,600 t", "tag": "Capacity", "teal": true } },
+        { "icon": "LuPackage", "name": "Converting", "items": [ { "text": "UC6 Gravure make-ready", "status": "After Gate 2" } ],
+          "outcome": { "text": "78.7%", "tag": "Utilised", "teal": true } },
+        { "icon": "LuRecycle", "name": "Recycling", "items": [ { "text": "UC3 rPET yield, records", "status": "Stage 1" } ],
+          "outcome": { "text": "113,917 t", "tag": "Capacity", "teal": true } }
+      ],
+      "outcome_label": "SCALE TODAY",
+      "legend": ["Stage 1", "After Gate 2", "Sized in sprint"], "legend_item_w": 1.6, "legend_w": 5.0, "legend_note": "",
+      "_source": "Source: UFlex Q1 FY27 investor presentation (annual capacities; converting utilisation in Q1 FY27). UC5, inventory and cash forecasting, sits across the group in Stage 1." },
+
+    { "layout": "disclosure_matrix", "section": "AI at UFlex today",
+      "title": "UFlex already reports AI in six places; the sprint finds out what each delivers",
+      "columns": ["Reported", "Result published"],
+      "row_h": 0.58,
+      "rows": [
+        { "icon": "LuCog", "label": "Engineering: predictive maintenance in machines", "cells": [ { "state": "yes" }, { "state": "no" } ] },
+        { "icon": "LuScanEye", "label": "Holography: AI quality control, track-and-trace", "cells": [ { "state": "yes" }, { "state": "no" } ] },
+        { "icon": "LuFlaskConical", "label": "Films: AI-led product development", "cells": [ { "state": "yes" }, { "state": "no" } ] },
+        { "icon": "LuRecycle", "label": "Recycling: AI-enabled segregation, traceability", "cells": [ { "state": "yes" }, { "state": "no" } ] },
+        { "icon": "LuGraduationCap", "label": "People: AIM-AIA leadership programme", "cells": [ { "state": "yes" }, { "state": "no" } ] },
+        { "icon": "LuMonitor", "label": "Gravure: Ceruflex 500 remote monitoring", "cells": [ { "state": "yes" }, { "state": "no" } ] }
+      ],
+      "legend": ["Yes", "Not in public reports"],
+      "_source": "Source: UFlex Annual Reports FY25 and FY26. A maturity assessment needs UFlex's people, systems and data, so it is part of the sprint." },
+
+    { "layout": "sensitivity_bars", "section": "Value",
+      "title": "Four use cases are worth about ₹41 cr a year at full rate, built on tonnes",
+      "num_fmt": { "pre": "₹", "suf": " cr", "dp": 1 },
+      "label_w": 2.7, "bar_max_w": 4.0, "bar_h": 0.62, "bar_gap": 0.32,
+      "figures": [
+        { "id": "uc1", "label": "UC1 Film-line yield", "_num": 17.89 },
+        { "id": "uc3", "label": "UC3 rPET yield", "_num": 15.8 },
+        { "id": "uc6", "label": "UC6 Print make-ready", "_num": 4.28 },
+        { "id": "uc2", "label": "UC2 Slit and schedule", "_num": 3.25 }
+      ],
+      "total_label": "Recurring",
+      "unit": "a year at full rate, base case",
+      "callout": { "head": "One-off, shown apart", "lines": ["₹61 cr inventory cash", "₹8 cr faster ramp-up", "Interest not counted"] },
+      "_source": "Source: PLUMB model. UC1: 492,779 t × 0.6% scrap removed × ₹110/kg × 30% value lost, plus 2% energy. UC3 at full recycling utilisation; year 5 reaches ₹34 cr while this ramps." },
+
+    { "layout": "year_bars", "section": "Five years",
+      "title": "Year 5 is cash-positive in the base case; Gate 2 decides whether years 2 to 5 happen",
+      "categories": ["Stage 1", "Year 2", "Year 3", "Year 4", "Year 5"],
+      "axis": "₹ crore",
+      "series": [
+        { "name": "Recurring benefit", "values": [6.4, 13.7, 22.7, 30.0, 34.1], "color": "0B6E6E" },
+        { "name": "Ramp-up gain (one-off)", "values": [1.7, 3.3, 3.3, 0, 0], "color": "9FC7C5" },
+        { "name": "Programme cost", "values": [-17.7, -38.8, -40.3, -32.3, -20.4], "color": "B5523B" }
+      ],
+      "callout": { "head": "Five-year NPV, pre-tax",
+        "rows": [ { "label": "Low case", "value": "−₹96 cr" }, { "label": "Base case", "value": "−₹30 cr" }, { "label": "High case", "value": "+₹50 cr" },
+                  { "label": "Base, with steady state after year 5", "value": "+₹35 cr", "strong": true },
+                  { "label": "Base, with inventory cash", "value": "+₹86 cr", "strong": true } ],
+        "row_step": 0.52, "note": "Low case assumes a 25% cost overrun. Build cost charged when spent." },
+      "strap": "That is why the money is staged: ₹18 cr is committed before anyone knows UFlex's own rates.",
+      "_source": "Source: PLUMB model, base case, ₹ crore, 12% discount rate. EBITDA view excluding capitalisable build is in the full strategy." },
+
+    { "layout": "value_chain", "section": "Architecture",
+      "title": "One data foundation, built once, serves every use case and recycled-content record",
+      "legend_statuses": ["Existing", "New"],
+      "stages": [
+        { "name": "Plant and ERP", "items": [ { "status": "Existing", "text": "Line controls, OEM services, inspection, lab, energy meters" }, { "status": "Existing", "text": "ERP: orders, stock, purchases in nine countries" } ] },
+        { "name": "Plant edge", "items": [ { "status": "New", "text": "Read-only exports by UFlex IT; no remote OT access" }, { "status": "New", "text": "Historian per site where missing" } ] },
+        { "name": "Data foundation", "items": [ { "status": "New", "text": "One model of site, line, grade, order and roll" }, { "status": "New", "text": "Records from resin to pack" } ] },
+        { "name": "AI services", "items": [ { "status": "New", "text": "Cause-finding and early break warning" }, { "status": "New", "text": "Forecasts for stock, cash and FX" } ] },
+        { "name": "Applications", "items": [ { "status": "New", "text": "Shift-lead advice with reasons shown" }, { "status": "New", "text": "Value ledger owned by group finance" } ] }
+      ],
+      "legend_note": "Security across all layers: IEC 62443 segmentation before any integration.",
+      "_source": "Source: PLUMB reference architecture. Vendors are chosen by UFlex; PLUMB takes no fees from technology vendors." },
+
+    { "layout": "icon_cards", "section": "Gates",
+      "title": "Three gates decide each next commitment, with group finance signing the results",
+      "cards": [
+        { "icon": "LuSearch", "head": "Gate 1 · week 2", "text": "A line and a problem chosen, the data agreed, and installed tools listed" },
+        { "icon": "LuScale", "head": "Gate 2 · month 10", "text": "Pilot line against a control: 1.02% scrap removed, 3.4% energy saved" },
+        { "icon": "LuGlobe", "head": "Gate 3 · month 18", "text": "India sites tracking measured rates before any overseas roll-out" }
+      ],
+      "_source": "Below the Gate 2 line, UFlex keeps the enterprise use cases and the data foundation, and does not roll out the film-line work." },
+
+    { "layout": "plan", "section": "Next step",
+      "title": "The first step is a two-week sprint on one line and one problem UFlex chooses",
+      "units": 14, "lane_h": 0.78, "output_step": 0.78,
+      "lanes": [
+        { "name": "Immerse: line walk, interviews", "from": 1, "to": 3 },
+        { "name": "Audit: data and systems", "from": 4, "to": 7 },
+        { "name": "Prioritise: model on UFlex data", "from": 8, "to": 11 },
+        { "name": "Decide: pilot scope session", "from": 12, "to": 14 }
+      ],
+      "outputs": [
+        { "icon": "LuListChecks", "text": "Installed AI and line tools listed" },
+        { "icon": "LuDatabase", "text": "Data check for the chosen problem" },
+        { "icon": "LuCalculator", "text": "Business case on UFlex numbers" },
+        { "icon": "LuScale", "text": "Gate 2 test agreed with finance" }
+      ],
+      "ask": "A short session with film technical leadership to choose the line and the problem. The sprint has a fixed fee; UFlex owns the deliverables and is not obliged to continue.",
+      "_source": "Working days. Data is read-only and exported by UFlex IT; nothing connects to plant networks." },
+
+    { "layout": "about_min", "section": "About PLUMB",
+      "title": "PLUMB Advisory: independent AI strategy, measured on results",
+      "lines": [
+        { "icon": "LuShieldCheck", "text": "Independent: no reseller, referral or implementation fees from any technology vendor" },
+        { "icon": "LuHandshake", "text": "Fixed fee for the sprint; pilot fees capped, with part held back until Gate 2 is signed off" },
+        { "icon": "LuFactory", "text": "Film-process expertise on the team: [[FOUNDER: named specialist]]" },
+        { "icon": "LuFileSearch", "text": "This pre-read uses public information only: UFlex filings, investor presentations and industry sources" },
+        { "icon": "LuMail", "text": "Deepak Waghmare, Founder · [[FOUNDER: PLUMB email and phone]]" }
+      ] }
+  ]
+}

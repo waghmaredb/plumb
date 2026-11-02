@@ -38,7 +38,10 @@ const THEME = {
     accent5: COL.hair, accent6: COL.ink, hlink: COL.teal, folHlink: COL.slate },
 };
 const W = 13.333, H = 7.5, MX = 0.6, CW = W - 2 * MX;
-const STATUS_COL = { "In use": COL.teal, "Developed": COL.slate, "Testing": COL.amber };
+const STATUS_COL = { "In use": COL.teal, "Developed": COL.slate, "Testing": COL.amber,
+  "Stage 1": COL.teal, "After Gate 2": COL.slate, "Sized in sprint": COL.muted, "Existing": COL.slate, "New": COL.teal };
+// money labels: GEH decks default to S$ millions; other clients pass num_fmt { pre, suf, dp }
+function money(sl, v) { const f = Object.assign({ pre: "S$", suf: "m", dp: 1 }, sl.num_fmt || {}); return `${v < 0 ? "\u2212" : ""}${f.pre}${Math.abs(v).toFixed(f.dp)}${f.suf}`; }
 
 const pres = new pptxgen();
 pres.layout = "LAYOUT_WIDE";
@@ -262,7 +265,7 @@ function valueChain(sl, i) {
   const ly = 6.08;
   let lx = MX;
   const used = new Set(sl.stages.flatMap((st) => st.items.map((it) => it.status)));
-  ["In use", "Developed", "Testing"].filter((st) => used.has(st)).forEach((st) => { chip(s, lx, ly, st); lx += 1.2; });
+  (sl.legend_statuses || ["In use", "Developed", "Testing"]).filter((st) => used.has(st)).forEach((st) => { chip(s, lx, ly, st); lx += 1.2; });
   if (sl.legend_note) s.addText(t(sl.legend_note), { x: lx + 0.1, y: ly - 0.06, w: CW - (lx - MX) - 0.1, h: 0.38, isTextBox: true, margin: 0,
     fontFace: F.body, fontSize: 10, color: COL.muted, valign: "middle" });
 }
@@ -514,14 +517,15 @@ function lifecycle(sl, i) {
       if (it.market) s.addText(it.market, { x: px + pw - 0.42, y: py, w: 0.3, h: 0.48, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 9, bold: true, color: COL.muted, align: "right", valign: "middle" });
     });
   });
+  const rows = Math.max(2, ...sl.stages.map((st) => st.items.length));
   if (sl.stages.some((st) => st.outcome)) {
-    const oy = top + d + 0.7 + 2 * 0.62 + 0.15;
+    const oy = top + d + 0.7 + rows * 0.62 + 0.15;
     s.addShape(pres.shapes.LINE, { x: MX, y: oy, w: CW, h: 0, line: { color: COL.hair, width: 0.75 } });
-    s.addText("REPORTED OUTCOME", { x: MX, y: oy + 0.12, w: 3, h: 0.25, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 9, bold: true, color: COL.muted, charSpacing: 1.5 });
+    s.addText(sl.outcome_label || "REPORTED OUTCOME", { x: MX, y: oy + 0.12, w: 3, h: 0.25, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 9, bold: true, color: COL.muted, charSpacing: 1.5 });
     sl.stages.forEach((st, k) => {
       const cx = MX + cw * k + cw / 2, y = oy + 0.5;
       if (st.outcome) {
-        const c = st.outcome.tag === "Result" ? COL.teal : COL.amber;
+        const c = st.outcome.tag === "Result" || st.outcome.teal ? COL.teal : COL.amber;
         s.addText(st.outcome.text, { _oneLine: true, x: cx - cw / 2, y, w: cw, h: 0.4, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 18, color: COL.ink, align: "center", valign: "middle" });
         s.addText(st.outcome.tag.toUpperCase(), { x: cx - 0.45, y: y + 0.48, w: 0.9, h: 0.24, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 8, bold: true, color: COL.white, charSpacing: 1.2,
           align: "center", valign: "middle", shape: pres.shapes.ROUNDED_RECTANGLE, rectRadius: 0.04, fill: { color: c }, line: { color: c, width: 0 } });
@@ -531,13 +535,14 @@ function lifecycle(sl, i) {
     });
   }
   const hasOut = sl.stages.some((st) => st.outcome);
-  const ly = hasOut ? top + d + 0.7 + 2 * 0.62 + 0.25 : 6.08; let lx = hasOut ? W - MX - 5.0 : MX;
-  [["In use", COL.teal], ["Testing", COL.amber]].forEach(([lab, c]) => {
+  const ly = hasOut ? top + d + 0.7 + rows * 0.62 + 0.25 : 6.08; let lx = hasOut ? W - MX - (sl.legend_w || 5.0) : MX;
+  (sl.legend || ["In use", "Testing"]).forEach((lab) => {
+    const c = STATUS_COL[lab] || COL.muted, lw2 = sl.legend_item_w || 1.35;
     s.addShape(pres.shapes.OVAL, { x: lx, y: ly + 0.07, w: 0.16, h: 0.16, fill: { color: c }, line: { color: c, width: 0 } });
-    s.addText(lab, { x: lx + 0.25, y: ly, w: 1.1, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.text, valign: "middle" });
-    lx += 1.35;
+    s.addText(lab, { x: lx + 0.25, y: ly, w: lw2 - 0.25, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.text, valign: "middle" });
+    lx += lw2;
   });
-  s.addText("MY = Malaysia operations", { x: lx, y: ly, w: 3, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.muted, valign: "middle" });
+  s.addText(sl.legend_note == null ? "MY = Malaysia operations" : t(sl.legend_note), { x: lx, y: ly, w: 3, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.muted, valign: "middle" });
 }
 
 function donut(s, cx, cy, d, pct, color, track) {
@@ -614,7 +619,7 @@ function pendingTimeline(sl, i) {
 
 function disclosureMatrix(sl, i) {
   const s = frame(sl, i);
-  const top = contentTop(sl) + 0.05, lx = MX, lw = 6.2, colX = MX + 7.0, colW = 3.0, rh = 0.66;
+  const top = contentTop(sl) + 0.05, lx = MX, lw = 6.2, colX = MX + 7.0, colW = 3.0, rh = sl.row_h || 0.66;
   sl.columns.forEach((c, k) => s.addText(c, { x: colX + k * colW, y: top, w: colW, h: 0.4, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 12, bold: true, color: COL.muted, align: "center", valign: "bottom" }));
   sl.rows.forEach((r, j) => {
     const y = top + 0.55 + j * rh;
@@ -655,7 +660,7 @@ function iconCards(sl, i) {
 
 function plan(sl, i) {
   const s = frame(sl, i);
-  const top = contentTop(sl) + 0.1, lw = 3.4, gx = MX + lw, gw = 5.8, days = sl.units || 12, dw = gw / days, rh = 0.5;
+  const top = contentTop(sl) + 0.1, lw = 3.4, gx = MX + lw, gw = 5.8, days = sl.units || 12, dw = gw / days, rh = sl.lane_h || 0.5;
   for (let d = 1; d <= days; d++) {
     s.addText(sl.unit_label ? `${sl.unit_label} ${d}` : String(d), { x: gx + (d - 1) * dw, y: top, w: dw, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10, color: COL.muted, align: "center" });
     if (d > 1) s.addShape(pres.shapes.LINE, { x: gx + (d - 1) * dw, y: top + 0.35, w: 0, h: sl.lanes.length * rh + 0.05, line: { color: "EDF0F4", width: 0.75 } });
@@ -671,7 +676,7 @@ function plan(sl, i) {
   const ox = gx + gw + 0.45, ow = W - MX - ox;
   s.addText("YOU RECEIVE", { x: ox, y: top, w: ow, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10, bold: true, color: COL.muted, charSpacing: 1.5 });
   sl.outputs.forEach((o, k) => {
-    const y = top + 0.45 + k * 0.62;
+    const y = top + 0.45 + k * (sl.output_step || 0.62);
     iconDisc(s, o.icon, ox + 0.22, y + 0.22, 0.44, COL.teal, "white");
     s.addText(o.text, { x: ox + 0.6, y, w: ow - 0.6, h: 0.46, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 13, color: COL.ink, valign: "middle" });
   });
@@ -684,20 +689,20 @@ function plan(sl, i) {
 
 function sensitivityBars(sl, i) {
   const s = frame(sl, i);
-  const top = contentTop(sl) + 0.35, figs = sl.figures, maxV = Math.max(...figs.map((f) => f._num)), lw = 1.9, bx = MX + lw, bwMax = 5.2, bh = 0.85, gap = 0.55;
+  const top = contentTop(sl) + 0.35, figs = sl.figures, maxV = Math.max(...figs.map((f) => f._num)), lw = sl.label_w || 1.9, bx = MX + lw, bwMax = sl.bar_max_w || 5.2, bh = sl.bar_h || 0.85, gap = sl.bar_gap || 0.55;
   figs.forEach((f, k) => {
     const y = top + k * (bh + gap), w = bwMax * f._num / maxV;
     s.addText(f.label, { x: MX, y, w: lw - 0.2, h: bh, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 16, bold: true, color: COL.ink, valign: "middle" });
     s.addShape(pres.shapes.RECTANGLE, { x: bx, y, w, h: bh, fill: { color: COL.teal }, line: { color: COL.teal, width: 0 } });
-    s.addText(`S$${f._num.toFixed(1)}m`, { _oneLine: true, x: bx + w + 0.15, y, w: 1.4, h: bh, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 22, color: COL.ink, valign: "middle" });
+    s.addText(money(sl, f._num), { _oneLine: true, x: bx + w + 0.15, y, w: 1.6, h: bh, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 22, color: COL.ink, valign: "middle" });
     const an = (sl.annotations || {})[f.id];
     if (an) s.addText(t(an), { x: bx, y: y + bh + 0.06, w: bwMax, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, italic: true, color: COL.teal });
   });
   const ty = top + figs.length * (bh + gap) + 0.05;
   s.addShape(pres.shapes.LINE, { x: MX, y: ty, w: lw + bwMax + 1.5, h: 0, line: { color: COL.ink, width: 1 } });
   const total = figs.reduce((a, f) => a + f._num, 0);
-  s.addText("Group", { x: MX, y: ty + 0.1, w: lw - 0.2, h: 0.5, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 16, bold: true, color: COL.ink, valign: "middle" });
-  s.addText(`S$${total.toFixed(1)}m`, { x: bx, y: ty + 0.1, w: 2.5, h: 0.5, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 26, color: COL.teal, valign: "middle" });
+  s.addText(sl.total_label || "Group", { x: MX, y: ty + 0.1, w: lw - 0.2, h: 0.5, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 16, bold: true, color: COL.ink, valign: "middle" });
+  s.addText(money(sl, total), { x: bx, y: ty + 0.1, w: 2.5, h: 0.5, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 26, color: COL.teal, valign: "middle" });
   s.addText(sl.unit, { x: bx + 2.4, y: ty + 0.1, w: 4.5, h: 0.5, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 11, color: COL.muted, valign: "middle" });
   if (sl.callout) {
     const cx = MX + 8.9, cw2 = W - MX - cx, cy = top - 0.05, ch = 3.1;
@@ -743,10 +748,35 @@ function aboutMin(sl, i) {
   });
 }
 
+// stacked columns by year (benefit above the axis, cost below) with a dark callout on the right
+function yearBars(sl, i) {
+  const s = frame(sl, i);
+  const top = contentTop(sl) + 0.1, cw = sl.chart_w || 7.6, ch = sl.chart_h || 3.9;
+  s.addChart(pres.charts.BAR, sl.series.map((sr) => ({ name: sr.name, labels: sl.categories, values: sr.values })), {
+    x: MX - 0.1, y: top, w: cw, h: ch, barDir: "col", barGrouping: "stacked", overlap: 100, barGapWidthPct: 55,
+    chartColors: sl.series.map((sr) => sr.color), showLegend: true, legendPos: "b", legendFontSize: 11, legendFontFace: F.body, legendColor: COL.text,
+    catAxisLabelColor: COL.text, catAxisLabelFontSize: 12, catAxisLabelFontFace: F.body, catAxisLineShow: false, catAxisLabelPos: "low",
+    valAxisLabelColor: COL.muted, valAxisLabelFontSize: 10, valAxisLabelFontFace: F.body, valAxisLineShow: false,
+    valGridLine: { color: "E6EAEF", size: 0.5 }, valAxisTitle: sl.axis || "", showValAxisTitle: !!sl.axis, valAxisTitleFontSize: 10, valAxisTitleColor: COL.muted,
+    showValue: false, dataBorder: { pt: 0, color: "FFFFFF" } });
+  if (sl.callout) {
+    const cx = MX + cw + 0.35, cw2 = W - MX - cx, cy = top, chh = ch;
+    s.addShape(pres.shapes.RECTANGLE, { x: cx, y: cy, w: cw2, h: chh, fill: { color: COL.ink }, line: { color: COL.ink, width: 0 } });
+    s.addText(sl.callout.head.toUpperCase(), { x: cx + 0.35, y: cy + 0.28, w: cw2 - 0.7, h: 0.3, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10, bold: true, color: "5FB3B0", charSpacing: 1.5 });
+    sl.callout.rows.forEach((r, k) => {
+      const y = cy + 0.7 + k * (sl.callout.row_step || 0.62);
+      s.addText(r.label, { x: cx + 0.35, y, w: cw2 - 2.2, h: 0.5, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 13, color: COL.onDark, valign: "middle" });
+      s.addText(r.value, { _oneLine: true, x: cx + cw2 - 1.85, y, w: 1.5, h: 0.5, isTextBox: true, margin: 0, fontFace: F.head, fontSize: 20, color: r.strong ? "5FB3B0" : COL.white, align: "right", valign: "middle" });
+    });
+    if (sl.callout.note) s.addText(t(sl.callout.note), { x: cx + 0.35, y: cy + chh - 0.75, w: cw2 - 0.7, h: 0.55, isTextBox: true, margin: 0, fontFace: F.body, fontSize: 10.5, italic: true, color: COL.onDark, valign: "bottom" });
+  }
+  strap(s, sl, top + ch + 0.2, sl.strap_icon || "LuTarget");
+}
+
 const LAYOUTS = { cover, exec_summary: execSummary, value_chain: valueChain, two_stats: twoStats, hero_stat: heroStat, hypotheses,
   timeline, two_columns: twoColumns, questions, proposal, about,
   tiles, lifecycle, donuts, value_bars: valueBars, pending_bars: pendingBars, pending_timeline: pendingTimeline,
-  disclosure_matrix: disclosureMatrix, sensitivity_bars: sensitivityBars, pending_table: pendingTable, icon_cards: iconCards, plan, about_min: aboutMin };
+  disclosure_matrix: disclosureMatrix, sensitivity_bars: sensitivityBars, pending_table: pendingTable, icon_cards: iconCards, plan, about_min: aboutMin, year_bars: yearBars };
 
 (async () => {
   await prerenderIcons();
