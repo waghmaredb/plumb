@@ -33,7 +33,18 @@ Rules for every broader source:
 - **Entities are enumerated.** Every subsidiary and market (GEH: General Insurance, Takaful, Indonesia) is listed even when nothing is found, so a miss is visible.
 - **Fetch path:** the shell cannot reach publisher sites from the cloud sandbox; web pages are read with the fetch tool as secondary capture. Hashing a primary document still needs a machine with egress (F26).
 
-## 3. What the client sees: the outside-in inventory starter
+## 3. Red team for every internet-facing source
+
+No claim drawn from a website reaches any page unless someone other than its collector has checked it against the live page (`pipeline/plumbinventory/plumbinventory/redteam.py`).
+
+1. **Claims are data.** Each web source in `candidates.yaml` lists the exact claims made about it (`claims: {c1: …}`). Entries and page statements cite claim ids, never free text alone.
+2. **Independent check.** `redteam prompt` writes a brief with only the URLs and claims, never the collector's reasoning. The checker (a separate agent with no shared context, or a person) is told to try to disprove each claim and returns a verdict per claim — SUPPORTED with a verbatim excerpt, PARTIAL, NOT_SUPPORTED, WRONG_ENTITY or UNREACHABLE — plus the page's own title, date and organisation. `redteam merge` refuses a round whose checker is the collector.
+3. **Gate.** The build uses only claims whose latest verdict is SUPPORTED. A row that rests only on unconfirmed web claims is withheld; a row that also has annual-report evidence keeps that evidence and drops the web part. Every rejected claim is listed on the page under "Removed, not footnoted".
+4. **Mechanical second line.** `redteam refetch` re-downloads each page where the shell has internet access and checks that every excerpt actually appears. The `--profile client` build requires a MATCH for every web claim it uses; claims of absence ("the article does not mention AI") need a human read in that profile.
+
+GEH, 2026-11-06: round 1 confirmed 22 of 31 claims and caught 9 overstatements (an inferred private-cloud link, "personalised" not on the page, no launch year for the chatbot, OCBC tools not called generative AI). The claims were reworded to what the pages say and re-checked: 10 of 11 confirmed, including the MAS "AI inside SaaS" scope against MAS's own PDF (para 4.2, fn. 21). 28 of 28 web claims used on the page are confirmed; the re-fetch could not run from the cloud sandbox and is recorded as unreachable.
+
+## 3a. What the client sees: the outside-in inventory starter
 
 `pipeline/plumbinventory` turns the research into a page a CRO can audit in 30 seconds:
 
@@ -53,4 +64,5 @@ Framing rules carried over from the red teams: no grades, no gap language, mater
 | R2 | Coverage step as a build gate: an item marked required for the industry and not searched blocks a final build | Makes "we read the whole thing" checkable |
 | R3 | Banking checklist (`catalogue/coverage/bank.yaml`) for Maybank | Second subject (N4) |
 | R4 | Re-hash the AR with egress and reconcile (F26), then drop the "not yet reconciled" banner | Required before the page leaves the firm |
+| R6 | Run `redteam refetch` on a machine with egress (with F26), then build `--profile client` | Mechanical confirmation of every web excerpt before anything leaves the firm |
 | R5 | Fold the inventory and the finance question into the pre-read (v5) | Replaces the misused S$131m headline (red team 2026-11-02 §1) |

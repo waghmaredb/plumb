@@ -73,7 +73,7 @@ def check_figure(pages: list[str], pdf_page: int, value: str) -> dict:
             "after": page_norm[m.end():m.end() + 160]}
 
 
-def build(candidates_path: Path, out_dir: Path) -> dict:
+def build(candidates_path: Path, out_dir: Path, profile: str = "internal") -> dict:
     spec = yaml.safe_load(candidates_path.read_text())
     root = candidates_path.resolve().parents[3]  # repo root: runs/<subject>/<run>/candidates.yaml
     prim = spec["primary_source"]
@@ -89,6 +89,38 @@ def build(candidates_path: Path, out_dir: Path) -> dict:
         return {**item, "printed_page": pg + offset, "check": res,
                 "link": f"{prim['url']}#page={pg}"}
 
+    # ---- red-team gate for internet-facing sources (plumbinventory.redteam)
+    from .redteam import checks_path, claim_status, latest, load_checks
+    rt_all = load_checks(checks_path(candidates_path, spec))
+    rt_view, rt_refetch = latest(rt_all), {k: v for k, v in rt_all.get("refetch", {}).items() if k != "at"}
+    sources = {s["id"]: s for s in spec.get("secondary_sources", [])}
+    collector = spec.get("collector")
+    withheld: list[dict] = []
+    used_claims: list[dict] = []
+
+    def gate(pairs: list[list[str]]) -> tuple[list[dict], list[str]]:
+        recs, why = [], []
+        for key, cid in pairs:
+            src = sources.get(key)
+            if not src or cid not in (src.get("claims") or {}):
+                failures.append(f"unknown source claim {key}/{cid}")
+                why.append(f"{key}/{cid}: unknown claim")
+                continue
+            meta = rt_view.get(key, {}).get("meta", {})
+            if meta.get("checker") and meta.get("checker") == collector:
+                failures.append(f"{key}: checked by its own collector")
+            ok, reason, rec = claim_status(rt_view, rt_refetch, key, cid, profile)
+            if ok:
+                recs.append({"source": key, "claim_id": cid, "claim": src["claims"][cid],
+                             "excerpt": rec.get("excerpt", ""), "checker_note": rec.get("note", ""),
+                             "checker": rec.get("checker"), "round": rec.get("round"),
+                             "page_date": meta.get("page_date"), "page_title": meta.get("page_title")})
+                used_claims.append({"source": key, "claim_id": cid, "ok": True})
+            else:
+                why.append(f"{key}/{cid}: {reason}")
+                used_claims.append({"source": key, "claim_id": cid, "ok": False})
+        return recs, why
+
     entries = []
     for e in spec["entries"]:
         e = dict(e)
@@ -96,9 +128,47 @@ def build(candidates_path: Path, out_dir: Path) -> dict:
         e["figures"] = [cite(f, "figure") for f in e.get("figures", [])]
         if e["basis"] == "disclosed" and not e["evidence"]:
             failures.append(f"{e['id']}: basis 'disclosed' but no annual-report evidence")
-        if e["basis"] != "disclosed" and not e.get("secondary") and not e["evidence"]:
+        if e.get("secondary"):
+            sec = dict(e["secondary"])
+            if not sec.get("claims"):
+                failures.append(f"{e['id']}: web source used without red-teamed claim ids")
+                sec["claims"] = []
+            recs, why = gate([[sec["source"], c] for c in sec["claims"]])
+            if why:
+                withheld.append({"id": e["id"], "name": e["name"], "reasons": why,
+                                 "kept_on_annual_report_evidence": bool(e["evidence"])})
+                if e["evidence"]:
+                    e.pop("secondary")          # keep the row, drop the unverified web part
+                else:
+                    continue                     # nothing verified left: withhold the row
+            else:
+                sec["verified"] = recs
+                e["secondary"] = sec
+        if not e["evidence"] and not e.get("secondary"):
             failures.append(f"{e['id']}: no evidence of any kind")
         entries.append(e)
+
+    page_claims = []
+    for pc in spec.get("page_claims", []):
+        recs, why = gate(pc["rests_on"])
+        if why:
+            withheld.append({"id": pc["id"], "name": pc["text"], "reasons": why, "kept_on_annual_report_evidence": False})
+        else:
+            page_claims.append({**pc, "verified": recs})
+
+    rt_records = [c for s in rt_view.values() for c in s["claims"].values()]
+    redteam_summary = {
+        "profile": profile,
+        "checker": sorted({r.get("checker") for r in rt_all.get("rounds", [])} - {None}),
+        "rounds": len(rt_all.get("rounds", [])),
+        "claims_checked": len(rt_records),
+        "claims_supported": sum(c["verdict"] == "SUPPORTED" for c in rt_records),
+        "claims_rejected": [{"source": k, "claim_id": cid, "claim": sources.get(k, {}).get("claims", {}).get(cid, ""),
+                             "verdict": c["verdict"], "note": c.get("note", "")}
+                            for k, s in rt_view.items() for cid, c in s["claims"].items() if c["verdict"] != "SUPPORTED"],
+        "used": len(used_claims), "used_passed": sum(u["ok"] for u in used_claims),
+        "refetch_run": bool(rt_refetch),
+    }
 
     context = []
     for c in spec.get("context", []):
@@ -126,6 +196,9 @@ def build(candidates_path: Path, out_dir: Path) -> dict:
         "context": context,
         "finance_question": fq,
         "ask_about": spec.get("ask_about", []),
+        "page_claims": page_claims,
+        "withheld": withheld,
+        "redteam": redteam_summary,
         "summary": {
             "entries": len(entries),
             "disclosed": sum(e["basis"] == "disclosed" for e in entries),
@@ -145,11 +218,19 @@ def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("candidates", type=Path)
     ap.add_argument("--out", type=Path, required=True)
+    ap.add_argument("--profile", choices=["internal", "client"], default="internal",
+                    help="client also requires a mechanical re-fetch match for every web claim used")
     a = ap.parse_args(argv)
-    out = build(a.candidates, a.out)
+    out = build(a.candidates, a.out, a.profile)
     s = out["summary"]
     print(f"{s['entries']} entries ({s['disclosed']} disclosed, {s['secondary']} secondary, {s['group']} group); "
           f"{s['checks_passed']}/{s['checks']} source checks passed")
+    r = out["redteam"]
+    print(f"red team ({r['profile']}): {r['used_passed']}/{r['used']} web claims used passed; "
+          f"{r['claims_supported']}/{r['claims_checked']} supported across {r['rounds']} rounds; "
+          f"{len(out['withheld'])} withheld")
+    for w in out["withheld"]:
+        print("WITHHELD", w["id"], "; ".join(w["reasons"]), file=sys.stderr)
     for f in s["failures"]:
         print("FAIL", f, file=sys.stderr)
     return 1 if s["failures"] else 0

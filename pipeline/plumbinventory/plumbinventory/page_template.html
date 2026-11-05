@@ -81,6 +81,11 @@ footer{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:
 .kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;font-size:13.5px;margin:0}
 .kv dt{color:var(--muted)} .kv dd{margin:0}
 .sec-note{font-size:13px;color:var(--muted);margin:0}
+.rt{display:inline-flex;align-items:center;gap:4px;font:500 11.5px/1 var(--f-body);color:var(--ok);background:var(--ok-soft);border:0;border-radius:4px;padding:4px 7px;cursor:pointer;vertical-align:2px}
+.rtl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+.rtl li{display:flex;flex-direction:column;gap:3px;font-size:13.5px}
+.rtl q{font:14px/1.5 var(--f-display);color:var(--ink);quotes:"\201C" "\201D"}
+.rej{font:500 11.5px/1 var(--f-body);color:var(--warn);white-space:nowrap}
 @media (max-width:520px){.stats{grid-template-columns:1fr}.row{grid-template-columns:minmax(0,1fr)}.meta{justify-content:flex-start}}
 @media (prefers-reduced-motion:no-preference){.sheet{animation:in .18s ease-out}@keyframes in{from{transform:translateY(12px);opacity:.6}}}
 </style>
@@ -90,7 +95,7 @@ footer{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:
   <header>
     <div class="eyebrow">PLUMB Advisory · for __CLIENT__</div>
     <h1>A starting list for your AI inventory, built only from what is public</h1>
-    <p class="lede">MAS expects an inventory of all AI in use, including AI inside vendor software, from 7 October 2027. These are the systems we could find in your FY2025 annual report and other public sources. Tap any row to see the exact passage, the page it is on, and the file it came from.</p>
+    <p class="lede"><span id="pc-mas"></span> These are the systems we could find in your FY2025 annual report and other public sources. Tap any row to see the exact passage, the page it is on, and the file it came from.</p>
     <p class="lede muted">This is a list for your teams to confirm, correct and rate. MAS leaves materiality to your control function, so we only note why each entry may matter.</p>
   </header>
 
@@ -103,6 +108,7 @@ footer{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:
       <button class="chip" id="f-group" data-f="group" aria-pressed="false">Group (OCBC)</button>
     </div>
     <h2 id="h-inv" class="sr" hidden>Candidate entries</h2>
+    <p class="sec-note" id="rt-line" style="margin:0 0 10px"></p>
     <div class="list" id="list"></div>
   </section>
 
@@ -127,8 +133,15 @@ footer{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:
     <ul class="ask" id="ask"></ul>
   </section>
 
+  <section aria-labelledby="h-removed">
+    <h2 id="h-removed">Removed, not footnoted</h2>
+    <p class="sec-note" style="margin-bottom:10px">Claims about web sources that an independent check could not confirm. None of them appears anywhere on this page.</p>
+    <div class="ctx" id="removed"></div>
+  </section>
+
   <footer>
-    <div>How to check this page: open the annual report link on any entry and go to the page shown. Every quotation here was matched word for word against our stored copy of the report before the page was built; figures were found on their page and the row was read by an analyst.</div>
+    <div>How to check this page: open the annual report link on any entry and go to the page shown. Every quotation here was matched word for word against our stored copy of the report before the page was built; figures were found on their page and the row was read by an analyst. Every statement drawn from another website was checked against the live page by an independent agent that did not collect it and was asked to disprove it; only claims it confirmed with a verbatim excerpt are shown.</div>
+    <div id="rt-foot"></div>
     <div>Stored copy, SHA-256: <span class="hash" id="sha"></span></div>
     <div id="built"></div>
   </footer>
@@ -156,6 +169,14 @@ $('status').textContent = 'Preview for internal review, ' + D.as_of + '. Not yet
 $('sha').textContent = P.sha256;
 $('built').textContent = 'Built ' + D.built_at.replace('T',' ').replace('+00:00',' UTC') + ' · ' + D.summary.checks_passed + ' of ' + D.summary.checks + ' source checks passed.';
 
+const R = D.redteam;
+const pcm = (D.page_claims||[]).find(x=>x.id==='pc-mas');
+$('pc-mas').innerHTML = pcm ? esc(pcm.text)+' <button class="rt" id="rt-mas" data-pc="pc-mas">✓ checked</button>' : '';
+$('rt-line').textContent = 'Web sources were checked by an independent agent asked to disprove them: '+R.claims_supported+' of '+R.claims_checked+' claims held up across '+R.rounds+' rounds. Only those are used here; the rest are listed under "Removed, not footnoted".';
+$('rt-foot').textContent = 'Web claims used on this page: '+R.used_passed+' of '+R.used+' confirmed by the independent check. Mechanical re-fetch of web pages: '+(R.refetch_run?'attempted; required before this page leaves the firm':'not yet run')+'.';
+const vlabel = {PARTIAL:'Only partly supported', NOT_SUPPORTED:'Not supported', WRONG_ENTITY:'Wrong organisation', UNREACHABLE:'Page unreachable'};
+$('removed').innerHTML = (R.claims_rejected||[]).map(c=>`<div class="row" style="cursor:default"><div class="name" style="font-weight:500">${esc(c.claim)}</div><div class="meta"><span class="rej">${esc(vlabel[c.verdict]||c.verdict)}</span></div><div class="why">${esc((src[c.source]||{}).publisher||c.source)} · ${esc(c.note)}</div></div>`).join('') +
+  (D.withheld||[]).map(w=>`<div class="row" style="cursor:default"><div class="name" style="font-weight:500">${esc(w.name)}</div><div class="meta"><span class="rej">Withheld</span></div><div class="why">${esc(w.reasons.join('; '))}</div></div>`).join('');
 const s = D.summary;
 $('stats').innerHTML = [
   [s.entries,'candidate AI systems'],
@@ -192,10 +213,14 @@ function evHTML(ev, isFigure){
   <div class="ev-body">…${esc(c.before)}<mark>${esc(c.match)}</mark>${esc(c.after)}…</div>
   <div class="ev-foot"><a href="${esc(ev.link)}" target="_blank" rel="noopener">Open page ${esc(ev.printed_page)} of the report</a><span class="hash">${esc(P.sha256.slice(0,12))}…</span></div></div>`;
 }
+function rtList(recs){
+  return `<ul class="rtl">${recs.map(r=>`<li><span>${esc(r.claim)}</span>${r.excerpt?`<q>${esc(r.excerpt)}</q>`:`<span class="sec-note">${esc(r.checker_note||'Checked; no excerpt applies (absence on the page).')}</span>`}</li>`).join('')}</ul>`;
+}
 function secHTML(sec){
-  const so = src[sec.source]||{};
-  return `<div class="ev"><div class="ev-head"><span style="color:var(--info);font-weight:600">Other public source · not hashed</span><span>${esc(so.publisher||'')}, ${esc(so.date||'')}</span></div>
+  const so = src[sec.source]||{}; const v = sec.verified||[]; const d = v[0]&&v[0].page_date;
+  return `<div class="ev"><div class="ev-head"><span style="color:var(--info);font-weight:600">Other public source · not hashed</span><span>${esc(so.publisher||'')}${d?', '+esc(d):''}</span></div>
   <div class="ev-body" style="font-family:var(--f-body);font-size:14px">${esc(sec.note)}</div>
+  <div class="ev-body" style="font-family:var(--f-body);border-top:1px solid var(--line)"><div class="check" style="margin-bottom:8px">✓ Independent check: ${v.length} of ${v.length} claims confirmed on the live page</div>${rtList(v)}</div>
   <div class="ev-foot"><a href="${esc(so.url)}" target="_blank" rel="noopener">${esc(so.title)}</a></div></div>`;
 }
 let lastFocus=null;
@@ -205,6 +230,8 @@ $('close').addEventListener('click',close); $('scrim').addEventListener('click',
 document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('sheet').hidden) close(); });
 
 document.addEventListener('click',ev=>{
+  const pc = ev.target.closest('[data-pc]');
+  if(pc){ const c=(D.page_claims||[]).find(x=>x.id===pc.dataset.pc); open(`<h3 id="sheet-title">${esc(c.text)}</h3><div class="ev"><div class="ev-head"><span class="check">✓ Independent check against the live page</span><span>${esc((src[c.verified[0].source]||{}).publisher||'')}</span></div><div class="ev-body" style="font-family:var(--f-body)">${rtList(c.verified)}</div><div class="ev-foot"><a href="${esc((src[c.verified[0].source]||{}).url)}" target="_blank" rel="noopener">${esc((src[c.verified[0].source]||{}).title)}</a></div></div>`); return; }
   const r = ev.target.closest('[data-id]'), fg = ev.target.closest('[data-fig]'), cx = ev.target.closest('[data-ctx]');
   if(r){
     const e = D.entries.find(x=>x.id===r.dataset.id);

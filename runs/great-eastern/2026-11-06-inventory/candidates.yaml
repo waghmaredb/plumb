@@ -18,62 +18,115 @@ primary_source:
   url: "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
   printed_page_offset: -2   # printed page = PDF page - 2 (checked against red-team 2026-11-02 citations)
 
+collector: claude-main-session      # whoever gathered the web sources; may never be the checker
+source_checks: source_checks.json   # red-team verdicts (plumbinventory.redteam merge)
+
+# Every web source lists the exact claims sent to the independent red team. An entry may rest only on
+# claim ids whose latest verdict is SUPPORTED; anything else is withheld from the page.
 secondary_sources:
   - id: pega2024
-    title: "PegaWorld Inspire 2024 — 'An everyday app to grow sales agent business' (Great Eastern session deck)"
+    title: "PegaWorld Inspire 2024 — An everyday app to grow the sales agent business for Great Eastern Life"
     url: "https://pega.com/system/files/resources/pdf/pega-pegaworld-inspire-2024-an-everyday-app-grow-sales-agent-business.pdf"
     publisher: Pegasystems
-    date: "2024"
     tier: T3
+    claims:
+      c1: "The deck is about Great Eastern (the Singapore insurer)."
+      c2: "Great Eastern uses Pega Customer Service and Sales Force Automation, running on Great Eastern's private cloud."
+      c3: "An agent app called GreatPlanner is built on Pega."
+      c4: "A GenAI 'Knowledge Buddy' for distribution channels is listed as a next step / plan."
+      c5: "The deck's timeline lists 'Pega CS & SFA'."
+      c6: "The deck's timeline lists Pega on Great Eastern's private cloud in 2022."
+      c7: "The deck features an agent app called GreatPlanner."
   - id: panda-gerica
     title: "Pand.ai develops chatbot for Great Eastern Life"
     url: "https://coverager.com/pand-ai-develops-chatbot-for-great-eastern-life/"
     publisher: Coverager
-    date: "not stated"
     tier: T4
+    claims:
+      c1: "Describes a chatbot named GERICA for Great Eastern Life."
+      c2: "It gives agents policy and claim-status information."
+      c3: "It is built on Pand.ai's engine."
+      c4: "The article gives a year for the launch."
+      c5: "The article says GERICA debuted 'in April' and gives no year."
+      c6: "The article says Pand.AI has a partnership with Great Eastern Life Singapore."
   - id: oracle-2024
-    title: "Great Eastern moves 200TB from 300 on-premises databases to a cloud database platform"
+    title: "Great Eastern insurance group migrates data to the Cloud"
     url: "https://digiconasia.net/?p=42742"
     publisher: DigiconAsia
-    date: "2024-04-29"
     tier: T4
+    claims:
+      c1: "Article dated 29 April 2024 about Great Eastern."
+      c2: "Over 200TB of data from 300 on-premises databases was migrated."
+      c3: "The platform is an Oracle cloud database service run in Great Eastern's own data centres."
+      c4: "The article does not mention AI."
   - id: app-mpe
-    title: "Great Eastern introduces new app feature (My Protection Explorer)"
+    title: "Great Eastern introduces new app feature"
     url: "https://coverager.com/great-eastern-introduces-new-app-feature/"
     publisher: Coverager
-    date: "not stated"
     tier: T4
+    claims:
+      c1: "Great Eastern introduced 'My Protection Explorer' in its app for Singapore customers."
+      c2: "It gives personalised gap analysis and recommendations."
+      c3: "The article does not say how the recommendations are produced (rules vs model)."
+      c4: "Great Eastern introduced an app feature that lets customers in Singapore assess their financial preparedness, highlighting gaps and offering recommendations."
+      c5: "The feature is named 'My Protection Explorer' on the page."
   - id: job-daie
     title: "Lead Data and AI Solution Engineer — The Great Eastern Life Assurance Company Limited (closed posting)"
     url: "https://www.foundit.sg/job/lead-data-and-ai-solution-engineer-the-great-eastern-life-assurance-company-limited-singapore-47233558"
     publisher: foundit.sg
-    date: "last updated 2026-03-10"
     tier: T4
+    claims:
+      c1: "The employer is The Great Eastern Life Assurance Company Limited."
+      c2: "Role title is Lead Data and AI Solution Engineer."
+      c3: "The posting mentions machine-learning pipelines and Data & AI Ops automation."
+      c4: "It names TensorFlow, PyTorch and scikit-learn, and AWS, GCP or Azure."
+      c5: "Page shows 'last updated' 10 March 2026 and the posting is closed."
+      c6: "Duties include Data & AI Ops issue/incident tracking and reporting."
   - id: ocbc-ar2025
     title: "OCBC Annual Report 2025 — Driving customer centricity through AI, digital and data"
     url: "https://www.ocbc.com/group/investors/annual-reports/2025-annual-report/driving-customer-centricity-through-ai-digital-and-data.page"
     publisher: OCBC
-    date: "2026"
     tier: T2
+    claims:
+      c1: "OCBC describes in-house generative AI productivity tools."
+      c2: "OCBC describes an RM copilot."
+      c3: "OCBC describes introducing agentic AI into KYC processes."
+      c4: "Great Eastern is not mentioned on the page."
+      c5: "OCBC describes deploying in-house tools that delivered significant productivity gains."
+      c6: "The page explicitly describes those in-house tools as generative AI."
   - id: geh-1h26
-    title: "Great Eastern sustains strong business momentum for 1H-2026 (media release)"
+    title: "Great Eastern sustains strong business momentum for 1H-2026"
     url: "https://www.greateasternlife.com/sg/en/about-us/media-centre/media-releases/great-eastern-sustains-strong-business-momentum-1h2026.html"
     publisher: Great Eastern
-    date: "2026-07-31"
     tier: T2
-    note: "Read 2026-11-06: no sentence on AI, automation, claims technology or a Data & AI successor."
+    claims:
+      c1: "Great Eastern media release dated 31 July 2026 on 1H-2026 results."
+      c2: "The release body contains no sentence about AI, automation, claims technology, or a new Data & AI leader."
   - id: mas-airm
     title: "MAS Guidelines on Artificial Intelligence Risk Management for Financial Institutions"
     url: "https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions"
     publisher: MAS
-    date: "2026-10-07"
     tier: T1
+    claims:
+      c1: "MAS Guidelines on Artificial Intelligence Risk Management for Financial Institutions, published 7 October 2026."
+      c2: "They take effect on 7 October 2027."
+      c3: "They apply to all financial institutions and all forms of AI."
+      c4: "The primary MAS text says identification should minimally cover AI in services provided by material third-party service providers."
   - id: beri-fn21
-    title: "MAS makes banks find the AI hidden in their SaaS by October 2027"
+    title: "MAS makes financial firms inventory AI across their SaaS tools"
     url: "https://www.beri.net/article/mas-ai-risk-management-guidelines-final-financial-institutions-inventory-materiality-third-party-ai-october-2027"
     publisher: beri.net
-    date: "2026-10-09"
     tier: T4
+    claims:
+      c1: "Article dated 9 October 2026."
+      c2: "It says MAS identification should cover AI in services provided by material third-party service providers (paragraph 4.2)."
+      c3: "It says a footnote (21) refers to software-as-a-service that may not be explicitly sold as AI but contains AI."
+
+# Statements on the page itself that rest on web sources (rendered only if every claim passes).
+page_claims:
+  - id: pc-mas
+    text: "MAS expects every financial institution to keep an inventory of all its AI, including AI inside vendor software, from 7 October 2027."
+    rests_on: [[mas-airm, c2], [mas-airm, c3], [mas-airm, c4]]
 
 # ---------------------------------------------------------------- candidate entries
 # basis: disclosed (the client's own AR says it) | secondary (third-party page, unhashed) | group (parent's disclosure)
@@ -200,7 +253,7 @@ entries:
     build: vendor
     status: unknown
     why_it_matters: "Vendor platform used by the tied agency, bancassurance and adviser channels; a GenAI feature was on the 2024 roadmap."
-    secondary: {source: pega2024, note: "Session deck names GreatPlanner on Pega Customer Service and Sales Force Automation, private cloud, and lists a GenAI 'Knowledge Buddy' for distribution as a next step."}
+    secondary: {source: pega2024, claims: [c1, c5, c6, c7, c4], note: "A Pega conference deck about Great Eastern Life lists Pega CS & SFA since 2013 and Pega on Great Eastern's private cloud from 2022, features the GreatPlanner agent app, and lists a GenAI 'Knowledge Buddy' for distribution channels under next steps."}
     to_confirm: "Whether the GenAI assistant went live, and whether any Pega decisioning features are switched on."
 
   - id: inv-11
@@ -211,18 +264,18 @@ entries:
     build: vendor
     status: unknown
     why_it_matters: "A third-party conversational AI; if still running, it is a vendor AI service to inventory."
-    secondary: {source: panda-gerica, note: "Reports a chatbot named GERICA for agents, giving policy and claim-status information, built on Pand.ai's engine. No year given."}
+    secondary: {source: panda-gerica, claims: [c1, c6, c5], note: "Reports a chatbot named GERICA from Pand.AI, which has a partnership with Great Eastern Life Singapore. It says GERICA debuted 'in April' but gives no year."}
     to_confirm: "Still in service, retired, or replaced."
 
   - id: inv-12
-    name: Customer app — My Protection Explorer recommendations
+    name: Customer app — My Protection Explorer gap recommendations
     stage: Advice
     market: Singapore
     basis: secondary
     build: unknown
     status: in-use
     why_it_matters: "Shows customers coverage gaps and recommendations; if model-driven, it is customer-facing AI."
-    secondary: {source: app-mpe, note: "Describes personalised gap analysis and recommendations in the Great Eastern app; does not say how recommendations are produced."}
+    secondary: {source: app-mpe, claims: [c5, c4, c3], note: "Describes My Protection Explorer, an app feature for Singapore customers that assesses financial preparedness, highlights gaps and offers recommendations. It does not say how the recommendations are produced."}
     to_confirm: "Rules or model; who approved the recommendation logic."
 
   - id: inv-13
@@ -233,7 +286,7 @@ entries:
     build: vendor
     status: in-use
     why_it_matters: "MAS asks FIs to look for AI inside SaaS that is not sold as AI; self-tuning managed databases are a typical case to check."
-    secondary: {source: oracle-2024, note: "Reports 200TB from 300 on-premises databases moved to an Oracle cloud database platform run in Great Eastern's own data centres; the article does not mention AI."}
+    secondary: {source: oracle-2024, claims: [c1, c2, c3, c4], note: "Reports, on 29 April 2024, that Great Eastern moved over 200TB from 300 on-premises databases to an Oracle database cloud service run in its own data centres. The article does not mention AI."}
     to_confirm: "Whether any embedded ML features are in scope of the inventory under MAS footnote 21."
 
   - id: inv-14
@@ -246,7 +299,7 @@ entries:
     why_it_matters: "The pipelines that train and deploy the models above; MAS lifecycle controls (from Oct 2028) land here."
     evidence:
       - {source: ar2025, pdf_page: 41, quote: "In 2025, we restructured our Data & AI operating model to accelerate transformation."}
-    secondary: {source: job-daie, note: "Closed posting for a Lead Data and AI Solution Engineer: machine-learning pipelines, Data & AI Ops automation, TensorFlow, PyTorch, scikit-learn; AWS, GCP or Azure."}
+    secondary: {source: job-daie, claims: [c1, c2, c3, c6, c4, c5], note: "Closed posting (last updated 10 March 2026) at The Great Eastern Life Assurance Company for a Lead Data and AI Solution Engineer: machine-learning pipeline deployments, Data & AI Ops incident tracking, TensorFlow, PyTorch and scikit-learn, and AWS, GCP or Azure."}
     to_confirm: "Which cloud, and whether models are registered in one catalogue."
 
   - id: inv-15
@@ -256,8 +309,8 @@ entries:
     basis: group
     build: unknown
     status: unknown
-    why_it_matters: "OCBC reports in-house GenAI tools and agentic AI in KYC; if Great Eastern staff use group tools, they belong on Great Eastern's inventory too."
-    secondary: {source: ocbc-ar2025, note: "OCBC describes in-house GenAI productivity tools, an RM copilot and agentic AI in KYC processes. Great Eastern is not mentioned."}
+    why_it_matters: "OCBC reports rapid generative AI adoption and agentic AI in KYC; if Great Eastern staff use group tools, they belong on Great Eastern's inventory too."
+    secondary: {source: ocbc-ar2025, claims: [c5, c2, c3, c4], note: "OCBC says it has rapidly adopted generative AI and deployed in-house tools with significant productivity gains, describes an AI copilot for relationship managers, and is introducing agentic AI into KYC. Great Eastern is not mentioned."}
     to_confirm: "Which group tools Great Eastern staff can use, and who owns their risk rating locally."
 
 # ---------------------------------------------------------------- context the reader can check (not inventory rows)

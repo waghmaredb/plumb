@@ -1,0 +1,19 @@
+{"checker":"independent-agent","checked_at":"2026-11-06","round":2,"sources":[
+{"id":"S1","key":"pega2024","claims":[
+{"id":"c5","verdict":"SUPPORTED","excerpt":"Pega CS & SFA (6.5) • 3 Applications","note":"This is the 2013 timeline entry."},
+{"id":"c6","verdict":"SUPPORTED","excerpt":"Upgrded to V8.8 • Pega on our private Cloud • E-Claims for Malaysia","note":"This is the 2022 entry. 'Upgrded' is the deck's own spelling, and 'our' means Great Eastern."},
+{"id":"c7","verdict":"SUPPORTED","excerpt":"make GreatPlanner the unified Go-to app for agents","note":"The 2023 timeline entry also lists 'Great Planner for Singapore'."}]},
+{"id":"S2","key":"panda-gerica","claims":[
+{"id":"c5","verdict":"SUPPORTED","excerpt":"made its debut in April, we have seen very high satisfactory score","note":"The only 4-digit number on the page is 2016, Pand.AI's founding year, so no launch year is given."},
+{"id":"c6","verdict":"SUPPORTED","excerpt":"the company has a partnership in place with Great Eastern Life Singapore","note":"'The company' refers to Pand.AI."}]},
+{"id":"S4","key":"app-mpe","claims":[
+{"id":"c4","verdict":"SUPPORTED","excerpt":"a new feature in its app that lets customers in Singapore assess their financial preparedness","note":"The page continues 'while highlighting gaps and offering recommendations'; the fetch succeeded this round."},
+{"id":"c5","verdict":"SUPPORTED","excerpt":"Great Eastern Holdings introduced My Protection Explorer, a new feature in its app that lets customers in Singapore assess","note":"The name also appears again later in the article."}]},
+{"id":"S5","key":"job-daie","claims":[
+{"id":"c6","verdict":"SUPPORTED","excerpt":"Lead Data & AI Ops issue/incident tracking and reporting, coordinate concerted issue/incident resolution with related parties","note":"This round also confirms automation duties: 'Develop automation scripts and methods to reduce manual effort in Data & AI deployments'."}]},
+{"id":"S6","key":"ocbc-ar2025","claims":[
+{"id":"c5","verdict":"SUPPORTED","excerpt":"We have rapidly adopted generative AI in recent years, deploying in-house tools that have delivered significant productivity","note":"The sentence ends with 'gains.'"},
+{"id":"c6","verdict":"PARTIAL","excerpt":"We have rapidly adopted generative AI in recent years, deploying in-house tools that have delivered significant productivity","note":"The tools appear in the same sentence as generative AI adoption, so the link is strong but not an explicit statement that the tools are generative AI."}]},
+{"id":"S8","key":"mas-airm","claims":[
+{"id":"c4","verdict":"SUPPORTED","excerpt":"the identification process should minimally cover such AI in services provided by material third-party service providers.","note":"Checked in the linked MAS PDF, para 4.2. Footnote 21 there also reads 'software-as-a-service which may not be explicitly sold as AI, but contains AI features', which confirms S9 c3 against the primary text."}]}
+]}

@@ -52,6 +52,13 @@ storyline, not our reasoning:
 Fix what it finds. When a finding is a pattern rather than a one-off, add it to `deck_rubric.py`
 so the next deck cannot repeat it.
 
+## Web sources: red team before any page
+
+Any claim taken from a website, on any client-facing surface (inventory page, deck, report), must
+carry a SUPPORTED verdict from an independent checker who did not collect it, with a verbatim excerpt
+(`plumbinventory.redteam`; rules in `docs/customer-research-coverage.md` §3). A client build also
+requires a mechanical re-fetch match. Unconfirmed claims are removed and listed, never footnoted.
+
 ## Lessons already encoded
 
 | Review finding (2026-10-26) | Now enforced by |
