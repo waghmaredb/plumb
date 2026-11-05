@@ -1,0 +1,225 @@
+<title>__TITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,650&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: a ledger. One column of inventory rows; tapping a row opens its evidence sheet with the
+   exact passage, page and hash. Ink-blue surveyor palette with a brass plumb-bob accent. */
+:root{
+  --bg:#f5f6f8; --surface:#ffffff; --ink:#14213a; --muted:#5a6478; --line:#dde1e8;
+  --accent:#9a6a14; --accent-soft:#f3ead8; --mark:#fff0c2; --ok:#1f7a4d; --ok-soft:#e3f2ea;
+  --info:#2d5b9a; --info-soft:#e4ecf7; --warn:#8a5a00;
+  --f-display:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --f-body:"IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --f-mono:"IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0f1522; --surface:#171f30; --ink:#e7ebf3; --muted:#9aa4b8; --line:#2a3448;
+  --accent:#d9a548; --accent-soft:#33291a; --mark:#4a3d14; --ok:#5cc28f; --ok-soft:#173326;
+  --info:#8fb3e8; --info-soft:#1c2a42; --warn:#e0b15a; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0f1522; --surface:#171f30; --ink:#e7ebf3; --muted:#9aa4b8; --line:#2a3448;
+  --accent:#d9a548; --accent-soft:#33291a; --mark:#4a3d14; --ok:#5cc28f; --ok-soft:#173326;
+  --info:#8fb3e8; --info-soft:#1c2a42; --warn:#e0b15a; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+.wrap{max-width:860px;margin:0 auto;display:flex;flex-direction:column;gap:36px}
+a{color:var(--info)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.note{margin-top:16px;font-size:12.5px;color:var(--muted);border:1px dashed var(--line);border-radius:6px;padding:8px 12px}
+header{display:flex;flex-direction:column;gap:12px;padding-top:20px}
+.eyebrow{font:500 12px/1 var(--f-body);letter-spacing:.08em;text-transform:uppercase;color:var(--accent)}
+h1{font:650 clamp(26px,5vw,38px)/1.15 var(--f-display);margin:0;text-wrap:balance;max-width:24ch}
+h2{font:650 22px/1.25 var(--f-display);margin:0 0 6px;text-wrap:balance}
+.lede{max-width:62ch;color:var(--ink);margin:0}
+.lede.muted{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.stat{background:var(--surface);padding:14px 16px;display:flex;flex-direction:column;gap:2px;min-width:0}
+.stat b{font:650 26px/1.1 var(--f-display);font-variant-numeric:tabular-nums}
+.stat span{font-size:12.5px;color:var(--muted)}
+.filters{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0 10px}
+.chip{font:500 13px/1 var(--f-body);border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:8px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.list{display:flex;flex-direction:column;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 16px;align-items:start;padding:14px 4px;border-bottom:1px solid var(--line);background:none;border-left:0;border-right:0;border-top:0;text-align:left;color:inherit;font:inherit;cursor:pointer;width:100%}
+.row:hover{background:var(--surface)}
+.row .name{font-weight:600}
+.row .why{grid-column:1/-1;color:var(--muted);font-size:13.5px;max-width:68ch}
+.meta{display:flex;flex-wrap:wrap;gap:6px;justify-content:flex-end}
+.pill{font:500 11.5px/1 var(--f-body);padding:5px 8px;border-radius:4px;white-space:nowrap}
+.p-disclosed{background:var(--ok-soft);color:var(--ok)}
+.p-secondary{background:var(--info-soft);color:var(--info)}
+.p-group{background:var(--accent-soft);color:var(--accent)}
+.p-plain{background:transparent;color:var(--muted);border:1px solid var(--line)}
+.cite{font:500 12px/1 var(--f-mono);color:var(--accent)}
+.fin{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px}
+.figs{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px}
+.fig{border:1px solid var(--line);border-radius:6px;padding:12px;background:var(--bg);text-align:left;color:inherit;font:inherit;cursor:pointer;display:flex;flex-direction:column;gap:4px}
+.fig b{font:650 22px/1 var(--f-display);font-variant-numeric:tabular-nums}
+.fig span{font-size:12.5px;color:var(--muted)}
+.ctx{display:flex;flex-direction:column;gap:0;border-top:1px solid var(--line)}
+.ctx .row{grid-template-columns:minmax(0,1fr) auto}
+ul.ask{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;max-width:68ch}
+footer{font-size:13px;color:var(--muted);display:flex;flex-direction:column;gap:8px;border-top:1px solid var(--line);padding-top:16px}
+.hash{font:400 12px/1.4 var(--f-mono);word-break:break-all;color:var(--ink)}
+/* evidence sheet */
+.scrim{position:fixed;inset:0;background:rgba(10,15,25,.45);z-index:20}
+.sheet{position:fixed;z-index:21;background:var(--surface);color:var(--ink);overflow:auto;
+  right:0;top:0;bottom:0;width:min(520px,100%);padding:20px max(20px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) 20px;
+  padding-top:calc(20px + env(safe-area-inset-top,0px));border-left:1px solid var(--line);display:flex;flex-direction:column;gap:16px}
+@media (max-width:640px){.sheet{top:auto;left:0;width:100%;max-height:86vh;border-left:0;border-top:1px solid var(--line);border-radius:14px 14px 0 0;padding-left:max(20px,env(safe-area-inset-left,0px))}}
+.sheet h3{font:650 20px/1.25 var(--f-display);margin:0;padding-right:40px}
+.close{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));right:max(12px,env(safe-area-inset-right,0px));border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:999px;width:34px;height:34px;font-size:18px;cursor:pointer}
+@media (max-width:640px){.close{top:12px}}
+.ev{border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.ev-head{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;align-items:center;padding:10px 12px;background:var(--bg);font-size:12.5px}
+.check{color:var(--ok);font-weight:600}
+.ev-body{padding:12px;font:15px/1.6 var(--f-display);color:var(--muted)}
+.ev-body mark{background:var(--mark);color:var(--ink);padding:1px 2px;border-radius:2px}
+.ev-foot{padding:10px 12px;border-top:1px solid var(--line);display:flex;flex-wrap:wrap;gap:12px;align-items:center;font-size:13px}
+.kv{display:grid;grid-template-columns:auto minmax(0,1fr);gap:6px 14px;font-size:13.5px;margin:0}
+.kv dt{color:var(--muted)} .kv dd{margin:0}
+.sec-note{font-size:13px;color:var(--muted);margin:0}
+@media (max-width:520px){.stats{grid-template-columns:1fr}.row{grid-template-columns:minmax(0,1fr)}.meta{justify-content:flex-start}}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:in .18s ease-out}@keyframes in{from{transform:translateY(12px);opacity:.6}}}
+</style>
+
+<div class="wrap">
+  <div class="note" id="status"></div>
+  <header>
+    <div class="eyebrow">PLUMB Advisory · for __CLIENT__</div>
+    <h1>A starting list for your AI inventory, built only from what is public</h1>
+    <p class="lede">MAS expects an inventory of all AI in use, including AI inside vendor software, from 7 October 2027. These are the systems we could find in your FY2025 annual report and other public sources. Tap any row to see the exact passage, the page it is on, and the file it came from.</p>
+    <p class="lede muted">This is a list for your teams to confirm, correct and rate. MAS leaves materiality to your control function, so we only note why each entry may matter.</p>
+  </header>
+
+  <section aria-labelledby="h-inv">
+    <div class="stats" id="stats"></div>
+    <div class="filters" role="group" aria-label="Filter by source">
+      <button class="chip" id="f-all" data-f="all" aria-pressed="true">All</button>
+      <button class="chip" id="f-disclosed" data-f="disclosed" aria-pressed="false">In your annual report</button>
+      <button class="chip" id="f-secondary" data-f="secondary" aria-pressed="false">Other public sources</button>
+      <button class="chip" id="f-group" data-f="group" aria-pressed="false">Group (OCBC)</button>
+    </div>
+    <h2 id="h-inv" class="sr" hidden>Candidate entries</h2>
+    <div class="list" id="list"></div>
+  </section>
+
+  <section class="fin" aria-labelledby="h-fin">
+    <div>
+      <div class="eyebrow">A question for your actuarial team</div>
+      <h2 id="h-fin"></h2>
+    </div>
+    <p class="lede" id="fin-text"></p>
+    <div class="figs" id="figs"></div>
+  </section>
+
+  <section aria-labelledby="h-ctx">
+    <h2 id="h-ctx">Context from the same report</h2>
+    <p class="sec-note">Who owns most of these systems, and where the board already looks.</p>
+    <div class="ctx" id="ctx"></div>
+  </section>
+
+  <section aria-labelledby="h-ask">
+    <h2 id="h-ask">Worth asking about</h2>
+    <p class="sec-note" style="margin-bottom:10px">Common in insurers, with no public evidence either way at Great Eastern. These are questions, not findings.</p>
+    <ul class="ask" id="ask"></ul>
+  </section>
+
+  <footer>
+    <div>How to check this page: open the annual report link on any entry and go to the page shown. Every quotation here was matched word for word against our stored copy of the report before the page was built; figures were found on their page and the row was read by an analyst.</div>
+    <div>Stored copy, SHA-256: <span class="hash" id="sha"></span></div>
+    <div id="built"></div>
+  </footer>
+</div>
+
+<div class="scrim" id="scrim" hidden></div>
+<aside class="sheet" id="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+  <button class="close" id="close" aria-label="Close">×</button>
+  <div id="sheet-body"></div>
+</aside>
+
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(function(){
+const D = JSON.parse(document.getElementById('data').textContent);
+const src = Object.fromEntries((D.secondary_sources||[]).map(s=>[s.id,s]));
+const P = D.primary_source;
+const $ = id => document.getElementById(id);
+const esc = s => String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const basisLabel = {disclosed:'In your annual report', secondary:'Other public source', group:'Group (OCBC)'};
+const statusLabel = {'in-use':'In use','testing':'Testing','planned':'Planned','unknown':'Status to confirm'};
+const firstPage = e => (e.evidence&&e.evidence[0]) ? 'AR p.'+e.evidence[0].printed_page : '';
+
+$('status').textContent = 'Preview for internal review, ' + D.as_of + '. Not yet read by an independent reviewer; stored copy not yet reconciled with a fresh download from the publisher.';
+$('sha').textContent = P.sha256;
+$('built').textContent = 'Built ' + D.built_at.replace('T',' ').replace('+00:00',' UTC') + ' · ' + D.summary.checks_passed + ' of ' + D.summary.checks + ' source checks passed.';
+
+const s = D.summary;
+$('stats').innerHTML = [
+  [s.entries,'candidate AI systems'],
+  [s.disclosed,'described in your own annual report'],
+  [s.checks_passed+'/'+s.checks,'quotations and figures matched to their page']
+].map(([b,t])=>`<div class="stat"><b>${esc(b)}</b><span>${esc(t)}</span></div>`).join('');
+
+function rowHTML(e){
+  return `<button class="row" id="row-${esc(e.id)}" data-id="${esc(e.id)}" data-basis="${esc(e.basis)}">
+    <div class="name">${esc(e.name)}</div>
+    <div class="meta"><span class="pill p-${esc(e.basis)}">${esc(basisLabel[e.basis])}</span><span class="pill p-plain">${esc(e.stage)} · ${esc(e.market)}</span><span class="pill p-plain">${esc(statusLabel[e.status]||e.status)}</span>${firstPage(e)?`<span class="cite">${esc(firstPage(e))}</span>`:''}</div>
+    <div class="why">${esc(e.why_it_matters)}</div></button>`;
+}
+function renderList(f){
+  $('list').innerHTML = D.entries.filter(e=>f==='all'||e.basis===f).map(rowHTML).join('');
+}
+renderList('all');
+document.querySelectorAll('.chip').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed', x===b?'true':'false'));
+  renderList(b.dataset.f);
+}));
+
+const fq = D.finance_question;
+$('h-fin').textContent = fq.title; $('fin-text').textContent = fq.text;
+$('figs').innerHTML = fq.figures.map((f,i)=>`<button class="fig" id="fig-${i}" data-fig="${i}"><b>S$${esc(f.value)}m</b><span>${esc(f.label.replace(' (S$m)',''))}</span><span class="cite">AR p.${esc(f.printed_page)}</span></button>`).join('');
+
+$('ctx').innerHTML = D.context.map(c=>`<button class="row" id="ctx-${esc(c.id)}" data-ctx="${esc(c.id)}"><div class="name" style="font-weight:500">${esc(c.text)}</div><div class="meta"><span class="cite">AR p.${esc(c.evidence[0].printed_page)}</span></div></button>`).join('');
+$('ask').innerHTML = D.ask_about.map(a=>`<li>${esc(a)}</li>`).join('');
+
+function evHTML(ev, isFigure){
+  const c = ev.check;
+  const head = isFigure ? 'Figure found on this page · row read by analyst' : 'Matched word for word';
+  return `<div class="ev"><div class="ev-head"><span class="check">✓ ${head}</span><span class="cite">Annual report p.${esc(ev.printed_page)} (PDF p.${esc(ev.pdf_page)})</span></div>
+  <div class="ev-body">…${esc(c.before)}<mark>${esc(c.match)}</mark>${esc(c.after)}…</div>
+  <div class="ev-foot"><a href="${esc(ev.link)}" target="_blank" rel="noopener">Open page ${esc(ev.printed_page)} of the report</a><span class="hash">${esc(P.sha256.slice(0,12))}…</span></div></div>`;
+}
+function secHTML(sec){
+  const so = src[sec.source]||{};
+  return `<div class="ev"><div class="ev-head"><span style="color:var(--info);font-weight:600">Other public source · not hashed</span><span>${esc(so.publisher||'')}, ${esc(so.date||'')}</span></div>
+  <div class="ev-body" style="font-family:var(--f-body);font-size:14px">${esc(sec.note)}</div>
+  <div class="ev-foot"><a href="${esc(so.url)}" target="_blank" rel="noopener">${esc(so.title)}</a></div></div>`;
+}
+let lastFocus=null;
+function open(html){ lastFocus=document.activeElement; $('sheet-body').innerHTML=html; $('sheet').hidden=false; $('scrim').hidden=false; $('close').focus(); }
+function close(){ $('sheet').hidden=true; $('scrim').hidden=true; if(lastFocus) lastFocus.focus(); }
+$('close').addEventListener('click',close); $('scrim').addEventListener('click',close);
+document.addEventListener('keydown',e=>{ if(e.key==='Escape' && !$('sheet').hidden) close(); });
+
+document.addEventListener('click',ev=>{
+  const r = ev.target.closest('[data-id]'), fg = ev.target.closest('[data-fig]'), cx = ev.target.closest('[data-ctx]');
+  if(r){
+    const e = D.entries.find(x=>x.id===r.dataset.id);
+    open(`<h3 id="sheet-title">${esc(e.name)}</h3>
+      <dl class="kv"><dt>Where</dt><dd>${esc(e.stage)} · ${esc(e.market)}</dd><dt>Built</dt><dd>${esc({ 'in-house':'In-house','vendor':'Vendor','unknown':'Not stated'}[e.build])}</dd><dt>Status</dt><dd>${esc(statusLabel[e.status]||e.status)}</dd><dt>Why it may matter</dt><dd>${esc(e.why_it_matters)}</dd><dt>To confirm</dt><dd>${esc(e.to_confirm)}</dd></dl>
+      ${(e.figures||[]).map(f=>`<div class="sec-note"><b style="color:var(--ink)">${esc(f.value)}</b> ${esc(f.label)}${f.kind==='target'?' — stated as an aim, not a result':''}</div>`).join('')}
+      ${(e.evidence||[]).map(x=>evHTML(x,false)).join('')}
+      ${e.secondary?secHTML(e.secondary):''}`);
+  } else if(fg){
+    const f = fq.figures[+fg.dataset.fig];
+    open(`<h3 id="sheet-title">S$${esc(f.value)}m</h3><p class="sec-note">${esc(f.label)}. A valuation sensitivity or balance, not an annual saving.</p>${evHTML(f,true)}`);
+  } else if(cx){
+    const c = D.context.find(x=>x.id===cx.dataset.ctx);
+    open(`<h3 id="sheet-title">${esc(c.text)}</h3>${c.evidence.map(x=>evHTML(x,false)).join('')}`);
+  }
+});
+})();
+</script>

@@ -1,0 +1,303 @@
+# Great Eastern Holdings — outside-in candidate AI inventory (input to plumbinventory)
+# Built 2026-11-06. Every `quote` below is string-matched by the build against the stored text of the
+# hashed FY2025 annual report (run 2026-10-26-run6, SHA-256 ae320cb3…6488). A quote that does not match
+# on its stated PDF page fails the build. Secondary sources are web pages read on 2026-11-06; they are
+# NOT hashed and are labelled as such on every surface.
+#
+# Framing rule (red-team 2026-11-02 §4, §7): this is a starting list for the client's control function
+# to confirm, not a gap finding and not a grade. Materiality is MAS's to assign (impact, complexity,
+# reliance — Guidelines §4); we give only the reason an entry may matter.
+
+subject: great-eastern
+client: Great Eastern Holdings
+run: runs/great-eastern/2026-10-26-run6
+as_of: 2026-11-06
+primary_source:
+  id: ar2025
+  title: Great Eastern Holdings Annual Report 2025
+  url: "https://www.greateasternlife.com/content/dam/corp-site/group/gels-au-corpcomms/english-website/annual-report/great-eastern-holdings-limited-ar-2025.pdf"
+  printed_page_offset: -2   # printed page = PDF page - 2 (checked against red-team 2026-11-02 citations)
+
+secondary_sources:
+  - id: pega2024
+    title: "PegaWorld Inspire 2024 — 'An everyday app to grow sales agent business' (Great Eastern session deck)"
+    url: "https://pega.com/system/files/resources/pdf/pega-pegaworld-inspire-2024-an-everyday-app-grow-sales-agent-business.pdf"
+    publisher: Pegasystems
+    date: "2024"
+    tier: T3
+  - id: panda-gerica
+    title: "Pand.ai develops chatbot for Great Eastern Life"
+    url: "https://coverager.com/pand-ai-develops-chatbot-for-great-eastern-life/"
+    publisher: Coverager
+    date: "not stated"
+    tier: T4
+  - id: oracle-2024
+    title: "Great Eastern moves 200TB from 300 on-premises databases to a cloud database platform"
+    url: "https://digiconasia.net/?p=42742"
+    publisher: DigiconAsia
+    date: "2024-04-29"
+    tier: T4
+  - id: app-mpe
+    title: "Great Eastern introduces new app feature (My Protection Explorer)"
+    url: "https://coverager.com/great-eastern-introduces-new-app-feature/"
+    publisher: Coverager
+    date: "not stated"
+    tier: T4
+  - id: job-daie
+    title: "Lead Data and AI Solution Engineer — The Great Eastern Life Assurance Company Limited (closed posting)"
+    url: "https://www.foundit.sg/job/lead-data-and-ai-solution-engineer-the-great-eastern-life-assurance-company-limited-singapore-47233558"
+    publisher: foundit.sg
+    date: "last updated 2026-03-10"
+    tier: T4
+  - id: ocbc-ar2025
+    title: "OCBC Annual Report 2025 — Driving customer centricity through AI, digital and data"
+    url: "https://www.ocbc.com/group/investors/annual-reports/2025-annual-report/driving-customer-centricity-through-ai-digital-and-data.page"
+    publisher: OCBC
+    date: "2026"
+    tier: T2
+  - id: geh-1h26
+    title: "Great Eastern sustains strong business momentum for 1H-2026 (media release)"
+    url: "https://www.greateasternlife.com/sg/en/about-us/media-centre/media-releases/great-eastern-sustains-strong-business-momentum-1h2026.html"
+    publisher: Great Eastern
+    date: "2026-07-31"
+    tier: T2
+    note: "Read 2026-11-06: no sentence on AI, automation, claims technology or a Data & AI successor."
+  - id: mas-airm
+    title: "MAS Guidelines on Artificial Intelligence Risk Management for Financial Institutions"
+    url: "https://www.mas.gov.sg/regulation/guidelines/guidelines-on-artificial-intelligence-risk-management-for-financial-institutions"
+    publisher: MAS
+    date: "2026-10-07"
+    tier: T1
+  - id: beri-fn21
+    title: "MAS makes banks find the AI hidden in their SaaS by October 2027"
+    url: "https://www.beri.net/article/mas-ai-risk-management-guidelines-final-financial-institutions-inventory-materiality-third-party-ai-october-2027"
+    publisher: beri.net
+    date: "2026-10-09"
+    tier: T4
+
+# ---------------------------------------------------------------- candidate entries
+# basis: disclosed (the client's own AR says it) | secondary (third-party page, unhashed) | group (parent's disclosure)
+# build: in-house | vendor | unknown          status: in-use | testing | planned | unknown
+entries:
+  - id: inv-01
+    name: Adviser preparation platform
+    stage: Advice
+    market: Group
+    basis: disclosed
+    build: unknown
+    status: in-use
+    why_it_matters: "Supports advice given to customers; fair-dealing and suitability controls apply to its outputs."
+    evidence:
+      - {source: ar2025, pdf_page: 14, quote: "In 2025, we deployed an AI-enabled advisory platform that aims to reduce preparation time for financial advisors by approximately 75%, enabling them to focus more on customer engagement and advice."}
+    figures:
+      - {label: "preparation-time reduction (aim)", value: "75%", source: ar2025, pdf_page: 14, kind: target}
+    to_confirm: "Model provider and hosting; whether outputs reach customers unreviewed; owner."
+
+  - id: inv-02
+    name: Medical-claims automation platform
+    stage: Claims
+    market: Singapore
+    basis: disclosed
+    build: in-house
+    status: in-use
+    why_it_matters: "Decides or speeds customer claim outcomes at volume; reliance is high once same-day turnaround is the norm."
+    evidence:
+      - {source: ar2025, pdf_page: 14, quote: "We rolled out a proprietary AI-powered platform to automate medical claims, enhancing claim efficiency while improving customer experience."}
+      - {source: ar2025, pdf_page: 40, quote: "In 2025, our AI-driven claims system delivered same-day turnarounds for 75% of medical claims, one of the fastest among Singapore’s health insurers based on Ministry of Health service indicators."}
+    figures:
+      - {label: "medical claims with same-day turnaround (Singapore, 2025)", value: "75%", source: ar2025, pdf_page: 40, kind: result}
+    to_confirm: "Which decisions are automated end to end versus routed to an assessor; override and appeal path."
+
+  - id: inv-03
+    name: Complex-case underwriting assistant
+    stage: Underwriting
+    market: Group
+    basis: disclosed
+    build: unknown
+    status: testing
+    why_it_matters: "Underwriting decisions shape who is covered and at what price; MAS expects pilots to be inventoried too."
+    evidence:
+      - {source: ar2025, pdf_page: 14, quote: "We are also testing an AI solution for complex underwriting cases to further improve automation and associated efficiency."}
+    to_confirm: "Whether a reinsurer or vendor engine sits underneath; decision rights during the test."
+
+  - id: inv-04
+    name: Underwriting and claims analytics (in-house)
+    stage: Underwriting
+    market: Singapore
+    basis: disclosed
+    build: in-house
+    status: in-use
+    why_it_matters: "Replacing vendor tools with in-house models moves model-risk ownership inside the firm."
+    evidence:
+      - {source: ar2025, pdf_page: 41, quote: "By sharpening our in-house analytics and AI for underwriting and medical claims, we improved accuracy and consistency while reducing reliance on external vendors."}
+    to_confirm: "Which vendor tools were retired, and whether any remain in parallel."
+
+  - id: inv-05
+    name: Great CareShield customer segmentation for instant approval
+    stage: Onboarding and underwriting
+    market: Singapore
+    basis: disclosed
+    build: unknown
+    status: in-use
+    why_it_matters: "An automated approval decision on a customer; fairness and explainability expectations are highest here."
+    evidence:
+      - {source: ar2025, pdf_page: 40, quote: "We further leveraged AI in our customer segmentation process for our supplementary long-term care insurance plan, Great CareShield, to enable instant approvals for existing lower-risk customers."}
+    to_confirm: "What happens to customers the model does not approve instantly; fairness testing."
+
+  - id: inv-06
+    name: Transaction and sales-pattern monitoring (AML and misconduct)
+    stage: Risk and conduct
+    market: Singapore
+    basis: disclosed
+    build: in-house
+    status: in-use
+    why_it_matters: "A control that other controls rely on; failure is silent, so monitoring of the monitor matters."
+    evidence:
+      - {source: ar2025, pdf_page: 40, quote: "Complementing these, our proprietary risk management AI solutions strengthen governance by continuously monitoring transactions and sales patterns to proactively detect compliance risks, including anti-money laundering and potential misconduct."}
+    to_confirm: "Alert thresholds, false-negative testing, and who validates the model (second line)."
+
+  - id: inv-07
+    name: Medical-bill OCR and claims-wastage review
+    stage: Claims
+    market: Malaysia
+    basis: disclosed
+    build: in-house
+    status: in-use
+    why_it_matters: "Flags customer claims for review; BNM fair-treatment rules apply in Malaysia."
+    evidence:
+      - {source: ar2025, pdf_page: 43, quote: "As AI accelerates transformation across the insurance industry, we have developed an Optical Character Recognition solution that extracts and analyses data from medical bills to identify potential wastage and abuse within medical claims."}
+    to_confirm: "Whether flagged claims are delayed or declined, and the human review step."
+
+  - id: inv-08
+    name: Campaign lead prioritisation
+    stage: Distribution
+    market: Malaysia
+    basis: disclosed
+    build: unknown
+    status: in-use
+    why_it_matters: "Described as analytics, not AI; MAS's definition is broad, so it may still belong on the list."
+    evidence:
+      - {source: ar2025, pdf_page: 43, quote: "In addition, we deployed advanced analytics to enhance lead prioritisation within our marketing campaigns, contributing to improved conversion rates."}
+    to_confirm: "Model type, and whether it uses personal data beyond consent scope."
+
+  - id: inv-09
+    name: Misconduct-case identification model
+    stage: Risk and conduct
+    market: Malaysia
+    basis: disclosed
+    build: in-house
+    status: in-use
+    why_it_matters: "Affects staff and agents; investigation outcomes depend on it."
+    evidence:
+      - {source: ar2025, pdf_page: 43, quote: "We have also developed an AI-driven model to help identify potential misconduct cases, significantly reducing the manual effort and time required for investigations."}
+    to_confirm: "Relationship to the Singapore monitoring tool (inv-06): one model or two."
+
+  - id: inv-10
+    name: Agent "everyday app" (GreatPlanner) on Pega, with a planned GenAI knowledge assistant
+    stage: Distribution
+    market: Singapore
+    basis: secondary
+    build: vendor
+    status: unknown
+    why_it_matters: "Vendor platform used by the tied agency, bancassurance and adviser channels; a GenAI feature was on the 2024 roadmap."
+    secondary: {source: pega2024, note: "Session deck names GreatPlanner on Pega Customer Service and Sales Force Automation, private cloud, and lists a GenAI 'Knowledge Buddy' for distribution as a next step."}
+    to_confirm: "Whether the GenAI assistant went live, and whether any Pega decisioning features are switched on."
+
+  - id: inv-11
+    name: Agent chatbot (GERICA, Pand.ai engine)
+    stage: Distribution
+    market: Singapore
+    basis: secondary
+    build: vendor
+    status: unknown
+    why_it_matters: "A third-party conversational AI; if still running, it is a vendor AI service to inventory."
+    secondary: {source: panda-gerica, note: "Reports a chatbot named GERICA for agents, giving policy and claim-status information, built on Pand.ai's engine. No year given."}
+    to_confirm: "Still in service, retired, or replaced."
+
+  - id: inv-12
+    name: Customer app — My Protection Explorer recommendations
+    stage: Advice
+    market: Singapore
+    basis: secondary
+    build: unknown
+    status: in-use
+    why_it_matters: "Shows customers coverage gaps and recommendations; if model-driven, it is customer-facing AI."
+    secondary: {source: app-mpe, note: "Describes personalised gap analysis and recommendations in the Great Eastern app; does not say how recommendations are produced."}
+    to_confirm: "Rules or model; who approved the recommendation logic."
+
+  - id: inv-13
+    name: Cloud database platform (vendor-managed)
+    stage: Data foundation
+    market: Group
+    basis: secondary
+    build: vendor
+    status: in-use
+    why_it_matters: "MAS asks FIs to look for AI inside SaaS that is not sold as AI; self-tuning managed databases are a typical case to check."
+    secondary: {source: oracle-2024, note: "Reports 200TB from 300 on-premises databases moved to an Oracle cloud database platform run in Great Eastern's own data centres; the article does not mention AI."}
+    to_confirm: "Whether any embedded ML features are in scope of the inventory under MAS footnote 21."
+
+  - id: inv-14
+    name: In-house ML platform and Data & AI operations
+    stage: Data foundation
+    market: Singapore
+    basis: secondary
+    build: in-house
+    status: in-use
+    why_it_matters: "The pipelines that train and deploy the models above; MAS lifecycle controls (from Oct 2028) land here."
+    evidence:
+      - {source: ar2025, pdf_page: 41, quote: "In 2025, we restructured our Data & AI operating model to accelerate transformation."}
+    secondary: {source: job-daie, note: "Closed posting for a Lead Data and AI Solution Engineer: machine-learning pipelines, Data & AI Ops automation, TensorFlow, PyTorch, scikit-learn; AWS, GCP or Azure."}
+    to_confirm: "Which cloud, and whether models are registered in one catalogue."
+
+  - id: inv-15
+    name: Group GenAI tools shared with OCBC
+    stage: Workforce
+    market: Group
+    basis: group
+    build: unknown
+    status: unknown
+    why_it_matters: "OCBC reports in-house GenAI tools and agentic AI in KYC; if Great Eastern staff use group tools, they belong on Great Eastern's inventory too."
+    secondary: {source: ocbc-ar2025, note: "OCBC describes in-house GenAI productivity tools, an RM copilot and agentic AI in KYC processes. Great Eastern is not mentioned."}
+    to_confirm: "Which group tools Great Eastern staff can use, and who owns their risk rating locally."
+
+# ---------------------------------------------------------------- context the reader can check (not inventory rows)
+context:
+  - id: ctx-leader
+    text: "The Managing Director, Group Data and AI is expected to join OCBC as Head of the Group Data Office in March 2026."
+    evidence:
+      - {source: ar2025, pdf_page: 67, quote: "Ms Zhao Jingyuan (Managing Director, Group Data and Artificial Intelligence) is expected to join Oversea-Chinese Banking Corporation Limited (“OCBC”) as the Head of the Group Data Office in March 2026."}
+  - id: ctx-ops
+    text: "Customer service, underwriting and claims sit under one Group Operations leader — the owner of most rows above."
+    evidence:
+      - {source: ar2025, pdf_page: 31, quote: "Leads and oversees the Customer Service, Underwriting and Claims departments across the Group, with strong focus on delivering customer service excellence."}
+  - id: ctx-governance
+    text: "The Letter to Shareholders ties AI expansion to governance."
+    evidence:
+      - {source: ar2025, pdf_page: 14, quote: "As we expanded the use of digital and AI capabilities, we did so with discipline and robust governance."}
+  - id: ctx-rmc
+    text: "Technology risk is within the Risk Management Committee's mandate."
+    evidence:
+      - {source: ar2025, pdf_page: 68, quote: "insurance, operational, technology, conduct, money laundering and terrorism financing, legal, regulatory, reputational, strategic and sustainability risks"}
+  - id: ctx-board
+    text: "Two directors were paid for work on IT infrastructure, data and AI initiatives in FY2025."
+    evidence:
+      - {source: ar2025, pdf_page: 80, quote: "for their contributions in respect of Great Eastern Group’s information technology infrastructure, data and artificial intelligence initiatives for FY2025."}
+
+# ---------------------------------------------------------------- figures for the CFO question (string presence checked on page; row read by analyst)
+finance_question:
+  title: "Malaysia accident and health has become more sensitive to claims experience"
+  text: "In the Malaysia segment's sensitivity table, a 10% fall in accident and health claims assumptions moved one year's profit after tax by S$99.3m in 2025, against S$5.9m in 2024. Across life contracts, the loss component on remaining coverage rose from S$727.1m to S$873.9m during 2025. Together these suggest less contractual-service-margin buffer, so claims-cost improvement there may reach profit faster. This is a question for your actuarial team, not a forecast: these are valuation sensitivities of a stock, not an annual saving."
+  figures:
+    - {label: "Malaysia A&H scenario 4 (−10%), net impact on 1-year profit after tax, 2025 (S$m)", value: "99.3", source: ar2025, pdf_page: 189, kind: sensitivity}
+    - {label: "Same scenario, 2024 (S$m)", value: "5.9", source: ar2025, pdf_page: 189, kind: sensitivity}
+    - {label: "Life contracts issued — loss component, 1 January 2025 (S$m)", value: "727.1", source: ar2025, pdf_page: 156, kind: balance}
+    - {label: "Life contracts issued — loss component, 31 December 2025 (S$m)", value: "873.9", source: ar2025, pdf_page: 156, kind: balance}
+
+# ---------------------------------------------------------------- classes with no public evidence (questions, never claims)
+ask_about:
+  - "Reinsurer underwriting rules engines used for automated acceptance"
+  - "Speech or text analytics in the contact centre"
+  - "AI features inside HR, CRM, document and e-signature SaaS"
+  - "Staff use of public GenAI tools, and the policy that governs it"
+  - "Great Eastern General Insurance, Takaful (Malaysia) and Indonesia — none of their AI appears in the Group report"
+  - "Investment management models used by the asset-management arm"

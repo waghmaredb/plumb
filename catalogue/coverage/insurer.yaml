@@ -1,0 +1,39 @@
+# Coverage checklist — life and general insurers (v0.1, 2026-11-06)
+# Built from the four-reviewer red team of the GEH pre-read (2026-11-02 §3, §5, §9) and the
+# MAS AIRM inventory scope (§4, footnote 21: AI inside SaaS not sold as AI).
+# Each item names what a CXO reader expects us to have read, and the terms that locate it in an
+# annual report. The coverage step reports, per item: pages found, or "not found in this document"
+# (never "does not exist"). Items marked external need a source beyond the annual report.
+industry: insurance
+items:
+  # --- the AI itself
+  - {id: ai-uses, area: AI in use, ask: "Every AI or analytics use the client names, by segment", terms: ["AI", "artificial intelligence", "machine learning", "analytics", "automat"]}
+  - {id: ai-genai, area: AI in use, ask: "Generative AI or LLM use, internal or customer-facing", terms: ["generative", "GenAI", "large language", "LLM", "copilot", "chatbot"]}
+  - {id: ai-vendor, area: AI in use, ask: "Vendor strategy: build vs buy, reliance on external vendors", terms: ["vendor", "in-house", "proprietary"]}
+  - {id: ai-pilots, area: AI in use, ask: "Pilots and tests (MAS expects them inventoried too)", terms: ["testing", "pilot", "trial", "proof of concept"]}
+  # --- foundations
+  - {id: data-platform, area: Foundations, ask: "Core systems and data-platform modernisation", terms: ["core system", "data platform", "modernis", "cloud"]}
+  - {id: operating-model, area: Foundations, ask: "Data & AI operating model and talent", terms: ["operating model", "Data & AI", "Data and AI", "talent", "upskill"]}
+  # --- people and owners
+  - {id: leaders, area: People, ask: "Named owners: data/AI, operations, risk, technology — and changes in the year", terms: ["Managing Director", "Chief", "expected to join", "appointed", "relinquish"]}
+  - {id: board-skills, area: People, ask: "Board members with technology or AI background", terms: ["artificial intelligence", "technology", "digital", "cybersecurity"]}
+  # --- oversight route (where AI governance actually sits for most FIs)
+  - {id: risk-committee, area: Oversight, ask: "Risk committee mandate covering technology risk", terms: ["Risk Management Committee", "technology risk"]}
+  - {id: kri, area: Oversight, ask: "Technology KRIs reported to the board", terms: ["key risk indicator", "KRI", "risk appetite"]}
+  - {id: internal-audit, area: Oversight, ask: "Internal audit coverage of technology and models", terms: ["Internal Audit", "technology risk", "model"]}
+  - {id: model-risk, area: Oversight, ask: "Model risk, model validation, AI governance language", terms: ["model risk", "model validation", "responsible AI", "AI governance", "FEAT", "Veritas"]}
+  # --- economics (for finance-literate sizing; flow bases, not stocks)
+  - {id: claims-flow, area: Economics, ask: "Claims incurred and expense lines by segment (flow bases for sizing)", terms: ["incurred claims", "claims and other expenses", "management expenses", "insurance service expenses"]}
+  - {id: sensitivity, area: Economics, ask: "Assumption sensitivities (to read as stock remeasurement, never annual value)", terms: ["sensitivity", "Scenario", "Accident and Health"]}
+  - {id: onerous, area: Economics, ask: "Loss component and CSM movements (where improvement reaches P&L fastest)", terms: ["loss component", "onerous", "contractual service margin", "CSM"]}
+  - {id: cost-pressure, area: Economics, ask: "Cost pressures the CEO names (e.g. medical inflation)", terms: ["inflation", "medical cost", "claims inflation", "cost pressure"]}
+  # --- conduct and market specifics
+  - {id: fair-dealing, area: Conduct, ask: "Fair dealing, misconduct, complaints", terms: ["fair dealing", "misconduct", "complaint", "fair treatment"]}
+  - {id: entities, area: Scope, ask: "Every entity and market: life, general, takaful, other Asia", terms: ["General Insurance", "Takaful", "Indonesia", "Brunei"]}
+  # --- outside the annual report (external sources required)
+  - {id: x-jobs, area: External, external: true, ask: "Job postings: stack, clouds, ML ops, GenAI roles"}
+  - {id: x-vendor-cases, area: External, external: true, ask: "Vendor case studies and conference decks naming the client"}
+  - {id: x-app, area: External, external: true, ask: "Customer and agent apps: features that may be model-driven"}
+  - {id: x-press, area: External, external: true, ask: "Results releases and media since the annual report"}
+  - {id: x-group, area: External, external: true, ask: "Parent or group disclosures and shared tools (labelled proxy-by-parent)"}
+  - {id: x-regulator, area: External, external: true, ask: "Regulator registers, enforcement and industry-initiative membership"}

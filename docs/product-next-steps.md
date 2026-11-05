@@ -18,3 +18,12 @@ Founder items are parked in `docs/founder-checklist.md`. This is the product que
 Ordering logic: P1–P5 together produce the single artefact the red team said not to launch without — one real deck, reviewed by someone who did not run the pipeline. P6–P9 are the commercial machinery for G2.
 
 Status 2026-10-25: P1, P2, P4 done; P3 built but offline false-SUPPORT 2.6% vs 2% target (see GA plan addendum; F27); P5 in progress.
+
+## 2026-11-06 — wow-factor work (live evidence page + outside-in inventory)
+
+| # | Item | Status |
+|---|---|---|
+| W1 | **Outside-in AI inventory starter** (`pipeline/plumbinventory`): candidates from the AR and six external source classes; every quote string-matched to its PDF page, every figure to its page; build fails on any miss; 6 tests | Done for GEH — 15 candidates, 22/22 checks (`runs/great-eastern/2026-11-06-inventory/`) |
+| W2 | **Click-any-number page**: each row and figure opens the highlighted passage, printed page, publisher link and hash; refuses to render with a failed check | Done for GEH, published privately for internal review |
+| W3 | **Deeper + broader customer research** (`docs/customer-research-coverage.md`, `catalogue/coverage/insurer.yaml`, coverage step) | v0.1; next: R1–R5 in that doc |
+| W4 | Pre-read v5: lead with the inventory and the Malaysia A&H question; drop the S$131m headline | Next |
